@@ -66,8 +66,7 @@ class Kohana_Mail_Sender {
 
         $this->template->content = $content->render();
 
-
-        return mail($receiver->email, "Un message de l'équipe de SaveInTeam", $this->template->render(), $this->generate_headers($receiver));
+        return mail($receiver->email, '=?UTF-8?B?' . base64_encode("Un message de l'équipe de SaveInTeam") . '?=', $this->template->render(), $this->generate_headers($receiver));
     }
 
 }
