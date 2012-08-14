@@ -1,5 +1,8 @@
 <?php
 
+defined('SYSPATH') or die('No direct script access.');
+
+
 /**
  * Sender de mail.
  */
@@ -41,10 +44,11 @@ class Kohana_Mail_Sender {
      */
     public function send($receivers, $view, $model) {
 
-        if (!$receivers->loaded())
-            $receivers->find_all();
 
-        foreach ($receivers as $receiver) {
+
+        foreach ($receivers->find_all() as $receiver) {
+
+
             $this->send_to_one($receiver, $view, $model);
         }
     }
@@ -58,6 +62,7 @@ class Kohana_Mail_Sender {
 
         // $receiver may be an email so we convert it into a user orm model.
         if (is_string($receiver) and Valid::email($receiver)) {
+
             $receiver = ORM::factory('user');
             $receiver->email = $receiver;
         }
@@ -65,6 +70,8 @@ class Kohana_Mail_Sender {
         $content->receiver = $receiver;
 
         $this->template->content = $content->render();
+
+
 
         return mail($receiver->email, '=?UTF-8?B?' . base64_encode("Un message de l'équipe de SaveInTeam") . '?=', $this->template->render(), $this->generate_headers($receiver));
     }
