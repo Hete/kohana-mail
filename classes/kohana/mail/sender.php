@@ -2,7 +2,6 @@
 
 defined('SYSPATH') or die('No direct script access.');
 
-
 /**
  * Sender de mail.
  */
@@ -12,7 +11,12 @@ class Kohana_Mail_Sender {
     private $_config;
     private $template;
 
+    /**
+     *
+     * @return Kohana_Mail_Sender 
+     */
     public static function instance() {
+
         return Kohana_Mail_Sender::$_instance ? Kohana_Mail_Sender::$_instance : new Mail_Sender();
     }
 
@@ -37,22 +41,31 @@ class Kohana_Mail_Sender {
     }
 
     /**
-     *
-     * @param type $receivers
-     * @param type $view
-     * @param type $model 
+     * Envoie un courriel à tous les utilisateurs de la variable $receivers
+     * basé sur la vue et le modèle spécifié.
+     * @param Model_User $receivers
+     * @param View $view
+     * @param ORM $model 
+     * @return Boolean false si au moins un envoie échoue.
      */
     public function send($receivers, $view, $model) {
-
-
+        
+        $result = true;
 
         foreach ($receivers->find_all() as $receiver) {
-
-
-            $this->send_to_one($receiver, $view, $model);
+            $result = $result && $this->send_to_one($receiver, $view, $model);
         }
+
+        return $result;
     }
 
+    /**
+     * 
+     * @param Model_User $receivers
+     * @param View $view
+     * @param ORM $model 
+     * @return Boolean résultat de la fonction mail().
+     */
     public function send_to_one($receiver, $view, $model) {
 
         // Message avec une structure de données à afficher
