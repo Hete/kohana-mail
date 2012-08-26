@@ -50,11 +50,11 @@ class Kohana_Mail_Sender {
      */
 
     public function send($receivers, $view, $model, $title = "Un message de l'équipe de SaveInTeam") {
-
+        
         $result = true;
 
         foreach ($receivers->find_all() as $receiver) {
-            $result = $result && $this->send_to_one($receiver, $view, $model);
+            $result = $result && $this->send_to_one($receiver, $view, $model, $title);
         }
 
         return $result;
@@ -67,7 +67,7 @@ class Kohana_Mail_Sender {
      * @param ORM $model 
      * @return Boolean résultat de la fonction mail().
      */
-    public function send_to_one($receiver, $view, $model) {
+    public function send_to_one($receiver, $view, $model, $title = "Un message de l'équipe de SaveInTeam") {
 
         // Message avec une structure de données à afficher
         $content = new View($view);
