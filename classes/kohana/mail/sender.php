@@ -48,8 +48,9 @@ class Kohana_Mail_Sender {
      * @param ORM $model 
      * @return Boolean false si au moins un envoie échoue.
      */
-    public function send($receivers, $view, $model) {
-        
+
+    public function send($receivers, $view, $model, $title = "Un message de l'équipe de SaveInTeam") {
+
         $result = true;
 
         foreach ($receivers->find_all() as $receiver) {
@@ -86,7 +87,15 @@ class Kohana_Mail_Sender {
 
 
 
-        return mail($receiver->email, '=?UTF-8?B?' . base64_encode("Un message de l'équipe de SaveInTeam") . '?=', $this->template->render(), $this->generate_headers($receiver));
+        return $this->mail($receiver->email, '=?UTF-8?B?' . base64_encode($title) . '?=', $this->template->render(), $this->generate_headers($receiver));
+    }
+
+    private function mail($receiver, $sujet, $body, $headers) {
+        if (!$this->_config['async']) {
+            mail($receiver, $sujet, $body, $headers);
+        } else {
+            // Add message to queue
+        }
     }
 
 }
