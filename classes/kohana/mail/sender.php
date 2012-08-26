@@ -48,12 +48,12 @@ class Kohana_Mail_Sender {
      * @param ORM $model 
      * @return Boolean false si au moins un envoie échoue.
      */
-    public function send($receivers, $view, $model) {
+    public function send($receivers, $view, $model, $title = "Un message de l'équipe de SaveInTeam") {
         
         $result = true;
 
         foreach ($receivers->find_all() as $receiver) {
-            $result = $result && $this->send_to_one($receiver, $view, $model);
+            $result = $result && $this->send_to_one($receiver, $view, $model, $title);
         }
 
         return $result;
@@ -66,7 +66,7 @@ class Kohana_Mail_Sender {
      * @param ORM $model 
      * @return Boolean résultat de la fonction mail().
      */
-    public function send_to_one($receiver, $view, $model) {
+    public function send_to_one($receiver, $view, $model, $title = "Un message de l'équipe de SaveInTeam") {
 
         // Message avec une structure de données à afficher
         $content = new View($view);
@@ -86,7 +86,7 @@ class Kohana_Mail_Sender {
 
 
 
-        return mail($receiver->email, '=?UTF-8?B?' . base64_encode("Un message de l'équipe de SaveInTeam") . '?=', $this->template->render(), $this->generate_headers($receiver));
+        return mail($receiver->email, '=?UTF-8?B?' . base64_encode($title) . '?=', $this->template->render(), $this->generate_headers($receiver));
     }
 
 }
