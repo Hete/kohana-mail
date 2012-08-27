@@ -13,7 +13,7 @@ Route::set('mail', '<controller>((/<folder>)/<view>)', array(
     
     'action' => 'index',
     
-));
+));	
 
 
 
