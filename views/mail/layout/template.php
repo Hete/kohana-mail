@@ -3,9 +3,18 @@
 <!DOCTYPE html>
 <html>
 
-<head><?php echo $head?></head>
+<head><?php echo $head?>
+</head>
 
-<body style="margin: 0; font-family: Arial">
+<body style=
+	"
+	body {
+	margin-left: 30px;
+	font-family: Arial;
+	
+"
+
+>
     
     <?php echo $header ?>
     
