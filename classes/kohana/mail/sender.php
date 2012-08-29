@@ -70,23 +70,20 @@ class Kohana_Mail_Sender {
 
         // Message avec une structure de données à afficher
         $content = new View($view);
-
+		$mail = null;
         $content->model = $model;
-
         // $receiver may be an email so we convert it into a user orm model.
         if (is_string($receiver) and Valid::email($receiver)) {
-
+			
 			$mail=$receiver;
             $receiver = ORM::factory('user');
 
             $receiver->email = $receiver;
 			
         }
-
         $content->receiver = $receiver;
 
         $this->template->content = $content->render();
-
 
         return mail($mail, '=?UTF-8?B?' . base64_encode($title) . '?=', $this->template->render(), $this->generate_headers($receiver));
     }
