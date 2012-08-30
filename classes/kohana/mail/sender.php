@@ -49,7 +49,7 @@ class Kohana_Mail_Sender {
      * @return Boolean false si au moins un envoie échoue.
      */
     public function send($receivers, $view, $model, $title = "Un message de l'équipe de SaveInTeam") {
-        
+
         $result = true;
 
         foreach ($receivers->find_all() as $receiver) {
@@ -70,22 +70,25 @@ class Kohana_Mail_Sender {
 
         // Message avec une structure de données à afficher
         $content = new View($view);
-		$mail = null;
+
         $content->model = $model;
+
         // $receiver may be an email so we convert it into a user orm model.
         if (is_string($receiver) and Valid::email($receiver)) {
-			
-			$mail=$receiver;
+
             $receiver = ORM::factory('user');
 
             $receiver->email = $receiver;
-			
         }
+
+        if (!$receiver instanceof Model_User)
+            throw new Kohana_Exception("Le receveur n'est pas une instance de Model_User !");
+
         $content->receiver = $receiver;
 
         $this->template->content = $content->render();
 
-        return mail($mail, '=?UTF-8?B?' . base64_encode($title) . '?=', $this->template->render(), $this->generate_headers($receiver));
+        return mail($receiver->email, '=?UTF-8?B?' . base64_encode($title) . '?=', $this->template->render(), $this->generate_headers($receiver));
     }
 
 }
