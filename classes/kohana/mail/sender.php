@@ -66,8 +66,7 @@ class Kohana_Mail_Sender {
      * @param ORM $model 
      * @return Boolean résultat de la fonction mail().
      */
-    public function send_to_one($receiver, $view, $model, $title = "Un message de l'équipe de SaveInTeam") {
-
+    public function send_to_one($receiver, View $view, ORM $model, string $title = "Un message de l'équipe de SaveInTeam") {
         // Message avec une structure de données à afficher
         $content = new View($view);
 
@@ -75,14 +74,16 @@ class Kohana_Mail_Sender {
 
         // $receiver may be an email so we convert it into a user orm model.
         if (is_string($receiver) and Valid::email($receiver)) {
-
+            $temp_email = $receiver;
             $receiver = ORM::factory('user');
-
-            $receiver->email = $receiver;
+            $receiver->email = $temp_email;
         }
 
         if (!$receiver instanceof Model_User)
             throw new Kohana_Exception("Le receveur n'est pas une instance de Model_User !");
+
+        if (!Valid::email($receiver->email))
+            throw new Kohana_Exception("Le email :email est invalide !", array(":email" => $receiver->email));
 
         $content->receiver = $receiver;
 
