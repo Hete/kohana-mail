@@ -10,6 +10,7 @@ class Kohana_Mail_Sender {
     protected static $_instance;
     private $_config;
     private $template;
+    private $queue;
 
     /**
      *
@@ -22,6 +23,8 @@ class Kohana_Mail_Sender {
 
     private function __construct() {
         $this->_config = Kohana::$config->load('mail.default');
+
+        $this->queue = new Mail_Queue($this->_config['queue_path']);
         $this->template = View::factory("mail/layout/template");
         $this->template->header = View::factory("mail/layout/header");
         $this->template->head = View::factory("mail/layout/head");
@@ -89,7 +92,17 @@ class Kohana_Mail_Sender {
 
         $this->template->content = $content->render();
 
-        return mail($receiver->email, '=?UTF-8?B?' . base64_encode($title) . '?=', $this->template->render(), $this->generate_headers($receiver));
+        return $this->_send($receiver->email, $title, $this->template->render(), $this->generate_headers($receiver));
+    }
+
+    private function _send(string $email, string $subject, string $content, string $headers) {
+        if ($this->_config['async']) {
+            $this->queue->push();
+            
+        } else {
+
+            return mail($email, '=?UTF-8?B?' . base64_encode($subject) . '?=', $content, $headers);
+        }
     }
 
 }
