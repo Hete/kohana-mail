@@ -17,7 +17,7 @@ class Kohana_Mail_Sender {
      */
     public static function instance() {
 
-        return Kohana_Mail_Sender::$_instance ? Kohana_Mail_Sender::$_instance : Kohana_Mail_Sender::$_instance  = new Mail_Sender();
+        return Kohana_Mail_Sender::$_instance ? Kohana_Mail_Sender::$_instance : Kohana_Mail_Sender::$_instance = new Mail_Sender();
     }
 
     private function __construct() {
@@ -40,7 +40,7 @@ class Kohana_Mail_Sender {
         $headers .= 'Content-type: text/html; charset=UTF-8' . "\r\n";
         // En-têtes additionnels
         $headers .= 'To: ' . $receiver->nom_complet() . ' <' . $receiver->email . '>' . "\r\n";
-        $headers .= 'From: SaveInTeam <' . $this->_config['from'] . '>' . "\r\n";
+        $headers .= 'From: ' . $this->_config['from_name'] . ' <' . $this->_config['from'] . '>' . "\r\n";
 
         return $headers;
     }
@@ -117,20 +117,16 @@ class Kohana_Mail_Sender {
      */
     public function push(string $email, string $subject, string $content, string $headers) {
         $filename = Cookie::salt("timestamp", time());
-
         return file_put_contents($filename, serialize(new Mail_Mail($email, $subject, $content, $headers)));
     }
 
-    public static function salt($timestamp) {
-        return sha1($this->_config['salt'] . $timestamp);
+    public function salt(integer $timestamp) {
+        return $timestamp . sha1($this->_config['salt'] . "~" . $timestamp);
     }
 
-    public static function validate_timestamp($timestamp, $digest) {
-        return salt($timestamp) === $digest;
-    }
-
-    public static function validate_file_by_name($name) {
-        
+    public function validate_filename(string $name) {
+        $parts = explode("~", $name);
+        return $this->salt($parts[0]) === $parts[1];
     }
 
     public function list_and_sort_files_in_queue() {
@@ -138,7 +134,7 @@ class Kohana_Mail_Sender {
         $files = scandir($this->queue_path, SCANDIR_SORT_ASCENDING);
 
 
-        return array_filter($files, Mail_Sender::validate_file_by_name($name));
+        return array_filter($files, $this->validate_filename($name));
     }
 
     /**
