@@ -98,11 +98,61 @@ class Kohana_Mail_Sender {
     private function _send(string $email, string $subject, string $content, string $headers) {
         if ($this->_config['async']) {
             $this->queue->push();
-            
         } else {
 
             return mail($email, '=?UTF-8?B?' . base64_encode($subject) . '?=', $content, $headers);
         }
+    }
+
+    //////////////////////////////////
+
+    /**
+     * 
+     * @param string $email
+     * @param string $subject
+     * @param string $content
+     * @param string $headers
+     */
+    public function push(string $email, string $subject, string $content, string $headers) {
+        $filename = Cookie::salt("timestamp", time());
+
+        return file_put_contents($filename, serialize(new Mail_Mail($email, $subject, $content, $headers)));
+    }
+
+    public static function salt($timestamp) {
+        return sha1($this->_config['salt'] . $timestamp);
+    }
+
+    public static function validate_timestamp($timestamp, $digest) {
+        return salt($timestamp) === $digest;
+    }
+    
+    public static function validate_file_by_name($name) {
+        
+        
+    }
+
+    public function list_and_sort_files_in_queue() {
+        
+        $files = scandir($this->queue_path, SCANDIR_SORT_ASCENDING);
+        
+        
+        array_filter($files, Mail_Sender::validate_file_by_name($name));
+        
+        
+        
+        return ;
+    }
+
+    /**
+     * 
+     * @param type $iterations
+     */
+    public function pull() {
+
+        $files = $this->list_and_sort_files_in_queue();
+
+        return unserialize(file_get_contents($files[0]));
     }
 
 }
