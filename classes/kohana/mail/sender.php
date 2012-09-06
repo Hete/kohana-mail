@@ -10,7 +10,6 @@ class Kohana_Mail_Sender {
     protected static $_instance;
     private $_config;
     private $template;
-    private $queue;
 
     /**
      *
@@ -18,17 +17,20 @@ class Kohana_Mail_Sender {
      */
     public static function instance() {
 
-        return Kohana_Mail_Sender::$_instance ? Kohana_Mail_Sender::$_instance : new Mail_Sender();
+        return Kohana_Mail_Sender::$_instance ? Kohana_Mail_Sender::$_instance : Kohana_Mail_Sender::$_instance  = new Mail_Sender();
     }
 
     private function __construct() {
         $this->_config = Kohana::$config->load('mail.default');
-
-        $this->queue = new Mail_Queue($this->_config['queue_path']);
         $this->template = View::factory("mail/layout/template");
         $this->template->header = View::factory("mail/layout/header");
         $this->template->head = View::factory("mail/layout/head");
         $this->template->footer = View::factory("mail/layout/footer");
+
+        // Tests
+
+        if ($this->_config['async'] && !is_writable($this->_config['queue_path']))
+            throw new Kohana_Exception("Folder :folder is not writeable.", array(":folder" => $this->_config['queue_path']));
     }
 
     private function generate_headers($receiver) {
@@ -126,22 +128,17 @@ class Kohana_Mail_Sender {
     public static function validate_timestamp($timestamp, $digest) {
         return salt($timestamp) === $digest;
     }
-    
+
     public static function validate_file_by_name($name) {
-        
         
     }
 
     public function list_and_sort_files_in_queue() {
-        
+
         $files = scandir($this->queue_path, SCANDIR_SORT_ASCENDING);
-        
-        
-        array_filter($files, Mail_Sender::validate_file_by_name($name));
-        
-        
-        
-        return ;
+
+
+        return array_filter($files, Mail_Sender::validate_file_by_name($name));
     }
 
     /**
