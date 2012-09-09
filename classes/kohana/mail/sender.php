@@ -7,8 +7,20 @@ defined('SYSPATH') or die('No direct script access.');
  */
 class Kohana_Mail_Sender {
 
+    /**
+     *
+     * @var Kohana_Mail_Sender 
+     */
     protected static $_instance;
+    /**
+     *
+     * @var array 
+     */
     private $_config;
+    /**
+     *
+     * @var type 
+     */
     private $template;
 
     /**
@@ -33,7 +45,7 @@ class Kohana_Mail_Sender {
             throw new Kohana_Exception("Folder :folder is not writeable.", array(":folder" => $this->_config['queue_path']));
     }
 
-    private function generate_headers($receiver) {
+    private function generate_headers(Model_User $receiver) {
 
         // Pour envoyer un mail HTML, l'en-tête Content-type doit être défini
         $headers = 'MIME-Version: 1.0' . "\r\n";
@@ -53,7 +65,7 @@ class Kohana_Mail_Sender {
      * @param ORM $model 
      * @return Boolean false si au moins un envoie échoue.
      */
-    public function send($receivers, $view, $model, $title = "Un message de l'équipe de SaveInTeam") {
+    public function send(Model_User $receivers, $view, ORM $model, $title = "Un message de l'équipe de SaveInTeam") {
 
         $result = true;
 
@@ -71,7 +83,7 @@ class Kohana_Mail_Sender {
      * @param ORM $model 
      * @return Boolean résultat de la fonction mail().
      */
-    public function send_to_one($receiver, View $view, ORM $model, string $title = "Un message de l'équipe de SaveInTeam") {
+    public function send_to_one($receiver, $view, ORM $model, $title = "Un message de l'équipe de SaveInTeam") {
         // Message avec une structure de données à afficher
         $content = new View($view);
 
@@ -94,58 +106,81 @@ class Kohana_Mail_Sender {
 
         $this->template->content = $content->render();
 
-        return $this->_send($receiver->email, $title, $this->template->render(), $this->generate_headers($receiver));
+        return $this->_send(new Mail_Mail($receiver->email, $title, $this->template->render(), $this->generate_headers($receiver)));
     }
 
-    private function _send(string $email, string $subject, string $content, string $headers) {
+    /**
+     * Fonction d'envoie.
+     * @param string $email
+     * @param string $subject
+     * @param string $content
+     * @param string $headers
+     * @return type
+     */
+    private function _send(Mail_Mail $mail) {
         if ($this->_config['async']) {
-            $this->queue->push();
+            $this->push($mail);
         } else {
-
-            return mail($email, '=?UTF-8?B?' . base64_encode($subject) . '?=', $content, $headers);
+            return mail($mail->email, '=?UTF-8?B?' . base64_encode($mail->subject) . '?=', $mail->content, $mail->headers);
         }
     }
 
-    //////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    // Gestion asynchrome
 
     /**
-     * 
+     * Ajoute un objet Mail_Mail à la fin de la queue.
      * @param string $email
      * @param string $subject
      * @param string $content
      * @param string $headers
      */
-    public function push(string $email, string $subject, string $content, string $headers) {
-        $filename = Cookie::salt("timestamp", time());
-        return file_put_contents($filename, serialize(new Mail_Mail($email, $subject, $content, $headers)));
+    public function push(Mail_Mail $mail) {
+        $filename = $this->salt($mail = serialize($mail), time());
+        return file_put_contents($this->filename_to_path($filename), serialize($mail));
     }
 
-    public function salt(integer $timestamp) {
-        return $timestamp . sha1($this->_config['salt'] . "~" . $timestamp);
-    }
-
-    public function validate_filename(string $name) {
-        $parts = explode("~", $name);
-        return $this->salt($parts[0]) === $parts[1];
-    }
-
-    public function list_and_sort_files_in_queue() {
-
-        $files = scandir($this->queue_path, SCANDIR_SORT_ASCENDING);
-
-
-        return array_filter($files, $this->validate_filename($name));
+    private function filename_to_path($filename) {
+        return $this->_config['queue_path'] . "/" . $filename;
     }
 
     /**
-     * 
-     * @param type $iterations
+     * Retourne l'objet Mail_Mail au début de la queue.
+     * @param Mail_Mail $iterations
      */
     public function pull() {
+        $files = $this->fetch_mail_queue();
 
-        $files = $this->list_and_sort_files_in_queue();
+        if ($this->validate_filename($files[0])) {
+            return unserialize(file_get_contents(array_shift($files)));
+        } else {
+            throw new Kohana_Exception("Invalid file in queue :file", array(":file" => $files[0]));
+        }
+    }
 
-        return unserialize(file_get_contents($files[0]));
+    /**
+     * Créé un sel à partir d'un timestamp.
+     * @param integer $timestamp
+     * @return type
+     */
+    public function salt($mail_sha1, $timestamp) {
+        return $timestamp . "~" . sha1($this->_config['salt'] . $mail_sha1 . $timestamp);
+    }
+
+    /**
+     * Valide un nom de fichier.
+     * @param string $name
+     * @return type
+     */
+    public function validate_filename(string $name) {
+        $parts = explode("~", $name);
+        $mail_sha1 = sha1_file($this->filename_to_path($name));
+        return $this->salt($mail_sha1, $parts[0]) === $parts[1];
+    }
+
+    public function fetch_mail_queue() {
+        $files = scandir($this->queue_path, SCANDIR_SORT_ASCENDING);
+        return array_filter($files, $this->validate_filename($name));
     }
 
 }
