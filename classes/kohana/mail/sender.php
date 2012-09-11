@@ -43,11 +43,6 @@ class Kohana_Mail_Sender {
         $this->template->header = View::factory("mail/layout/header");
         $this->template->head = View::factory("mail/layout/head");
         $this->template->footer = View::factory("mail/layout/footer");
-
-        // Tests
-
-        if ($this->_config['async'] && !is_writable($this->_config['queue_path']))
-            throw new Kohana_Exception("Folder :folder is not writeable.", array(":folder" => $this->_config['queue_path']));
     }
 
     /**
@@ -75,7 +70,7 @@ class Kohana_Mail_Sender {
      * @param ORM $model 
      * @return Boolean false si au moins un envoie échoue.
      */
-    public function send(Model_User $receivers, $view, ORM $model, $title = "Un message de l'équipe de SaveInTeam") {
+    public function send(Model_User $receivers, $view, ORM $model, $title = NULL) {
 
         $result = true;
 
@@ -93,7 +88,13 @@ class Kohana_Mail_Sender {
      * @param ORM $model 
      * @return Boolean résultat de la fonction mail().
      */
-    public function send_to_one($receiver, $view, ORM $model, $title = "Un message de l'équipe de SaveInTeam") {
+    public function send_to_one($receiver, $view, ORM $model, $title = NULL) {
+
+        if ($title === NULL) {
+
+            $title = $this->_config['default_subject'];
+        }
+
         // Message avec une structure de données à afficher
         $content = new View($view);
 
@@ -161,11 +162,10 @@ class Kohana_Mail_Sender {
      * @param Mail_Mail $iterations
      */
     public function pull() {
-        
+
         $files = $this->peek_mail_queue();
 
         return unserialize(file_get_contents($this->filename_to_path(array_shift($files))));
-
     }
 
     /**
@@ -184,15 +184,15 @@ class Kohana_Mail_Sender {
      */
     public function validate_filename($name) {
         $parts = explode("~", $name);
-        
+
         $validation = Validation::factory($parts)
                 ->rule(0, "digit")
                 ->rule(1, "aplha_numeric");
-        
-        if(count($parts) !== 2 | ! $validation->check()) {
-            return false;            
+
+        if (count($parts) !== 2 | !$validation->check()) {
+            return false;
         }
-        
+
         $mail_sha1 = sha1_file($this->filename_to_path($name));
         return $this->salt($mail_sha1, $parts[0]) === $parts[1];
     }
