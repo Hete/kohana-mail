@@ -11,7 +11,7 @@ class Kohana_Mail_Sender {
      *
      * @var Kohana_Mail_Sender 
      */
-    protected static $_instance;
+    protected static $_instances;
 
     /**
      *
@@ -29,20 +29,28 @@ class Kohana_Mail_Sender {
      *
      * @return Kohana_Mail_Sender 
      */
-    public static function instance() {
-        return Kohana_Mail_Sender::$_instance ? Kohana_Mail_Sender::$_instance : Kohana_Mail_Sender::$_instance = new Mail_Sender();
+    public static function instance($name = "default") {
+        return Kohana_Mail_Sender::$_instances[$name] ? Kohana_Mail_Sender::$_instances[$name] : Kohana_Mail_Sender::$_instances[$name] = new Mail_Sender($name);
     }
 
     /**
      * 
      * @throws Kohana_Exception
      */
-    private function __construct() {
-        $this->_config = Kohana::$config->load('mail.default');
+    private function __construct($name) {
+        $this->_config = Kohana::$config->load("mail.$name");
         $this->template = View::factory("mail/layout/template");
         $this->template->header = View::factory("mail/layout/header");
         $this->template->head = View::factory("mail/layout/head");
         $this->template->footer = View::factory("mail/layout/footer");
+
+        if ($this->_config['async']) {
+            if (!is_writable($this->_config['queue_path']))
+                throw new Kohana_Exception("Folder :folder is not writeable.", array(":folder" => Kohana::$config->load('mail.default.queue_path')));
+
+            if ($this->_config['salt'] === NULL)
+                throw new Kohana_Exception("Salt is not defined.");
+        }
     }
 
     /**
