@@ -11,7 +11,11 @@ class Kohana_Mail_Mail {
         $this->headers = $headers;
     }
 
-}
+    public function send() {
 
+        return mail($this->email, '=?UTF-8?B?' . base64_encode($this->subject) . '?=', $this->content, $this->headers);
+    }
+
+}
 
 ?>

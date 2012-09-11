@@ -12,11 +12,13 @@ class Kohana_Mail_Sender {
      * @var Kohana_Mail_Sender 
      */
     protected static $_instance;
+
     /**
      *
      * @var array 
      */
     private $_config;
+
     /**
      *
      * @var type 
@@ -28,10 +30,13 @@ class Kohana_Mail_Sender {
      * @return Kohana_Mail_Sender 
      */
     public static function instance() {
-
         return Kohana_Mail_Sender::$_instance ? Kohana_Mail_Sender::$_instance : Kohana_Mail_Sender::$_instance = new Mail_Sender();
     }
 
+    /**
+     * 
+     * @throws Kohana_Exception
+     */
     private function __construct() {
         $this->_config = Kohana::$config->load('mail.default');
         $this->template = View::factory("mail/layout/template");
@@ -45,6 +50,11 @@ class Kohana_Mail_Sender {
             throw new Kohana_Exception("Folder :folder is not writeable.", array(":folder" => $this->_config['queue_path']));
     }
 
+    /**
+     * 
+     * @param Model_User $receiver
+     * @return string
+     */
     private function generate_headers(Model_User $receiver) {
 
         // Pour envoyer un mail HTML, l'en-tête Content-type doit être défini
@@ -119,9 +129,9 @@ class Kohana_Mail_Sender {
      */
     private function _send(Mail_Mail $mail) {
         if ($this->_config['async']) {
-            $this->push($mail);
+            return $this->push($mail);
         } else {
-            return mail($mail->email, '=?UTF-8?B?' . base64_encode($mail->subject) . '?=', $mail->content, $mail->headers);
+            return $mail->send();
         }
     }
 
@@ -129,37 +139,37 @@ class Kohana_Mail_Sender {
     // Gestion asynchrome
 
     /**
-     * Ajoute un objet Mail_Mail à la fin de la queue.
-     * @param string $email
-     * @param string $subject
-     * @param string $content
-     * @param string $headers
+     * Ajoute un objet Mail_Mail à la fin de la queue.     
      */
     public function push(Mail_Mail $mail) {
         $filename = $this->salt($mail = serialize($mail), time());
         return file_put_contents($this->filename_to_path($filename), serialize($mail));
     }
 
+    /**
+     * Converts filename from a mail in the queue to a path.
+     * @param string $filename
+     * @return string
+     */
     private function filename_to_path($filename) {
         return $this->_config['queue_path'] . "/" . $filename;
     }
 
     /**
      * Retourne l'objet Mail_Mail au début de la queue.
+     * Si l'objet est retournable, 
      * @param Mail_Mail $iterations
      */
     public function pull() {
-        $files = $this->fetch_mail_queue();
+        
+        $files = $this->peek_mail_queue();
 
-        if ($this->validate_filename($files[0])) {
-            return unserialize(file_get_contents(array_shift($files)));
-        } else {
-            throw new Kohana_Exception("Invalid file in queue :file", array(":file" => $files[0]));
-        }
+        return unserialize(file_get_contents($this->filename_to_path(array_shift($files))));
+
     }
 
     /**
-     * Créé un sel à partir d'un timestamp.
+     * Créé un sel à partir d'un timestamp et le sha1 unique d'un mail.
      * @param integer $timestamp
      * @return type
      */
@@ -172,13 +182,26 @@ class Kohana_Mail_Sender {
      * @param string $name
      * @return type
      */
-    public function validate_filename(string $name) {
+    public function validate_filename($name) {
         $parts = explode("~", $name);
+        
+        $validation = Validation::factory($parts)
+                ->rule(0, "digit")
+                ->rule(1, "aplha_numeric");
+        
+        if(count($parts) !== 2 | ! $validation->check()) {
+            return false;            
+        }
+        
         $mail_sha1 = sha1_file($this->filename_to_path($name));
         return $this->salt($mail_sha1, $parts[0]) === $parts[1];
     }
 
-    public function fetch_mail_queue() {
+    /**
+     * 
+     * @return type
+     */
+    public function peek_mail_queue() {
         $files = scandir($this->queue_path, SCANDIR_SORT_ASCENDING);
         return array_filter($files, $this->validate_filename($name));
     }
