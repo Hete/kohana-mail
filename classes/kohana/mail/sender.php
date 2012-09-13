@@ -30,7 +30,7 @@ class Kohana_Mail_Sender {
      * @return Kohana_Mail_Sender 
      */
     public static function instance($name = "default") {
-        return Kohana_Mail_Sender::$_instances[$name] ? Kohana_Mail_Sender::$_instances[$name] : Kohana_Mail_Sender::$_instances[$name] = new Mail_Sender($name);
+        return isset(Kohana_Mail_Sender::$_instances[$name]) ? Kohana_Mail_Sender::$_instances[$name] : Kohana_Mail_Sender::$_instances[$name] = new Mail_Sender($name);
     }
 
     /**
@@ -148,11 +148,15 @@ class Kohana_Mail_Sender {
     // Gestion asynchrome
 
     /**
-     * Ajoute un objet Mail_Mail à la fin de la queue.     
+     * Ajoute un objet Mail_Mail à la fin de la queue.   
+     * @param Mail_Mail $mail
+     * @return int
      */
     public function push(Mail_Mail $mail) {
-        $filename = $this->salt($mail = serialize($mail), time());
-        return file_put_contents($this->filename_to_path($filename), serialize($mail));
+        $serialized_mail = serialize($mail);
+        $mail_sha1 = sha1($serialized_mail);
+        $filename = $this->salt($mail_sha1, time());
+        return file_put_contents($this->filename_to_path($filename), $serialized_mail);
     }
 
     /**
@@ -169,17 +173,56 @@ class Kohana_Mail_Sender {
      * Si l'objet est retournable, 
      * @param Mail_Mail $iterations
      */
-    public function pull() {
 
+    /**
+     * 
+     * @param type $unlink
+     * @return boolean|\Mail_Mail FALSE if queue is empty, a Mail_Mail object otherwise.
+     * @throws Kohana_Exception
+     */
+    public function pull($unlink = false) {
         $files = $this->peek_mail_queue();
 
-        return unserialize(file_get_contents($this->filename_to_path(array_shift($files))));
+        if (count($files) === 0) {
+            return FALSE;
+        }
+
+        $file_path = $this->filename_to_path(array_shift($files));
+
+        $file_content_serialized = file_get_contents($file_path);
+
+
+        if ($file_content_serialized === FALSE) {
+
+            throw new Kohana_Exception("Le contenu du fichier :fichier n'a pas pu être récupéré.",
+                    array(":fichier", $file_path));
+        }
+
+        $file_content = unserialize($file_content_serialized);
+
+        if ($file_content === FALSE) {
+            throw new Kohana_Exception("La désérialization n'a pas fonctionné sur le fichier :file.",
+                    array(":file", $file_path));
+        }
+
+        if (!($file_content instanceof Mail_Mail)) {
+            throw new Kohana_Exception("Le contenu du fichier :fichier n'est pas de type Mail_Mail.",
+                    array(":fichier", $file_path));
+        }
+
+        if ($unlink) {
+            unlink($file_path);
+        }
+
+
+        return $file_content;
     }
 
     /**
      * Créé un sel à partir d'un timestamp et le sha1 unique d'un mail.
-     * @param integer $timestamp
-     * @return type
+     * @param string $mail_sha1 mail's content sha1.
+     * @param int $timestamp 
+     * @return string
      */
     public function salt($mail_sha1, $timestamp) {
         return $timestamp . "~" . sha1($this->_config['salt'] . $mail_sha1 . $timestamp);
@@ -195,14 +238,19 @@ class Kohana_Mail_Sender {
 
         $validation = Validation::factory($parts)
                 ->rule(0, "digit")
-                ->rule(1, "aplha_numeric");
+                ->rule(1, "alpha_numeric");
+
 
         if (count($parts) !== 2 | !$validation->check()) {
             return false;
         }
 
         $mail_sha1 = sha1_file($this->filename_to_path($name));
-        return $this->salt($mail_sha1, $parts[0]) === $parts[1];
+
+
+
+
+        return $this->salt($mail_sha1, $parts[0]) === $name;
     }
 
     /**
@@ -210,8 +258,8 @@ class Kohana_Mail_Sender {
      * @return type
      */
     public function peek_mail_queue() {
-        $files = scandir($this->queue_path, SCANDIR_SORT_ASCENDING);
-        return array_filter($files, $this->validate_filename($name));
+        $files = scandir($this->_config['queue_path']);
+        return array_filter($files, array($this, "validate_filename"));
     }
 
 }

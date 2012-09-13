@@ -10,6 +10,12 @@ class Kohana_Mail_Mail {
         $this->content = $content;
         $this->headers = $headers;
     }
+    
+    public function render() {
+        
+        return $this->content;
+        
+    }
 
     public function send() {
 
