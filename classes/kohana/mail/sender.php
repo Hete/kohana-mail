@@ -11,7 +11,7 @@ class Kohana_Mail_Sender {
      *
      * @var Kohana_Mail_Sender 
      */
-    protected static $_instances;
+    protected static $_instances = array();
 
     /**
      *
