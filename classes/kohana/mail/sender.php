@@ -93,10 +93,10 @@ class Kohana_Mail_Sender {
      * 
      * @param Model_User $receivers
      * @param View $view
-     * @param ORM $model 
+     * @param Model $model 
      * @return Boolean résultat de la fonction mail().
      */
-    public function send_to_one($receiver, $view, ORM $model, $title = NULL) {
+    public function send_to_one($receiver, $view, Model $model, $title = NULL) {
 
         if ($title === NULL) {
 
