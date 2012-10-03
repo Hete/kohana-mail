@@ -98,7 +98,6 @@ class Kohana_Mail_Sender {
      */
     public function send_to_one($receiver, $view, $model, $title = NULL) {
 
-        
         if ($title === NULL) {
 
             $title = $this->_config['default_subject'];
@@ -125,6 +124,7 @@ class Kohana_Mail_Sender {
         $content->receiver = $receiver;
 
         $this->template->content = $content->render();
+       
 
         return $this->_send(new Mail_Mail($receiver->email, $title, $this->template->render(), $this->generate_headers($receiver)));
     }
@@ -138,6 +138,8 @@ class Kohana_Mail_Sender {
      * @return type
      */
     private function _send(Mail_Mail $mail) {
+
+
         if ($this->_config['async']) {
             return $this->push($mail);
         } else {
