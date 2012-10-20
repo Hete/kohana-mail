@@ -93,6 +93,12 @@ class Kohana_Mail_Mail extends Model {
     public function __toString() {
         return $this->render();
     }
+    
+    public function render() {
+        
+        return $this->content;
+        
+    }
 
     /**
      * Send the mail to its subject.
