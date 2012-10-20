@@ -41,7 +41,6 @@ class Kohana_Mail_Sender {
         $this->_config = Kohana::$config->load("mail.$name");
         $this->template = View::factory("mail/layout/template");
         $this->template->header = View::factory("mail/layout/header");
-        $this->template->head = View::factory("mail/layout/head");
         $this->template->footer = View::factory("mail/layout/footer");
 
         if ($this->_config['async']) {
@@ -60,9 +59,6 @@ class Kohana_Mail_Sender {
      */
     private function generate_headers(Model_User $receiver) {
 
-        // Pour envoyer un mail HTML, l'en-tête Content-type doit être défini
-        $headers = 'MIME-Version: 1.0' . "\r\n";
-        $headers .= 'Content-type: text/html; charset=UTF-8' . "\r\n";
         // En-têtes additionnels
         $headers .= 'To: ' . $receiver->nom_complet() . ' <' . $receiver->email . '>' . "\r\n";
         $headers .= 'From: ' . $this->_config['from_name'] . ' <' . $this->_config['from'] . '>' . "\r\n";
@@ -99,14 +95,8 @@ class Kohana_Mail_Sender {
     public function send_to_one($receiver, $view, $model, $title = NULL) {
 
         if ($title === NULL) {
-
             $title = $this->_config['default_subject'];
         }
-
-        // Message avec une structure de données à afficher
-        $content = new View($view);
-
-        $content->model = $model;
 
         // $receiver may be an email so we convert it into a user orm model.
         if (is_string($receiver) and Valid::email($receiver)) {
@@ -121,12 +111,27 @@ class Kohana_Mail_Sender {
         if (!Valid::email($receiver->email))
             throw new Kohana_Exception("Le email :email est invalide !", array(":email" => $receiver->email));
 
-        $content->receiver = $receiver;
+        // Message avec une structure de données à afficher
 
-        $this->template->content = $content->render();
-       
+        $mail = new Mail_Mail($receiver, $this->template);
 
-        return $this->_send(new Mail_Mail($receiver->email, $title, $this->template->render(), $this->generate_headers($receiver)));
+        $this->build_template($mail->template);
+
+
+        return $this->_send($mail);
+    }
+
+    /**
+     * You may override this method for your custom templates.
+     * @param View $template
+     * @param Model $mode
+     * @param type $receiver
+     */
+    public function build_template(View $content, Model $model, $receiver) {
+        $this->template->header = View::factory("mail/layout/header", array("model" => $model, "receiver" => $receiver));
+
+        $this->template->content = View::factory($view, array("model" => $model, "receiver" => $receiver));
+        $this->template->footer = View::factory($view, array("model" => $model, "receiver" => $receiver));
     }
 
     /**
