@@ -1,35 +1,25 @@
 <?php
 
 /**
- * 
+ * Model for mail.
+ * @author Guillaume Poirier-Morency <guillaumepoiriermorency@gmail.com>
+ * @copyright (c) 2012, Hète.ca
  */
 class Kohana_Mail_Mail extends Model {
-    /*
-     * Supported headers
-     */
-
-    const TO = "To",
-            FROM = "From",
-            BCC = "Bcc",
-            MIME_VERSION = "MIME-Version",
-            CONTENT_TYPE = "Content-type";
 
     public $content,
             $headers = array(
-                'MIME-Version:' => 1.0,
+                'MIME-Version' => 1.0,
                 'Content-type' => 'text/html; charset=UTF-8',
                     ),
             $email,
             $subject;
-    public $template;
 
-    public function __construct($email, $subject, array $headers = array()) {
+    public function __construct($email, $subject, View $content, array $headers = array()) {
         $this->email = $email;
         $this->subject = $subject;
-
-
-
         $this->headers += $headers;
+        $this->content = $content;
     }
 
     /**
@@ -50,32 +40,15 @@ class Kohana_Mail_Mail extends Model {
     }
 
     /**
-     * 
-     * @param type $name
-     * @param type $arguments
-     * @param type $render_callback
-     * @return type
+     * Print headers in a 
+     * @return string
      */
-    public function __call($name, $arguments = NULL) {
-
-        if ($arguments === NULL) {
-            return $this->headers(constant("Mail_Mail::HEADERS_" . strtoupper($name)));
+    public function render_headers() {
+        $output = array();
+        foreach ($this->headers as $key => $value) {
+            $output += array("$key: $value");
         }
-
-
-        if (count($arguments) !== 1) {
-            throw new Kohana_Exception(":number arguments not supported.", array(":number" => count($arguments)));
-        }
-
-        // We set a key based on the constants.
-        $key = constant("Mail_Mail::" . strtoupper($name));
-
-        if ($key === NULL) {
-            throw new Kohana_Exception("Header :header not supported.", array(":header" => $name));
-        }
-
-
-        $this->headers($key, $arguments[0]);
+        return implode("\r\n", $output);
     }
 
     /**
@@ -83,7 +56,7 @@ class Kohana_Mail_Mail extends Model {
      * @return string
      */
     public function render() {
-        return $this->template->render();
+        return $this->content->render();
     }
 
     /**
@@ -99,8 +72,7 @@ class Kohana_Mail_Mail extends Model {
      * @return type
      */
     public function send() {
-
-        return mail($this->email, '=?UTF-8?B?' . base64_encode($this->subject) . '?=', $this->render(), implode("\r\n", $this->headers));
+        return mail($this->email, '=?UTF-8?B?' . base64_encode($this->subject) . '?=', $this->render(), $this->render_headers());
     }
 
 }

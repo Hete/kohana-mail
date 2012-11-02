@@ -39,9 +39,7 @@ class Kohana_Mail_Sender {
      */
     private function __construct($name) {
         $this->_config = Kohana::$config->load("mail.$name");
-        $this->template = View::factory("mail/layout/template");
-        $this->template->header = View::factory("mail/layout/header");
-        $this->template->footer = View::factory("mail/layout/footer");
+
 
         if ($this->_config['async']) {
             if (!is_writable($this->_config['queue_path']))
@@ -55,15 +53,13 @@ class Kohana_Mail_Sender {
     /**
      * 
      * @param Model_User $receiver
-     * @return string
+     * @return array
      */
     private function generate_headers(Model_User $receiver) {
-
-        // En-têtes additionnels
-        $headers .= 'To: ' . $receiver->nom_complet() . ' <' . $receiver->email . '>' . "\r\n";
-        $headers .= 'From: ' . $this->_config['from_name'] . ' <' . $this->_config['from'] . '>' . "\r\n";
-
-        return $headers;
+        return array(
+            'To' => $receiver->nom_complet() . " <$receiver->email>",
+            'From' => $this->_config['from_name'] . " <" . $this->_config['from'] . ">",
+        );
     }
 
     /**
@@ -113,25 +109,9 @@ class Kohana_Mail_Sender {
 
         // Message avec une structure de données à afficher
 
-        $mail = new Mail_Mail($receiver, $this->template);
+        $view = View::factory($view, array('model' => $model));
 
-        $this->build_template($mail->template);
-
-
-        return $this->_send($mail);
-    }
-
-    /**
-     * You may override this method for your custom templates.
-     * @param View $template
-     * @param Model $mode
-     * @param type $receiver
-     */
-    public function build_template(View $content, Model $model, $receiver) {
-        $this->template->header = View::factory("mail/layout/header", array("model" => $model, "receiver" => $receiver));
-
-        $this->template->content = View::factory($view, array("model" => $model, "receiver" => $receiver));
-        $this->template->footer = View::factory($view, array("model" => $model, "receiver" => $receiver));
+        return $this->_send(new Mail_Mail($receiver->email, $title, $view, $this->generate_headers($receiver)));
     }
 
     /**

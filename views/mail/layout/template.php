@@ -1,10 +1,10 @@
 <?php defined('SYSPATH') or die('No direct script access.'); ?><!DOCTYPE html>
 <html>
-    <head><?php echo $head ?></head>
+    <head><?php echo View::factory("mail/layout/template/head") ?></head>
     <body style="margin-left: 30px; font-family: Arial;">
-        <?php echo $header ?>
+        <?php echo View::factory("mail/layout/template/header") ?>
         <?php echo $content ?>
-        <?php echo $footer ?>
+        <?php echo View::factory("mail/layout/template/footer") ?>
     </body>
 </html>
 
