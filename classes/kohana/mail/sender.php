@@ -88,7 +88,15 @@ class Kohana_Mail_Sender {
      * @param Model $model 
      * @return Boolean résultat de la fonction mail().
      */
-    public function send_to_one($receiver, $view, $model, $title = NULL) {
+    public function send_to_one($receiver, $view, ORM $model, $title = NULL) {
+
+        if ($title === NULL) {
+
+            $title = $this->_config['default_subject'];
+        }
+
+        // Message avec une structure de données à afficher
+        $content = new View($view);
 
         if ($title === NULL) {
             $title = $this->_config['default_subject'];
