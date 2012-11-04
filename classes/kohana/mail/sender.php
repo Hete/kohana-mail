@@ -21,12 +21,6 @@ class Kohana_Mail_Sender {
 
     /**
      *
-     * @var type 
-     */
-    private $template;
-
-    /**
-     *
      * @return Kohana_Mail_Sender 
      */
     public static function instance($name = "default") {
@@ -70,7 +64,7 @@ class Kohana_Mail_Sender {
      * @param ORM $model 
      * @return Boolean false si au moins un envoie échoue.
      */
-    public function send(Model_User $receivers, $view, ORM $model, $title = NULL) {
+    public function send(Model_User $receivers, View $view, ORM $model, $title = NULL) {
 
         $result = true;
 
@@ -83,54 +77,32 @@ class Kohana_Mail_Sender {
 
     /**
      * 
-     * @param Model_User $receivers
-     * @param View $view
+     * @param Model_User|string $receivers
+     * @param string $view
      * @param Model $model 
      * @return Boolean résultat de la fonction mail().
      */
-    public function send_to_one($receiver, $view, ORM $model, $title = NULL) {
-
+    public function send_to_one($receiver, $view, ORM $model = NULL, $title = NULL) {
+        $email = NULL;
         if ($title === NULL) {
-
             $title = $this->_config['default_subject'];
         }
-
-        // Message avec une structure de données à afficher
-        $content = new View($view);
 
         if ($title === NULL) {
             $title = $this->_config['default_subject'];
         }
 
-        // $receiver may be an email so we convert it into a user orm model.
-        if (is_string($receiver) and Valid::email($receiver)) {
-            $temp_email = $receiver;
-            $receiver = ORM::factory('user');
-            $receiver->email = $temp_email;
+        if ($receiver instanceof Model_Auth_User) {
+            $email = $receiver->email;
+        } elseif (Valid::email($receiver)) {
+            $email = $receiver;
+            $receiver = Model::factory("Auth_User", array("email" => $receiver));
         }
-
-        if (!$receiver instanceof Model_User)
-            throw new Kohana_Exception("Le receveur n'est pas une instance de Model_User !");
 
         if (!Valid::email($receiver->email))
             throw new Kohana_Exception("Le email :email est invalide !", array(":email" => $receiver->email));
 
-        // Message avec une structure de données à afficher
-
-        $view = View::factory($view, array('model' => $model));
-
-        return $this->_send(new Mail_Mail($receiver->email, $title, $view, $this->generate_headers($receiver)));
-    }
-
-    /**
-     * Fonction d'envoie.
-     * @param string $email
-     * @param string $subject
-     * @param string $content
-     * @param string $headers
-     * @return type
-     */
-    private function _send(Mail_Mail $mail) {
+        $mail = new Mail_Mail($email, $title, $view, $model, $this->generate_headers($receiver), $receiver);
 
 
         if ($this->_config['async']) {
@@ -151,7 +123,7 @@ class Kohana_Mail_Sender {
     public function push(Mail_Mail $mail) {
         $serialized_mail = serialize($mail);
         $mail_sha1 = sha1($serialized_mail);
-        $filename = $this->salt($mail_sha1, time());
+        $filename = $this->salt($mail_sha1);
         return file_put_contents($this->filename_to_path($filename), $serialized_mail);
     }
 
@@ -177,7 +149,7 @@ class Kohana_Mail_Sender {
      * @throws Kohana_Exception
      */
     public function pull($unlink = false) {
-        $files = $this->peek_mail_queue();
+        $files = $this->get_queue();
 
         if (count($files) === 0) {
             return FALSE;
@@ -220,17 +192,21 @@ class Kohana_Mail_Sender {
      * @param int $timestamp 
      * @return string
      */
-    public function salt($mail_sha1, $timestamp) {
+    public function salt($mail_sha1, $timestamp = NULL) {
+        if (!is_integer($timestamp)) {
+            $timestamp = time();
+        }
+
         return $timestamp . "~" . sha1($this->_config['salt'] . $mail_sha1 . $timestamp);
     }
 
     /**
      * Valide un nom de fichier.
-     * @param string $name
+     * @param string $path
      * @return type
      */
-    public function validate_filename($name) {
-        $parts = explode("~", $name);
+    public function check($path) {
+        $parts = explode("~", $path);
 
         $validation = Validation::factory($parts)
                 ->rule(0, "digit")
@@ -241,21 +217,21 @@ class Kohana_Mail_Sender {
             return false;
         }
 
-        $mail_sha1 = sha1_file($this->filename_to_path($name));
+        $mail_sha1 = sha1_file($this->filename_to_path($path));
 
 
 
 
-        return $this->salt($mail_sha1, $parts[0]) === $name;
+        return $this->salt($mail_sha1, $parts[0]) === $path;
     }
 
     /**
      * 
      * @return type
      */
-    public function peek_mail_queue() {
+    public function get_queue() {
         $files = scandir($this->_config['queue_path']);
-        return array_filter($files, array($this, "validate_filename"));
+        return array_filter($files, array($this, "check"));
     }
 
 }

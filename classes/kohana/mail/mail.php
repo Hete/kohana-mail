@@ -8,18 +8,29 @@
 class Kohana_Mail_Mail extends Model {
 
     public $content,
+            $model,
             $headers = array(
                 'MIME-Version' => 1.0,
                 'Content-type' => 'text/html; charset=UTF-8',
                     ),
             $email,
-            $subject;
+            $subject,
+            $receiver;
 
-    public function __construct($email, $subject, View $content, array $headers = array()) {
+    /**
+     * 
+     * @param type $email
+     * @param type $subject
+     * @param View $content
+     * @param array $headers
+     */
+    public function __construct($email, $subject, $content, ORM $model, array $headers = array(), Model_Auth_User $receiver = NULL) {
         $this->email = $email;
         $this->subject = $subject;
         $this->headers += $headers;
         $this->content = $content;
+        $this->model = $model;
+        $this->receiver = $receiver;
     }
 
     /**
@@ -56,7 +67,7 @@ class Kohana_Mail_Mail extends Model {
      * @return string
      */
     public function render() {
-        return $this->content->render();
+        return View::factory("mail/layout/template", array('mail' => $this))->render();
     }
 
     /**
