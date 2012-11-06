@@ -4,6 +4,10 @@ defined('SYSPATH') or die('No direct script access.');
 
 /**
  * Sender de mail.
+ * 
+ * @package Mail
+ * @author Guillaume Poirier-Morency <guillaumepoiriermorency@gmail.com>
+ * @copyright (c) 2012, Hète.ca
  */
 class Kohana_Mail_Sender {
 
@@ -15,12 +19,6 @@ class Kohana_Mail_Sender {
 
     /**
      *
-     * @var array 
-     */
-    private $_config;
-
-    /**
-     *
      * @return Kohana_Mail_Sender 
      */
     public static function instance($name = "default") {
@@ -28,11 +26,25 @@ class Kohana_Mail_Sender {
     }
 
     /**
+     * Template to be used to build the mail.
+     * @var View 
+     */
+    public $_template = "mail/template";
+
+    /**
+     *
+     * @var array 
+     */
+    private $_config;
+
+    /**
      * 
      * @throws Kohana_Exception
      */
     private function __construct($name) {
         $this->_config = Kohana::$config->load("mail.$name");
+
+        $this->_template = View::factory($this->_template);
 
 
         if ($this->_config['async']) {
@@ -43,18 +55,25 @@ class Kohana_Mail_Sender {
                 throw new Kohana_Exception("Salt is not defined.");
         }
     }
-
+    
     /**
-     * 
-     * @param Model_User $receiver
-     * @return array
+     * Headers access method. Same as param.
+     * @param string $key
+     * @param string $value
+     * @return type
      */
-    private function generate_headers(Model_User $receiver) {
-        return array(
-            'To' => $receiver->nom_complet() . " <$receiver->email>",
-            'From' => $this->_config['from_name'] . " <" . $this->_config['from'] . ">",
-        );
+    public function config($key = NULL, $value = NULL) {
+        if ($key === NULL) {
+            return $this->_config;
+        } else if ($value === NULL) {
+            return $this->_config[$key];
+        } else {
+            $this->_config[$key] = $value;
+            return $this;
+        }
     }
+
+   
 
     /**
      * Envoie un courriel à tous les utilisateurs de la variable $receivers
@@ -82,7 +101,7 @@ class Kohana_Mail_Sender {
      * @param Model $model 
      * @return Boolean résultat de la fonction mail().
      */
-    public function send_to_one($receiver, $view, ORM $model = NULL, $title = NULL) {
+    public function send_to_one($receiver, $content, ORM $model = NULL, $title = NULL) {
         $email = NULL;
         if ($title === NULL) {
             $title = $this->_config['default_subject'];
@@ -102,8 +121,7 @@ class Kohana_Mail_Sender {
         if (!Valid::email($receiver->email))
             throw new Kohana_Exception("Le email :email est invalide !", array(":email" => $receiver->email));
 
-        $mail = new Mail_Mail($email, $title, $view, $model, $this->generate_headers($receiver), $receiver);
-
+        $mail = new Model_Mail_Mail($receiver, $title, $content, $model);
 
         if ($this->_config['async']) {
             return $this->push($mail);
@@ -173,7 +191,7 @@ class Kohana_Mail_Sender {
                     array(":file", $file_path));
         }
 
-        if (!($file_content instanceof Mail_Mail)) {
+        if (!($file_content instanceof Model_Mail_Mail)) {
             throw new Kohana_Exception("Le contenu du fichier :fichier n'est pas de type Mail_Mail.",
                     array(":fichier", $file_path));
         }
