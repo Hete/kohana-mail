@@ -1,6 +1,6 @@
 <?php
 
-class Kohana_Mail_Mail {
+class Kohana_Model_Mail_Mail extends Model {
 
     public $content, $headers, $email, $subject;
 
@@ -10,11 +10,10 @@ class Kohana_Mail_Mail {
         $this->content = $content;
         $this->headers = $headers;
     }
-    
+
     public function render() {
-        
+
         return $this->content;
-        
     }
 
     public function send() {

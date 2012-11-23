@@ -21,12 +21,6 @@ class Kohana_Mail_Sender {
 
     /**
      *
-     * @var type 
-     */
-    private $template;
-
-    /**
-     *
      * @return Kohana_Mail_Sender 
      */
     public static function instance($name = "default") {
@@ -39,10 +33,6 @@ class Kohana_Mail_Sender {
      */
     private function __construct($name) {
         $this->_config = Kohana::$config->load("mail.$name");
-        $this->template = View::factory("mail/layout/template");
-        $this->template->header = View::factory("mail/layout/header");
-        $this->template->head = View::factory("mail/layout/head");
-        $this->template->footer = View::factory("mail/layout/footer");
 
         if ($this->_config['async']) {
             if (!is_writable($this->_config['queue_path']))
@@ -78,12 +68,12 @@ class Kohana_Mail_Sender {
      * @param array $model 
      * @return Boolean false si au moins un envoie échoue.
      */
-    public function send(Model_User $receivers, $view, $parameters = NULL, $title = NULL, array $variables = NULL) {
+    public function send(Model_User $receivers, $view, $parameters = NULL, $title = NULL) {
 
         $result = true;
 
         foreach ($receivers->find_all() as $receiver) {
-            $result = $result && $this->send_to_one($receiver, $view, $parameters, $title, $variables);
+            $result = $result && $this->send_to_one($receiver, $view, $parameters, $title);
         }
 
         return $result;
@@ -92,23 +82,24 @@ class Kohana_Mail_Sender {
     /**
      * 
      * @param Model_User $receivers
-     * @param View $view
-     * @param array $parameters 
+     * @param View $view vue.
+     * @param array $parameters paramètres de la vue.
+     * @param string $title
+     * @param array $variables variables de
      * @return Boolean résultat de la fonction mail().
      */
-    public function send_to_one($receiver, $view, $parameters = NULL, $title = NULL, array $variables = NULL) {
+    public function send_to_one($receiver, $view, $parameters = NULL, $title = NULL) {
 
         if ($title === NULL) {
-
             $title = $this->_config['default_subject'];
         }
 
-        // Message avec une structure de données à afficher
-        if (Arr::is_array($parameters)) {
-            $content = new View($view, $parameters);
-        } else {
-            $content = new View($view);
-            $content->model = $parameters;
+        if ($parameters === NULL) {
+            $parameters = array();
+        }
+
+        if (!Arr::is_array($parameters)) {
+            $parameters = array("model" => $parameters);
         }
 
         // $receiver may be an email so we convert it into a user orm model.
@@ -118,35 +109,33 @@ class Kohana_Mail_Sender {
             $receiver->email = $temp_email;
         }
 
-        if (!$receiver instanceof Model_User)
-            throw new Kohana_Exception("Le receveur n'est pas une instance de Model_User !");
+        $parameters["title"] = $title;
+        $parameters["receiver"] = $receiver;
 
         if (!Valid::email($receiver->email))
             throw new Kohana_Exception("Le email :email est invalide !", array(":email" => $receiver->email));
 
-        $content->receiver = $receiver;
+        // We use a template clone not to corrupt the original.
+        $template = View::factory("mail/layout/template", $parameters);
+        $template->header = View::factory("mail/layout/header", $parameters);
+        $template->head = View::factory("mail/layout/head", $parameters);
+        $template->footer = View::factory("mail/layout/footer", $parameters);
 
-        $this->template->content = $content->render();
+        // We define the template content.
+        $template->set("content", View::factory($view, $parameters));
 
-
-        return $this->_send(new Mail_Mail($receiver->email, $title, $this->template->render(), $this->generate_headers($receiver)));
-    }
-
-    /**
-     * Fonction d'envoie.
-     * @param string $email
-     * @param string $subject
-     * @param string $content
-     * @param string $headers
-     * @return type
-     */
-    private function _send(Mail_Mail $mail) {
-
+        $mail = new Model_Mail_Mail($receiver->email, $title, $template->render(), $this->generate_headers($receiver));
 
         if ($this->_config['async']) {
             return $this->push($mail);
         } else {
-            return $mail->send();
+            $result = $mail->send();
+            if (!$result) {
+                // On push dans la file, le mail n'a pas pu être envoyé.
+                Log::instance()->add(Log::CRITICAL, "L'envoi d'un mail à :email a échoué!", array(":email" => $receiver->email));
+                $this->push($mail);
+            }
+            return $result;
         }
     }
 
