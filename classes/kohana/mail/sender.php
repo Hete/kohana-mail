@@ -75,15 +75,15 @@ class Kohana_Mail_Sender {
      * basé sur la vue et le modèle spécifié.
      * @param Model_User $receivers
      * @param View $view
-     * @param ORM $model 
+     * @param array $model 
      * @return Boolean false si au moins un envoie échoue.
      */
-    public function send(Model_User $receivers, $view, Model $model, $title = NULL, array $variables = NULL) {
+    public function send(Model_User $receivers, $view, $parameters = NULL, $title = NULL, array $variables = NULL) {
 
         $result = true;
 
         foreach ($receivers->find_all() as $receiver) {
-            $result = $result && $this->send_to_one($receiver, $view, $model, $title, $variables);
+            $result = $result && $this->send_to_one($receiver, $view, $parameters, $title, $variables);
         }
 
         return $result;
@@ -93,10 +93,10 @@ class Kohana_Mail_Sender {
      * 
      * @param Model_User $receivers
      * @param View $view
-     * @param Model $model 
+     * @param array $parameters 
      * @return Boolean résultat de la fonction mail().
      */
-    public function send_to_one($receiver, $view, Model $model, $title = NULL, array $variables = NULL) {
+    public function send_to_one($receiver, $view, $parameters = NULL, $title = NULL, array $variables = NULL) {
 
         if ($title === NULL) {
 
@@ -104,9 +104,12 @@ class Kohana_Mail_Sender {
         }
 
         // Message avec une structure de données à afficher
-        $content = new View($view);
-
-        $content->model = $model;
+        if (Arr::is_array($parameters)) {
+            $content = new View($view, $parameters);
+        } else {
+            $content = new View($view);
+            $content->model = $parameters;
+        }
 
         // $receiver may be an email so we convert it into a user orm model.
         if (is_string($receiver) and Valid::email($receiver)) {
@@ -124,7 +127,7 @@ class Kohana_Mail_Sender {
         $content->receiver = $receiver;
 
         $this->template->content = $content->render();
-       
+
 
         return $this->_send(new Mail_Mail($receiver->email, $title, $this->template->render(), $this->generate_headers($receiver)));
     }
