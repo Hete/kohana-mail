@@ -78,12 +78,12 @@ class Kohana_Mail_Sender {
      * @param ORM $model 
      * @return Boolean false si au moins un envoie échoue.
      */
-    public function send(Model_User $receivers, $view, ORM $model, $title = NULL) {
+    public function send(Model_User $receivers, $view, Model $model, $title = NULL, array $variables = NULL) {
 
         $result = true;
 
         foreach ($receivers->find_all() as $receiver) {
-            $result = $result && $this->send_to_one($receiver, $view, $model, $title);
+            $result = $result && $this->send_to_one($receiver, $view, $model, $title, $variables);
         }
 
         return $result;
@@ -96,7 +96,7 @@ class Kohana_Mail_Sender {
      * @param Model $model 
      * @return Boolean résultat de la fonction mail().
      */
-    public function send_to_one($receiver, $view, $model, $title = NULL) {
+    public function send_to_one($receiver, $view, Model $model, $title = NULL, array $variables = NULL) {
 
         if ($title === NULL) {
 
