@@ -48,47 +48,36 @@ class Kohana_Mail_Sender {
      * @param Model_User $receiver
      * @return string
      */
-    private function generate_headers(Model_User $receiver) {
+    private function generate_headers(Model_User $receivers, $title = NULL) {
+
+        if ($title === NULL) {
+            $title = $this->_config['default_subject'];
+        }
+
+        $to = array();
+        foreach ($receivers as $receiver) {
+            $to[] = $receiver->nom_complet() . '<' . $receiver->email . '>';
+        }
+
+        $headers = array();
 
         // Pour envoyer un mail HTML, l'en-tête Content-type doit être défini
-        $headers = 'MIME-Version: 1.0' . "\r\n";
-        $headers .= 'Content-type: text/html; charset=UTF-8' . "\r\n";
+        $headers["MIME-Version"] = 1.0;
+        $headers["Content-type"] = 'text/html; charset=UTF-8';
         // En-têtes additionnels
-        $headers .= 'To: ' . $receiver->nom_complet() . ' <' . $receiver->email . '>' . "\r\n";
-        $headers .= 'From: ' . $this->_config['from_name'] . ' <' . $this->_config['from'] . '>' . "\r\n";
+        $headers["To"] = implode(", ", $to);
+        $headers["From"] = $this->_config['from_name'] . ' <' . $this->_config['from'] . '>';
+        $headers["Subject"] = $title;
+        $headers["Date"] = date(Date::$timestamp_format);
 
         return $headers;
     }
 
     /**
-     * Envoie un courriel à tous les utilisateurs de la variable $receivers
-     * basé sur la vue et le modèle spécifié.
-     * @param Model_User $receivers
-     * @param View $view
-     * @param array $model 
-     * @return Boolean false si au moins un envoie échoue.
+     * @return View
      */
-    public function send(Model_User $receivers, $view, $parameters = NULL, $title = NULL) {
+    private function generate_content(Model_User $receiver, $view, array $parameters = NULL, $title = NULL) {
 
-        $result = true;
-
-        foreach ($receivers->find_all() as $receiver) {
-            $result = $result && $this->send_to_one($receiver, $view, $parameters, $title);
-        }
-
-        return $result;
-    }
-
-    /**
-     * 
-     * @param Model_User $receivers
-     * @param View $view vue.
-     * @param array $parameters paramètres de la vue.
-     * @param string $title
-     * @param array $variables variables de
-     * @return Boolean résultat de la fonction mail().
-     */
-    public function send_to_one($receiver, $view, $parameters = NULL, $title = NULL) {
 
         if ($title === NULL) {
             $title = $this->_config['default_subject'];
@@ -98,22 +87,14 @@ class Kohana_Mail_Sender {
             $parameters = array();
         }
 
+        // $parameters is a model, not an array
         if (!Arr::is_array($parameters)) {
             $parameters = array("model" => $parameters);
-        }
-
-        // $receiver may be an email so we convert it into a user orm model.
-        if (is_string($receiver) and Valid::email($receiver)) {
-            $temp_email = $receiver;
-            $receiver = ORM::factory('user');
-            $receiver->email = $temp_email;
         }
 
         $parameters["title"] = $title;
         $parameters["receiver"] = $receiver;
 
-        if (!Valid::email($receiver->email))
-            throw new Kohana_Exception("Le email :email est invalide !", array(":email" => $receiver->email));
 
         // We use a template clone not to corrupt the original.
         $template = View::factory("mail/layout/template", $parameters);
@@ -124,7 +105,74 @@ class Kohana_Mail_Sender {
         // We define the template content.
         $template->set("content", View::factory($view, $parameters));
 
-        $mail = new Model_Mail_Mail($receiver->email, $title, $template->render(), $this->generate_headers($receiver));
+        return $template;
+    }
+
+    /**
+     * Envoie un courriel à tous les utilisateurs de la variable $receivers
+     * basé sur la vue et le modèle spécifié.
+     * @param Model_User $receivers
+     * @param View $view
+     * @param array $model 
+     * @param boolean $send_a_copy if true, one mail will be generated for all users.
+     * @return Boolean false si au moins un envoie échoue.
+     */
+    public function send(Model_User $receivers, $view, $parameters = NULL, $title = NULL) {
+
+        $result = true;
+
+        foreach ($receivers->find_all() as $receiver) {
+
+            $content = $this->generate_content($receiver, $view, $parameters, $title);
+            $headers = $this->generate_headers($receiver, $title);
+
+            $mail = new Model_Mail($receiver, $title, $content, $headers);
+
+            if ($mail->check()) {
+                echo $mail->content;
+                $success = $mail->send();
+                if (!$success) {
+                    Log::instance()->add(Log::CRITICAL, "Mail failed to send. Check server configuration.");
+                    $this->push($mail);
+                }
+
+                $result = $result && $success;
+            } else {
+                throw new Validation_Exception("Mail failed to validate.");
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * 
+     * @param Model_User|string $receivers may be a Model_User or a valid email.
+     * @param string $view vue.
+     * @param array $parameters paramètres de la vue.
+     * @param string $title
+     * @param array $variables variables de
+     * @deprecated Simply use send.
+     * @return Boolean résultat de la fonction mail().
+     */
+    public function send_to_one($receiver, $view, $parameters = NULL, $title = NULL) {
+
+        // $receiver may be an email so we convert it into a user orm model.
+        if (is_string($receiver) and Valid::email($receiver)) {
+            $temp_email = $receiver;
+            $receiver = ORM::factory('user');
+            $receiver->email = $temp_email;
+        }
+
+        $view = $this->generate_content($receiver, $view, $parameters, $title);
+
+        $mail = new Model_Mail($receiver, $title, $view, $this->generate_headers($receiver, $title));
+
+        if ($mail->check()) {
+            return $mail->send();
+        } else {
+            throw new Validation_Exception("Mail failed to validate.");
+        }
 
         if ($this->_config['async']) {
             return $this->push($mail);
@@ -147,7 +195,7 @@ class Kohana_Mail_Sender {
      * @param Mail_Mail $mail
      * @return int
      */
-    public function push(Mail_Mail $mail) {
+    public function push(Model_Mail $mail) {
         $serialized_mail = serialize($mail);
         $mail_sha1 = sha1($serialized_mail);
         $filename = $this->salt($mail_sha1, time());
@@ -155,22 +203,7 @@ class Kohana_Mail_Sender {
     }
 
     /**
-     * Converts filename from a mail in the queue to a path.
-     * @param string $filename
-     * @return string
-     */
-    private function filename_to_path($filename) {
-        return $this->_config['queue_path'] . "/" . $filename;
-    }
-
-    /**
      * Retourne l'objet Mail_Mail au début de la queue.
-     * Si l'objet est retournable, 
-     * @param Mail_Mail $iterations
-     */
-
-    /**
-     * 
      * @param type $unlink
      * @return boolean|\Mail_Mail FALSE if queue is empty, a Mail_Mail object otherwise.
      * @throws Kohana_Exception
@@ -189,20 +222,17 @@ class Kohana_Mail_Sender {
 
         if ($file_content_serialized === FALSE) {
 
-            throw new Kohana_Exception("Le contenu du fichier :fichier n'a pas pu être récupéré.",
-                    array(":fichier", $file_path));
+            throw new Kohana_Exception("Le contenu du fichier :fichier n'a pas pu être récupéré.", array(":fichier", $file_path));
         }
 
         $file_content = unserialize($file_content_serialized);
 
         if ($file_content === FALSE) {
-            throw new Kohana_Exception("La désérialization n'a pas fonctionné sur le fichier :file.",
-                    array(":file", $file_path));
+            throw new Kohana_Exception("La désérialization n'a pas fonctionné sur le fichier :file.", array(":file", $file_path));
         }
 
         if (!($file_content instanceof Mail_Mail)) {
-            throw new Kohana_Exception("Le contenu du fichier :fichier n'est pas de type Mail_Mail.",
-                    array(":fichier", $file_path));
+            throw new Kohana_Exception("Le contenu du fichier :fichier n'est pas de type Mail_Mail.", array(":fichier", $file_path));
         }
 
         if ($unlink) {
@@ -211,6 +241,15 @@ class Kohana_Mail_Sender {
 
 
         return $file_content;
+    }
+
+    /**
+     * Converts filename from a mail in the queue to a path.
+     * @param string $filename
+     * @return string
+     */
+    private function filename_to_path($filename) {
+        return $this->_config['queue_path'] . "/" . $filename;
     }
 
     /**

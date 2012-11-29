@@ -2,7 +2,7 @@
 
 defined('SYSPATH') or die('No direct script access.');
 
-class Model_User extends Model_Auth_User {
+class Model_Mail extends Kohana_Model_Mail {
     
 }
 

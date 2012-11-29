@@ -2,9 +2,9 @@
 <html>
     <head><?php echo $head ?></head>
     <body>
-        <?php echo $header ?>
-        <?php echo $content ?>
-        <?php echo $footer ?>
+        <header><?php echo $header ?></header>
+        <section><?php echo $content ?></section>
+        <footer><?php echo $footer ?></footer>
     </body>
 </html>
 
