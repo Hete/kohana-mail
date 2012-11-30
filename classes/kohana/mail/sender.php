@@ -92,7 +92,6 @@ class Kohana_Mail_Sender {
      */
     public function send(Model_User $receivers, $view, $parameters = NULL, $subject = NULL, $headers = NULL) {
 
-
         if (!$receivers->loaded()) {
             throw new Kohana_Exception("The receivers model must be loaded.");
         }
@@ -103,30 +102,36 @@ class Kohana_Mail_Sender {
             );
         }
 
-        $result = true;
+        if (count($receivers) > 1) {
+            $result = true;
 
-        foreach ($receivers as $receiver) {
-
-            $content = $this->generate_content($receiver, $view, $parameters, $subject);
-
-            $mail = new Model_Mail($receiver, $subject, $content, $headers);
-
-            if ($mail->check()) {
-
-                $success = $mail->send(Arr::get($this->_config, "async", FALSE));
-
-                if (!$success) {
-                    Log::instance()->add(Log::CRITICAL, "Mail failed to send. Check server configuration.");
-                    $this->push($mail);
-                }
-
-                $result = $result && $success;
-            } else {
-                throw new Validation_Exception("Mail failed to validate.");
+            foreach ($receivers as $receiver) {
+                $result = $result && $this->_send($receiver, $view, $parameters, $subject, $headers);
             }
+            return $result;
         }
+        return $this->_send($receivers, $view, $parameters, $subject, $headers);
+    }
 
-        return $result;
+    private function _send(Model_User $receiver, $view, $parameters = NULL, $subject = NULL, $headers = NULL) {
+
+        $content = $this->generate_content($receiver, $view, $parameters, $subject);
+
+        $mail = new Model_Mail($receiver, $subject, $content, $headers);
+
+        if ($mail->check()) {
+            $success = $mail->send(Arr::get($this->_config, "async", FALSE));
+
+            if (!$success) {
+                Log::instance()->add(Log::CRITICAL, "Mail failed to send. Check server configuration.");
+                $this->push($mail);
+
+            }
+
+            return $success;
+        } else {
+            throw new Validation_Exception("Mail failed to validate.");
+        }
     }
 
     /**
