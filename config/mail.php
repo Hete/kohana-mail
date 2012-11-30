@@ -2,14 +2,16 @@
 
 return array(
     'default' => array(
-        'from' => '', // Send mails from this address.
-        'from_name' => '',
-        'default_subject' => '',
-        
-        // Async 
-        'async' => FALSE, // If async is enabled, emails are not sent immediately but appended to a queue.
-        'queue_path' => APPPATH . 'mailqueue',
-        'salt' => NULL,
+        'from' => array(
+            'name' => NULL,
+            'email' => NULL
+        ),
+        'subject' => NULL,
+        'async' => array(
+            // Asynchronous configuration
+            'path' => APPPATH . 'mailqueue',
+            'salt' => NULL,
+        ),
     ),
 );
 ?>

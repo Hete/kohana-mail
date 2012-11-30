@@ -33,28 +33,19 @@ class Kohana_Mail_Sender {
      */
     private function __construct($name) {
         $this->_config = Kohana::$config->load("mail.$name");
-
-        if ($this->_config['async']) {
-            if (!is_writable($this->_config['queue_path']))
-                throw new Kohana_Exception("Folder :folder is not writeable.", array(":folder" => Kohana::$config->load('mail.default.queue_path')));
-
-            if ($this->_config['salt'] === NULL)
-                throw new Kohana_Exception("Salt is not defined.");
-        }
     }
 
     /**
      * @return View
      */
-    protected function generate_content(Model_User $receiver, $view, array $parameters = NULL, $title = NULL) {
-
-
-        if ($title === NULL) {
-            $title = $this->_config['default_subject'];
-        }
+    protected function generate_content(Model_User $receiver, $view, array $parameters = NULL, $subject = NULL) {
 
         if ($parameters === NULL) {
             $parameters = array();
+        }
+
+        if ($subject === NULL) {
+            $subject = $this->_config["subject"];
         }
 
         // $parameters is a model, not an array
@@ -62,7 +53,7 @@ class Kohana_Mail_Sender {
             $parameters = array("model" => $parameters);
         }
 
-        $parameters["title"] = $title;
+        $parameters["title"] = $subject;
         $parameters["receiver"] = $receiver;
 
 
@@ -90,11 +81,7 @@ class Kohana_Mail_Sender {
      * @param array $headers
      * @return Boolean false si au moins un envoie échoue.
      */
-    public function send(Model_User $receivers, $view, $parameters = NULL, $subject = NULL, $headers = NULL) {
-
-        if (!$receivers->loaded()) {
-            throw new Kohana_Exception("The receivers model must be loaded.");
-        }
+    public function send($receivers, $view, $parameters = NULL, $subject = NULL, $headers = NULL, $async = FALSE) {
 
         if (!Arr::is_array($parameters)) {
             $parameters = array(
@@ -102,30 +89,53 @@ class Kohana_Mail_Sender {
             );
         }
 
-        if (count($receivers) > 1) {
+        if ($subject === NULL) {
+            $subject = $this->_config["subject"];
+        }
+
+        if ($receivers instanceof Database_Result) {
             $result = true;
 
             foreach ($receivers as $receiver) {
-                $result = $result && $this->_send($receiver, $view, $parameters, $subject, $headers);
+                $result = $result && $this->_send($receiver, $view, $parameters, $subject, $headers, $async);
             }
+
+            // Résultat cumulé
             return $result;
         }
-        return $this->_send($receivers, $view, $parameters, $subject, $headers);
+
+        if ($receivers->loaded()) {
+            // Envoi unitaire
+            return $this->_send($receivers, $view, $parameters, $subject, $headers, $async);
+        } else {
+            throw new Kohana_Exception("The receivers model must be loaded.");
+        }
     }
 
-    private function _send(Model_User $receiver, $view, $parameters = NULL, $subject = NULL, $headers = NULL) {
+    /**
+     * 
+     * @param Model_User $receiver
+     * @param type $view
+     * @param type $parameters
+     * @param type $subject
+     * @param type $headers
+     * @param type $async 
+     * @return boolean true if sending is successful, false otherwise. If sending
+     * fails, the mail will be pushed on the queue for later sending.
+     * @throws Validation_Exception
+     */
+    private function _send(Model_User $receiver, $view, $parameters = NULL, $subject = NULL, $headers = NULL, $async = FALSE) {
 
         $content = $this->generate_content($receiver, $view, $parameters, $subject);
 
         $mail = new Model_Mail($receiver, $subject, $content, $headers);
 
         if ($mail->check()) {
-            $success = $mail->send(Arr::get($this->_config, "async", FALSE));
 
+            $success = $mail->send($async);
             if (!$success) {
                 Log::instance()->add(Log::CRITICAL, "Mail failed to send. Check server configuration.");
                 $this->push($mail);
-
             }
 
             return $success;
@@ -230,7 +240,7 @@ class Kohana_Mail_Sender {
      * @return string
      */
     private function filename_to_path($filename) {
-        return $this->_config['queue_path'] . "/" . $filename;
+        return $this->_config['async']['path'] . "/" . $filename;
     }
 
     /**
@@ -240,7 +250,7 @@ class Kohana_Mail_Sender {
      * @return string
      */
     public function salt($mail_sha1, $timestamp) {
-        return $timestamp . "~" . sha1($this->_config['salt'] . $mail_sha1 . $timestamp);
+        return $timestamp . "~" . sha1($this->_config['async']['salt'] . $mail_sha1 . $timestamp);
     }
 
     /**
@@ -295,7 +305,7 @@ class Kohana_Mail_Sender {
      * @return type
      */
     public function mail_queue() {
-        $files = scandir($this->_config['queue_path']);
+        $files = scandir($this->_config['async']['path']);
 
         $valid_files = array_filter($files, array($this, "validate_filename"));
 
