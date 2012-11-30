@@ -79,9 +79,11 @@ class Kohana_Mail_Sender {
     }
 
     /**
-     * Envoie un courriel à tous les utilisateurs de la variable $receivers
+     * Envoie un courriel à tous les utilisateurs de la variable $receivers.
+     * Si on fait l'envoi 
      * basé sur la vue et le modèle spécifié.
-     * @param Model_User $receivers fetchable ORM model of receivers.
+     * @param Model_User|string $receivers fetchable and loaded ORM model of 
+     * receivers, one loaded Model_User, or a valid string email.
      * @param View $view content to be sent.
      * @param array $parameters view's parameters.
      * @param string $subject 
@@ -89,6 +91,11 @@ class Kohana_Mail_Sender {
      * @return Boolean false si au moins un envoie échoue.
      */
     public function send(Model_User $receivers, $view, $parameters = NULL, $subject = NULL, $headers = NULL) {
+
+
+        if (!$receivers->loaded()) {
+            throw new Kohana_Exception("The receivers model must be loaded.");
+        }
 
         if (!Arr::is_array($parameters)) {
             $parameters = array(
@@ -98,10 +105,9 @@ class Kohana_Mail_Sender {
 
         $result = true;
 
-        foreach ($receivers->find_all() as $receiver) {
+        foreach ($receivers as $receiver) {
 
             $content = $this->generate_content($receiver, $view, $parameters, $subject);
-
 
             $mail = new Model_Mail($receiver, $subject, $content, $headers);
 
