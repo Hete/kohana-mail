@@ -14,7 +14,7 @@ class Kohana_Mail_Sender {
     protected static $_instances = array();
 
     /**
-     *
+     * Current configuration.
      * @var array 
      */
     private $_config;
@@ -44,39 +44,9 @@ class Kohana_Mail_Sender {
     }
 
     /**
-     * 
-     * @param Model_User $receiver
-     * @return string
-     */
-    private function generate_headers(Model_User $receivers, $title = NULL) {
-
-        if ($title === NULL) {
-            $title = $this->_config['default_subject'];
-        }
-
-        $to = array();
-        foreach ($receivers as $receiver) {
-            $to[] = $receiver->nom_complet() . '<' . $receiver->email . '>';
-        }
-
-        $headers = array();
-
-        // Pour envoyer un mail HTML, l'en-tête Content-type doit être défini
-        $headers["MIME-Version"] = 1.0;
-        $headers["Content-type"] = 'text/html; charset=UTF-8';
-        // En-têtes additionnels
-        $headers["To"] = implode(", ", $to);
-        $headers["From"] = $this->_config['from_name'] . ' <' . $this->_config['from'] . '>';
-        $headers["Subject"] = $title;
-        $headers["Date"] = date(Date::$timestamp_format);
-
-        return $headers;
-    }
-
-    /**
      * @return View
      */
-    private function generate_content(Model_User $receiver, $view, array $parameters = NULL, $title = NULL) {
+    protected function generate_content(Model_User $receiver, $view, array $parameters = NULL, $title = NULL) {
 
 
         if ($title === NULL) {
@@ -111,26 +81,28 @@ class Kohana_Mail_Sender {
     /**
      * Envoie un courriel à tous les utilisateurs de la variable $receivers
      * basé sur la vue et le modèle spécifié.
-     * @param Model_User $receivers
-     * @param View $view
-     * @param array $model 
-     * @param boolean $send_a_copy if true, one mail will be generated for all users.
+     * @param Model_User $receivers fetchable ORM model of receivers.
+     * @param View $view content to be sent.
+     * @param array $parameters view's parameters. 
+     * @param string $subject 
+     * @param array $headers
      * @return Boolean false si au moins un envoie échoue.
      */
-    public function send(Model_User $receivers, $view, $parameters = NULL, $title = NULL) {
+    public function send(Model_User $receivers, $view, $parameters = NULL, $subject = NULL, $headers = NULL) {
 
         $result = true;
 
         foreach ($receivers->find_all() as $receiver) {
 
-            $content = $this->generate_content($receiver, $view, $parameters, $title);
-            $headers = $this->generate_headers($receiver, $title);
+            $content = $this->generate_content($receiver, $view, $parameters, $subject);
 
-            $mail = new Model_Mail($receiver, $title, $content, $headers);
+
+            $mail = new Model_Mail($receiver, $subject, $content, $headers);
 
             if ($mail->check()) {
-                echo $mail->content;
-                $success = $mail->send();
+
+                $success = $mail->send(Arr::get($this->_config, "async", FALSE));
+
                 if (!$success) {
                     Log::instance()->add(Log::CRITICAL, "Mail failed to send. Check server configuration.");
                     $this->push($mail);
@@ -205,10 +177,10 @@ class Kohana_Mail_Sender {
     /**
      * Retourne l'objet Mail_Mail au début de la queue.
      * @param type $unlink
-     * @return boolean|\Mail_Mail FALSE if queue is empty, a Mail_Mail object otherwise.
+     * @return boolean|Model_Mail FALSE if queue is empty, a Mail_Mail object otherwise.
      * @throws Kohana_Exception
      */
-    public function pull($unlink = false) {
+    public function pull($unlink = FALSE) {
         $files = $this->peek_mail_queue();
 
         if (count($files) === 0) {
@@ -239,8 +211,19 @@ class Kohana_Mail_Sender {
             unlink($file_path);
         }
 
-
         return $file_content;
+    }
+
+    /**
+     * Pulls the element at the end of the queue and send it.
+     */
+    public function pull_and_send($unlink = TRUE) {
+        $model = $this->pull($unlink);
+        if ($model === FALSE) {
+            return TRUE;
+        } else {
+            return $model->send();
+        }
     }
 
     /**
@@ -263,9 +246,9 @@ class Kohana_Mail_Sender {
     }
 
     /**
-     * Valide un nom de fichier.
-     * @param string $name
-     * @return type
+     * Validate a file name against its content.
+     * @param string $name is the file name, not its path.
+     * @return boolean true if the content represents its name, false otherwise.
      */
     public function validate_filename($name) {
         $parts = explode("~", $name);
@@ -276,6 +259,8 @@ class Kohana_Mail_Sender {
 
 
         if (count($parts) !== 2 | !$validation->check()) {
+            // It's not that terrible, but still we warn the user.
+            Log::instance()->add(Log::INFO, "Invalid file :file in mail queue :path.", array(":file" => $name, ":path" => $this->filename_to_path($name)));
             return false;
         }
 
@@ -288,12 +273,35 @@ class Kohana_Mail_Sender {
     }
 
     /**
-     * 
+     * Compare two filenames for usort function.
+     * @param type $name1
+     * @param type $name2
+     * @return int
+     */
+    public function compare_filenames($name1, $name2) {
+
+        $parts1 = explode("~", $name1);
+        $parts2 = explode("~", $name2);
+
+        $name1 = $parts1[0];
+        $name2 = $parts2[0];
+
+        if ($name1 == $name2) {
+            return 0;
+        }
+        return ($name1 < $name2) ? -1 : 1;
+    }
+
+    /**
+     * Obtain the mail queue sorted by time and filtered by validity.
      * @return type
      */
-    public function peek_mail_queue() {
+    public function mail_queue() {
         $files = scandir($this->_config['queue_path']);
-        return array_filter($files, array($this, "validate_filename"));
+
+        $valid_files = array_filter($files, array($this, "validate_filename"));
+
+        return usort($valid_files, array($this, "compare_filenames"));
     }
 
 }
