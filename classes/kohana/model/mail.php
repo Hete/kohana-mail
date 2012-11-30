@@ -25,7 +25,6 @@ class Kohana_Model_Mail extends Kohana_Model_Validation {
 
         $basic_headers = array(
             "To" => $receiver->nom_complet() . " <$receiver->email>",
-            "Subject" => $subject,
             "Date" => date(Date::$timestamp_format),
             "Content-type" => 'text/html; charset=UTF-8',
             "MIME-Version" => "1.0"
@@ -56,13 +55,11 @@ class Kohana_Model_Mail extends Kohana_Model_Validation {
      */
     public function send($async = FALSE) {
 
-
         if ($async) {
             return Mail_Sender::instance()->push($this);
         }
 
-
-        return mail($this->receiver->email, '=?UTF-8?B?' . base64_encode($this->subject) . '?=', $this->content->render(), $this->generate_headers());
+        return mail($this->receiver->email, '=?utf-8?B?' . base64_encode($this->subject) . '?=', $this->content->render(), $this->generate_headers());
     }
 
 }
