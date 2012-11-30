@@ -83,12 +83,18 @@ class Kohana_Mail_Sender {
      * basé sur la vue et le modèle spécifié.
      * @param Model_User $receivers fetchable ORM model of receivers.
      * @param View $view content to be sent.
-     * @param array $parameters view's parameters. 
+     * @param array $parameters view's parameters.
      * @param string $subject 
      * @param array $headers
      * @return Boolean false si au moins un envoie échoue.
      */
     public function send(Model_User $receivers, $view, $parameters = NULL, $subject = NULL, $headers = NULL) {
+
+        if (!Arr::is_array($parameters)) {
+            $parameters = array(
+                "model" => $parameters
+            );
+        }
 
         $result = true;
 
@@ -118,16 +124,17 @@ class Kohana_Mail_Sender {
     }
 
     /**
-     * 
+     * Alias de la fonction send.
      * @param Model_User|string $receivers may be a Model_User or a valid email.
      * @param string $view vue.
      * @param array $parameters paramètres de la vue.
-     * @param string $title
-     * @param array $variables variables de
-     * @deprecated Simply use send.
+     * @param string $subject
+     * @param array $variables variables de     * 
      * @return Boolean résultat de la fonction mail().
+     * 
+     * @deprecated Simply use send.
      */
-    public function send_to_one($receiver, $view, $parameters = NULL, $title = NULL) {
+    public function send_to_one($receiver, $view, $parameters = NULL, $subject = NULL, $headers = NULL) {
 
         // $receiver may be an email so we convert it into a user orm model.
         if (is_string($receiver) and Valid::email($receiver)) {
@@ -136,27 +143,7 @@ class Kohana_Mail_Sender {
             $receiver->email = $temp_email;
         }
 
-        $view = $this->generate_content($receiver, $view, $parameters, $title);
-
-        $mail = new Model_Mail($receiver, $title, $view, $this->generate_headers($receiver, $title));
-
-        if ($mail->check()) {
-            return $mail->send();
-        } else {
-            throw new Validation_Exception("Mail failed to validate.");
-        }
-
-        if ($this->_config['async']) {
-            return $this->push($mail);
-        } else {
-            $result = $mail->send();
-            if (!$result) {
-                // On push dans la file, le mail n'a pas pu être envoyé.
-                Log::instance()->add(Log::CRITICAL, "L'envoi d'un mail à :email a échoué!", array(":email" => $receiver->email));
-                $this->push($mail);
-            }
-            return $result;
-        }
+        return $this->send($receiver, $view, $parameters, $subject, $headers);
     }
 
     ////////////////////////////////////////////////////////////////////////////
