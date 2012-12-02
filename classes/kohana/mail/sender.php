@@ -44,13 +44,13 @@ class Kohana_Mail_Sender {
     }
 
     /**
+     * 
      * @return View
      */
     protected function generate_content(Model_User $receiver, $view, array $parameters = NULL, $title = NULL) {
 
-
         if ($title === NULL) {
-            $title = $this->_config['default_subject'];
+            $title = $this->_config['subject'];
         }
 
         if ($parameters === NULL) {
@@ -79,6 +79,16 @@ class Kohana_Mail_Sender {
     }
 
     /**
+     * Read configuration using Arr::path()
+     * @param type $path
+     * @param type $default
+     * @return type
+     */
+    public function config($path, $default = NULL, $delimiter = NULL) {
+        return Arr::path($this->_config, $path, $default, $delimiter);
+    }
+
+    /**
      * Envoie un courriel à tous les utilisateurs de la variable $receivers
      * basé sur la vue et le modèle spécifié.
      * @param Model_User $receivers fetchable ORM model of receivers.
@@ -90,27 +100,20 @@ class Kohana_Mail_Sender {
      */
     public function send(Model_User $receivers, $view, $parameters = NULL, $subject = NULL, $headers = NULL) {
 
-        $result = true;
+        $result = 0;
 
         foreach ($receivers->find_all() as $receiver) {
 
             $content = $this->generate_content($receiver, $view, $parameters, $subject);
 
-
             $mail = new Model_Mail($receiver, $subject, $content, $headers);
 
-            if ($mail->check()) {
-
-                $success = $mail->send(Arr::get($this->_config, "async", FALSE));
-
-                if (!$success) {
-                    Log::instance()->add(Log::CRITICAL, "Mail failed to send. Check server configuration.");
-                    $this->push($mail);
-                }
-
-                $result = $result && $success;
-            } else {
+            if (!$mail->check()) {
                 throw new Validation_Exception("Mail failed to validate.");
+            }
+
+            if ($this->config("async", FALSE) ? $this->push($mail) : $mail->send()) {
+                $result++;
             }
         }
 

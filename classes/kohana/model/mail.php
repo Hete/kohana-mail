@@ -26,6 +26,7 @@ class Kohana_Model_Mail extends Kohana_Model_Validation {
         $basic_headers = array(
             "To" => $receiver->nom_complet() . " <$receiver->email>",
             "Subject" => $subject,
+            "From" => Mail_Sender::instance()->config("from.name") . " <" . Mail_Sender::instance()->config("from.email") . ">",
             "Date" => date(Date::$timestamp_format),
             "Content-type" => 'text/html; charset=UTF-8',
             "MIME-Version" => 1.0
@@ -38,8 +39,16 @@ class Kohana_Model_Mail extends Kohana_Model_Validation {
     }
 
     /**
+     * Generates the subject. It is encoded to accept any non-ascii characters.
+     * @return string
+     */
+    private function generate_subject() {
+        return '=?UTF-8?B?' . base64_encode($this->subject) . '?=';
+    }
+
+    /**
      * 
-     * @return type
+     * @return string
      */
     private function generate_headers() {
         $output = array();
@@ -54,11 +63,16 @@ class Kohana_Model_Mail extends Kohana_Model_Validation {
      * @param boolean $async si true, le mail sera stocké de façon asynchrome.
      * @return boolean le résultat de la fonction mail.
      */
-    public function send($async = FALSE) {
-        if ($async) {
-            return Mail_Sender::instance()->push($this);
+    public function send() {
+
+        $success = mail($this->receiver->email, $this->generate_subject(), $this->content->render(), $this->generate_headers());
+
+        if (!$success) {
+            Mail_Sender::instance()->push($this);
+            Log::instance()->add(Log::CRITICAL, "Mail failed to send. Check server configuration.");
         }
-        return mail($this->receiver->email, '=?UTF-8?B?' . base64_encode($this->subject) . '?=', $this->content->render(), $this->generate_headers());
+
+        return $success;
     }
 
 }
