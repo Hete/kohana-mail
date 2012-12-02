@@ -19,17 +19,20 @@ class Kohana_Model_Mail extends Kohana_Model_Validation {
      */
     public function __construct(Model_User $receiver, $subject, View $content, array $headers = NULL) {
 
+        if ($subject === NULL) {
+            $subject = Mail_Sender::instance()->config("subject");
+        }
+
         if ($headers === NULL) {
             $headers = array();
         }
 
         $basic_headers = array(
             "To" => $receiver->nom_complet() . " <$receiver->email>",
-            "Subject" => $subject,
             "From" => Mail_Sender::instance()->config("from.name") . " <" . Mail_Sender::instance()->config("from.email") . ">",
             "Date" => date(Date::$timestamp_format),
             "Content-type" => 'text/html; charset=UTF-8',
-            "MIME-Version" => 1.0
+            "MIME-Version" => "1.0"
         );
 
         $this->receiver = $receiver;
@@ -64,15 +67,7 @@ class Kohana_Model_Mail extends Kohana_Model_Validation {
      * @return boolean le résultat de la fonction mail.
      */
     public function send() {
-
-        $success = mail($this->receiver->email, $this->generate_subject(), $this->content->render(), $this->generate_headers());
-
-        if (!$success) {
-            Mail_Sender::instance()->push($this);
-            Log::instance()->add(Log::CRITICAL, "Mail failed to send. Check server configuration.");
-        }
-
-        return $success;
+        return mail($this->receiver->email, $this->generate_subject(), $this->content->render(), $this->generate_headers());
     }
 
 }

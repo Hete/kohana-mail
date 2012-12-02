@@ -33,28 +33,20 @@ class Kohana_Mail_Sender {
      */
     private function __construct($name) {
         $this->_config = Kohana::$config->load("mail.$name");
-
-        if ($this->_config['async']) {
-            if (!is_writable($this->_config['queue_path']))
-                throw new Kohana_Exception("Folder :folder is not writeable.", array(":folder" => Kohana::$config->load('mail.default.queue_path')));
-
-            if ($this->_config['salt'] === NULL)
-                throw new Kohana_Exception("Salt is not defined.");
-        }
     }
 
     /**
      * 
      * @return View
      */
-    protected function generate_content(Model_User $receiver, $view, array $parameters = NULL, $title = NULL) {
-
-        if ($title === NULL) {
-            $title = $this->_config['subject'];
-        }
+    protected function generate_content(Model_User $receiver, $view, array $parameters = NULL, $subject = NULL) {
 
         if ($parameters === NULL) {
             $parameters = array();
+        }
+
+        if ($subject === NULL) {
+            $subject = $this->_config["subject"];
         }
 
         // $parameters is a model, not an array
@@ -62,7 +54,7 @@ class Kohana_Mail_Sender {
             $parameters = array("model" => $parameters);
         }
 
-        $parameters["title"] = $title;
+        $parameters["title"] = $subject;
         $parameters["receiver"] = $receiver;
 
 
@@ -79,58 +71,98 @@ class Kohana_Mail_Sender {
     }
 
     /**
-     * Read configuration using Arr::path()
-     * @param type $path
-     * @param type $default
-     * @return type
-     */
-    public function config($path, $default = NULL, $delimiter = NULL) {
-        return Arr::path($this->_config, $path, $default, $delimiter);
-    }
-
-    /**
-     * Envoie un courriel à tous les utilisateurs de la variable $receivers
+     * Envoie un courriel à tous les utilisateurs de la variable $receivers.
+     * Si on fait l'envoi 
      * basé sur la vue et le modèle spécifié.
-     * @param Model_User $receivers fetchable ORM model of receivers.
+     * @param Model_User|string $receivers fetchable and loaded ORM model of 
+     * receivers, one loaded Model_User, or a valid string email.
      * @param View $view content to be sent.
-     * @param array $parameters view's parameters. 
+     * @param array $parameters view's parameters.
      * @param string $subject 
      * @param array $headers
      * @return Boolean false si au moins un envoie échoue.
      */
-    public function send(Model_User $receivers, $view, $parameters = NULL, $subject = NULL, $headers = NULL) {
+    public function send(Model_User $receivers, $view, $parameters = NULL, $subject = NULL, $headers = NULL, $async = FALSE) {
 
-        $result = 0;
 
-        foreach ($receivers->find_all() as $receiver) {
 
-            $content = $this->generate_content($receiver, $view, $parameters, $subject);
+        if ($receivers instanceof Database_Result) {
+            $result = true;
 
-            $mail = new Model_Mail($receiver, $subject, $content, $headers);
-
-            if (!$mail->check()) {
-                throw new Validation_Exception("Mail failed to validate.");
+            foreach ($receivers as $receiver) {
+                $result = $result && $this->_send($receiver, $view, $parameters, $subject, $headers, $async);
             }
 
-            if ($this->config("async", FALSE) ? $this->push($mail) : $mail->send()) {
-                $result++;
-            }
+            // Résultat cumulé
+            return $result;
         }
 
-        return $result;
+        if ($receivers->loaded()) {
+            // Envoi unitaire
+            return $this->_send($receivers, $view, $parameters, $subject, $headers, $async);
+        } else {
+            throw new Kohana_Exception("The receivers model must be loaded.");
+        }
     }
 
     /**
-     * 
+     * Envoie unitaire.
+     * @param Model_User $receiver
+     * @param type $view
+     * @param type $parameters
+     * @param type $subject
+     * @param type $headers
+     * @param type $async 
+     * @return boolean true if sending is successful, false otherwise. If sending
+     * fails, the mail will be pushed on the queue for later sending.
+     * @throws Validation_Exception
+     */
+    private function _send(Model_User $receiver, $view, $parameters = NULL, $subject = NULL, $headers = NULL, $async = FALSE) {
+
+        if (!Arr::is_array($parameters)) {
+            $parameters = array(
+                "model" => $parameters
+            );
+        }
+
+        $parameters["receiver"] = $receiver;
+
+        $content = $this->generate_content($receiver, $view, $parameters, $subject);
+
+        $mail = new Model_Mail($receiver, $subject, $content, $headers);
+
+        if ($mail->check()) {
+
+            if ($async) {
+                $this->push($mail);
+            } else {
+                $success = $mail->send($async);
+            }
+
+
+            if (!$success) {
+                Log::instance()->add(Log::CRITICAL, "Mail failed to send. Check server configuration.");
+                $this->push($mail);
+            }
+
+            return $success;
+        } else {
+            throw new Validation_Exception("Mail failed to validate.");
+        }
+    }
+
+    /**
+     * Alias de la fonction send.
      * @param Model_User|string $receivers may be a Model_User or a valid email.
      * @param string $view vue.
      * @param array $parameters paramètres de la vue.
-     * @param string $title
-     * @param array $variables variables de
-     * @deprecated Simply use send.
+     * @param string $subject
+     * @param array $variables variables de     * 
      * @return Boolean résultat de la fonction mail().
+     * 
+     * @deprecated Simply use send.
      */
-    public function send_to_one($receiver, $view, $parameters = NULL, $title = NULL) {
+    public function send_to_one($receiver, $view, $parameters = NULL, $subject = NULL, $headers = NULL) {
 
         // $receiver may be an email so we convert it into a user orm model.
         if (is_string($receiver) and Valid::email($receiver)) {
@@ -139,27 +171,7 @@ class Kohana_Mail_Sender {
             $receiver->email = $temp_email;
         }
 
-        $view = $this->generate_content($receiver, $view, $parameters, $title);
-
-        $mail = new Model_Mail($receiver, $title, $view, $this->generate_headers($receiver, $title));
-
-        if ($mail->check()) {
-            return $mail->send();
-        } else {
-            throw new Validation_Exception("Mail failed to validate.");
-        }
-
-        if ($this->_config['async']) {
-            return $this->push($mail);
-        } else {
-            $result = $mail->send();
-            if (!$result) {
-                // On push dans la file, le mail n'a pas pu être envoyé.
-                Log::instance()->add(Log::CRITICAL, "L'envoi d'un mail à :email a échoué!", array(":email" => $receiver->email));
-                $this->push($mail);
-            }
-            return $result;
-        }
+        return $this->_send($receiver, $view, $parameters, $subject, $headers);
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -235,7 +247,7 @@ class Kohana_Mail_Sender {
      * @return string
      */
     private function filename_to_path($filename) {
-        return $this->_config['queue_path'] . "/" . $filename;
+        return $this->_config['async']['path'] . "/" . $filename;
     }
 
     /**
@@ -245,7 +257,7 @@ class Kohana_Mail_Sender {
      * @return string
      */
     public function salt($mail_sha1, $timestamp) {
-        return $timestamp . "~" . sha1($this->_config['salt'] . $mail_sha1 . $timestamp);
+        return $timestamp . "~" . sha1($this->_config['async']['salt'] . $mail_sha1 . $timestamp);
     }
 
     /**
@@ -300,7 +312,7 @@ class Kohana_Mail_Sender {
      * @return type
      */
     public function mail_queue() {
-        $files = scandir($this->_config['queue_path']);
+        $files = scandir($this->_config['async']['path']);
 
         $valid_files = array_filter($files, array($this, "validate_filename"));
 
