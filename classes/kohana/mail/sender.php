@@ -21,17 +21,17 @@ class Kohana_Mail_Sender {
 
     /**
      *
-     * @return Kohana_Mail_Sender 
+     * @return Mail_Sender 
      */
     public static function instance($name = "default") {
-        return isset(Kohana_Mail_Sender::$_instances[$name]) ? Kohana_Mail_Sender::$_instances[$name] : Kohana_Mail_Sender::$_instances[$name] = new Mail_Sender($name);
+        return isset(Mail_Sender::$_instances[$name]) ? Mail_Sender::$_instances[$name] : Mail_Sender::$_instances[$name] = new Mail_Sender($name);
     }
 
     /**
      * 
      * @throws Kohana_Exception
      */
-    private function __construct($name) {
+    private function __construct($name = "default") {
         $this->_config = Kohana::$config->load("mail.$name");
     }
 
@@ -68,6 +68,10 @@ class Kohana_Mail_Sender {
         $template->set("content", View::factory($view, $parameters));
 
         return $template;
+    }
+    
+    public function config($path, $default = NULL, $delimiter = NULL) {
+        return Arr::path($this->_config, $path, $default, $delimiter);
     }
 
     /**
