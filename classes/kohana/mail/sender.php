@@ -69,7 +69,7 @@ class Kohana_Mail_Sender {
 
         return $template;
     }
-    
+
     public function config($path, $default = NULL, $delimiter = NULL) {
         return Arr::path($this->_config, $path, $default, $delimiter);
     }
@@ -78,7 +78,7 @@ class Kohana_Mail_Sender {
      * Envoie un courriel à tous les utilisateurs de la variable $receivers.
      * Si on fait l'envoi 
      * basé sur la vue et le modèle spécifié.
-     * @param Model_User|string $receivers fetchable and loaded ORM model of 
+     * @param Model_User|Database_Result|string $receivers fetchable and loaded ORM model of 
      * receivers, one loaded Model_User, or a valid string email.
      * @param View $view content to be sent.
      * @param array $parameters view's parameters.
@@ -86,9 +86,7 @@ class Kohana_Mail_Sender {
      * @param array $headers
      * @return Boolean false si au moins un envoie échoue.
      */
-    public function send(Model_User $receivers, $view, $parameters = NULL, $subject = NULL, $headers = NULL, $async = FALSE) {
-
-
+    public function send($receivers, $view, $parameters = NULL, $subject = NULL, $headers = NULL, $async = FALSE) {
 
         if ($receivers instanceof Database_Result) {
             $result = true;
