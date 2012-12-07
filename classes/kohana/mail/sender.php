@@ -119,7 +119,7 @@ class Kohana_Mail_Sender {
      * fails, the mail will be pushed on the queue for later sending.
      * @throws Validation_Exception
      */
-    private function _send(Model_User $receiver, $view, $parameters = NULL, $subject = NULL, $headers = NULL, $async = FALSE) {
+    protected function _send(Model_User $receiver, $view, $parameters = NULL, $subject = NULL, $headers = NULL, $async = FALSE) {
 
         if (!Arr::is_array($parameters)) {
             $parameters = array(
