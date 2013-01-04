@@ -197,7 +197,7 @@ class Kohana_Mail_Sender {
      * @throws Kohana_Exception
      */
     public function pull($unlink = FALSE) {
-        $files = $this->peek_mail_queue();
+        $files = $this->mail_queue();
 
         if (count($files) === 0) {
             return FALSE;
@@ -317,7 +317,9 @@ class Kohana_Mail_Sender {
 
         $valid_files = array_filter($files, array($this, "validate_filename"));
 
-        return usort($valid_files, array($this, "compare_filenames"));
+        usort($valid_files, array($this, "compare_filenames"));
+        
+        return $valid_files;
     }
 
 }
