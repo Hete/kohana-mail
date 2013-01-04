@@ -88,6 +88,12 @@ class Kohana_Mail_Sender {
      */
     public function send($receivers, $view, $parameters = NULL, $subject = NULL, $headers = NULL, $async = FALSE) {
 
+        if (!Arr::is_array($parameters)) {
+            $parameters = array(
+                "model" => $parameters
+            );
+        }
+
         if ($receivers instanceof Database_Result) {
             $result = true;
 
@@ -119,13 +125,7 @@ class Kohana_Mail_Sender {
      * fails, the mail will be pushed on the queue for later sending.
      * @throws Validation_Exception
      */
-    protected function _send(Model_User $receiver, $view, $parameters = NULL, $subject = NULL, $headers = NULL, $async = FALSE) {
-
-        if (!Arr::is_array($parameters)) {
-            $parameters = array(
-                "model" => $parameters
-            );
-        }
+    protected function _send(Model_User $receiver, $view, array $parameters = array(), $subject = NULL, $headers = NULL, $async = FALSE) {
 
         $parameters["receiver"] = $receiver;
 
@@ -140,7 +140,6 @@ class Kohana_Mail_Sender {
             } else {
                 $success = $mail->send($async);
             }
-
 
             if (!$success) {
                 Log::instance()->add(Log::CRITICAL, "Mail failed to send. Check server configuration.");
