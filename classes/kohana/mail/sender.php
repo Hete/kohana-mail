@@ -197,7 +197,6 @@ class Kohana_Mail_Sender {
      * @throws Kohana_Exception
      */
     public function pull($unlink = FALSE) {
-
         $files = $this->mail_queue();
 
         if (count($files) === 0) {
@@ -205,14 +204,6 @@ class Kohana_Mail_Sender {
         }
 
         $file_path = $this->filename_to_path(array_shift($files));
-
-        if (!is_readable($file_path)) {
-            throw new Kohana_Exception("File :file is not readable!", array(":file" => $file_path));
-        }
-
-        if (!is_writeable($file_path) && $unlink) {
-            throw new Kohana_Exception("File :file is not writeable and it is asked to be removed!", array(":file" => $file_path));
-        }
 
         $file_content_serialized = file_get_contents($file_path);
 
@@ -331,7 +322,9 @@ class Kohana_Mail_Sender {
 
         $valid_files = array_filter($files, array($this, "validate_filename"));
 
-        return usort($valid_files, array($this, "compare_filenames"));
+        usort($valid_files, array($this, "compare_filenames"));
+        
+        return $valid_files;
     }
 
 }
