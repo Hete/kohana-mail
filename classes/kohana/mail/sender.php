@@ -197,7 +197,8 @@ class Kohana_Mail_Sender {
      * @throws Kohana_Exception
      */
     public function pull($unlink = FALSE) {
-        $files = $this->peek_mail_queue();
+
+        $files = $this->mail_queue();
 
         if (count($files) === 0) {
             return FALSE;
@@ -205,22 +206,35 @@ class Kohana_Mail_Sender {
 
         $file_path = $this->filename_to_path(array_shift($files));
 
+        if (!is_readable($file_path)) {
+            throw new Kohana_Exception("File :file is not readable!", array(":file" => $file_path));
+        }
+
+        if (!is_writeable($file_path) && $unlink) {
+            throw new Kohana_Exception("File :file is not writeable and it is asked to be removed!", array(":file" => $file_path));
+        }
+
         $file_content_serialized = file_get_contents($file_path);
 
 
         if ($file_content_serialized === FALSE) {
-
-            throw new Kohana_Exception("Le contenu du fichier :fichier n'a pas pu être récupéré.", array(":fichier", $file_path));
+            Log::instance()->add(Log::CRITICAL, "Le contenu du fichier :fichier n'a pas pu être récupéré.", array(":fichier", $file_path));
+            unlink($file_path);
+            return $this->pull($unlink);
         }
 
         $file_content = unserialize($file_content_serialized);
 
         if ($file_content === FALSE) {
-            throw new Kohana_Exception("La désérialization n'a pas fonctionné sur le fichier :file.", array(":file", $file_path));
+            Log::instance()->add(Log::CRITICAL, "La désérialization n'a pas fonctionné sur le fichier :file.", array(":file", $file_path));
+            unlink($file_path);
+            return $this->pull($unlink);
         }
 
         if (!($file_content instanceof Mail_Mail)) {
-            throw new Kohana_Exception("Le contenu du fichier :fichier n'est pas de type Mail_Mail.", array(":fichier", $file_path));
+            Log::instance()->add(Log::CRITICAL, "Le contenu du fichier :fichier n'est pas de type Mail_Mail.", array(":fichier", $file_path));
+            unlink($file_path);
+            return $this->pull($unlink);
         }
 
         if ($unlink) {
