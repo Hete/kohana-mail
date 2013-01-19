@@ -39,7 +39,7 @@ class Kohana_Mail_Sender {
      * 
      * @return View
      */
-    protected function generate_content(Model_User $receiver, $view, array $parameters = NULL, $subject = NULL) {
+    public function generate_content(Model_User $receiver, $view, array $parameters = NULL, $subject = NULL) {
 
         if ($parameters === NULL) {
             $parameters = array();
