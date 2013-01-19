@@ -209,18 +209,23 @@ class Kohana_Mail_Sender {
 
 
         if ($file_content_serialized === FALSE) {
-
-            throw new Kohana_Exception("Le contenu du fichier :fichier n'a pas pu être récupéré.", array(":fichier", $file_path));
+            Log::instance()->add(Log::CRITICAL, "Le contenu du fichier :fichier n'a pas pu être récupéré.", array(":fichier", $file_path));
+            unlink($file_path);
+            return $this->pull($unlink);
         }
 
         $file_content = unserialize($file_content_serialized);
 
         if ($file_content === FALSE) {
-            throw new Kohana_Exception("La désérialization n'a pas fonctionné sur le fichier :file.", array(":file", $file_path));
+            Log::instance()->add(Log::CRITICAL, "La désérialization n'a pas fonctionné sur le fichier :file.", array(":file", $file_path));
+            unlink($file_path);
+            return $this->pull($unlink);
         }
 
         if (!($file_content instanceof Mail_Mail)) {
-            throw new Kohana_Exception("Le contenu du fichier :fichier n'est pas de type Mail_Mail.", array(":fichier", $file_path));
+            Log::instance()->add(Log::CRITICAL, "Le contenu du fichier :fichier n'est pas de type Mail_Mail.", array(":fichier", $file_path));
+            unlink($file_path);
+            return $this->pull($unlink);
         }
 
         if ($unlink) {
