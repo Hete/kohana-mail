@@ -4,6 +4,10 @@ defined('SYSPATH') or die('No direct script access.');
 
 /**
  * Sender de mail.
+ * 
+ * @package Mail
+ * @author Guillaume Poirier-Morency <guillaumepoiriermorency@gmail.com>
+ * @copyright (c) 2013, Hète.ca Inc.
  */
 class Kohana_Mail_Sender {
 
@@ -125,7 +129,7 @@ class Kohana_Mail_Sender {
      * fails, the mail will be pushed on the queue for later sending.
      * @throws Validation_Exception
      */
-    protected function _send(Model_User $receiver, $view, array $parameters = array(), $subject = NULL, $headers = NULL, $async = FALSE) {
+    protected function _send(Model_Auth_User $receiver, $view, array $parameters = NULL, $subject = NULL, $headers = NULL, $async = FALSE) {
 
         $parameters["receiver"] = $receiver;
 
@@ -148,7 +152,7 @@ class Kohana_Mail_Sender {
 
             return $success;
         } else {
-            throw new Validation_Exception("Mail failed to validate.");
+            throw new Validation_Exception($mail, "Mail failed to validate.");
         }
     }
 
@@ -323,7 +327,7 @@ class Kohana_Mail_Sender {
         $valid_files = array_filter($files, array($this, "validate_filename"));
 
         usort($valid_files, array($this, "compare_filenames"));
-        
+
         return $valid_files;
     }
 

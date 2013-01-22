@@ -1,4 +1,5 @@
-<?php defined('SYSPATH') or die('No direct script access.'); ?><!DOCTYPE html>
+<?php defined('SYSPATH') or die('No direct script access.'); ?>
+<!DOCTYPE html>
 <html>
     <head><?php echo $head ?></head>
     <body>

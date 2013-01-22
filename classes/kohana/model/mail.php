@@ -1,13 +1,26 @@
 <?php
 
-class Kohana_Model_Mail extends Kohana_Model_Validation {
+defined('SYSPATH') or die('No direct script access.');
+
+/**
+ * Model for mail.
+ * 
+ * @see Model_Validation
+ * 
+ * @package Mail
+ * @category Model
+ * @author Guillaume Poirier-Morency
+ * @copyright (c) 2013, Hète.ca Inc.
+ */
+class Kohana_Model_Mail extends Model_Validation {
 
     /**
      *
-     * @var Model_User 
+     * @var Model_Auth_User 
      */
     public $receiver;
-    public $content, $headers,
+    public $content,
+            $headers,
             $subject;
 
     /**
@@ -17,7 +30,7 @@ class Kohana_Model_Mail extends Kohana_Model_Validation {
      * @param View $content mail's content stored in a view.
      * @param array $headers headers
      */
-    public function __construct(Model_User $receiver, $subject, View $content, array $headers = NULL) {
+    public function __construct(Model_Auth_User $receiver, $subject, View $content, array $headers = NULL) {
 
         if ($subject === NULL) {
             $subject = Mail_Sender::instance()->config("subject");

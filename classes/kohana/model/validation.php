@@ -3,32 +3,46 @@
 defined('SYSPATH') or die('No direct script access.');
 
 /**
+ * Système pour valider des modèles qui ne sont pas ORM.
  * 
+ * @package Mail
+ * @category Model
+ * @author Hète.ca Team
+ * @copyright (c) 2013, Hète.ca Inc.
  */
-class Kohana_Model_Validation extends Model {
+abstract class Kohana_Model_Validation extends Model {
 
     /**
-     *
+     * Internal validation object.
      * @var Validation 
      */
-    private $validation;
+    private $_validation = NULL;
 
     public function __construct() {
+        $this->_validation = Validation::factory((array) $this);
 
-        $this->validation = Validation::factory((array) $this);
-
-        foreach ($this->rules() as $key => $rules) {
-            $this->validation->rules($key, $rules);
+        foreach ($this->rules() as $field => $rules) {
+            $this->_validation->rules($field, $rules);
         }
     }
 
+    /**
+     * 
+     * @return Validation
+     */
     public function validation() {
-        return $this->validation;
+        return $this->_validation;
     }
 
-    public function check() {
-        $this->validation = Validation::factory((array) $this);
-        return $this->validation->check();
+    /**
+     * Reload validation.  
+     */
+    private function reload() {
+        $this->_validation = $this->_validation->copy((array) $this);
+    }
+
+    public function labels() {
+        return array();
     }
 
     public function filters() {
@@ -37,6 +51,16 @@ class Kohana_Model_Validation extends Model {
 
     public function rules() {
         return array();
+    }
+
+    // Bindings
+    public function check() {
+        $this->reload();
+        return $this->_validation->check();
+    }
+
+    public function errors($file = NULL, $translate = TRUE) {
+        return $this->_validation->errors($file, $translate);
     }
 
 }
