@@ -32,6 +32,8 @@ class Kohana_Model_Mail extends Model_Validation {
      */
     public function __construct(Model_Auth_User $receiver, $subject, View $content, array $headers = NULL) {
 
+        parent::__construct();
+
         if ($subject === NULL) {
             $subject = Mail_Sender::instance()->config("subject");
         }
