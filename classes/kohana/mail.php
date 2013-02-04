@@ -69,7 +69,7 @@ class Kohana_Mail extends Model_Mail {
         static::add_attribute($attributes, static::STYLE . " border:none; padding-left: 20px; text-align: left", "style");
         $attributes["colspan"] = $colspan;
 
-        return "<th " . HTML::attributes($attributes) . ">";
+        return "<td " . HTML::attributes($attributes) . ">";
     }
 
     public static function th_open($colspan = 12, array $attributes = NULL) {
