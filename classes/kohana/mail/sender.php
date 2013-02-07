@@ -90,7 +90,7 @@ class Kohana_Mail_Sender {
      * @param array $headers
      * @return Boolean false si au moins un envoie échoue.
      */
-    public function send($receivers, $view, $parameters = NULL, $subject = NULL, $headers = NULL, $async = FALSE, $force = FALSE) {
+    public function send($receivers, $view, $parameters = NULL, $subject = NULL, $headers = NULL, $async = FALSE) {
 
         if (!Arr::is_array($parameters)) {
             $parameters = array(
@@ -102,7 +102,7 @@ class Kohana_Mail_Sender {
             $result = true;
 
             foreach ($receivers as $receiver) {
-                $result = $result && $this->_send($receiver, $view, $parameters, $subject, $headers, $async, $force);
+                $result = $result && $this->_send($receiver, $view, $parameters, $subject, $headers, $async);
             }
 
             // Résultat cumulé
@@ -111,7 +111,7 @@ class Kohana_Mail_Sender {
 
         if ($receivers->loaded()) {
             // Envoi unitaire
-            return $this->_send($receivers, $view, $parameters, $subject, $headers, $async, $force);
+            return $this->_send($receivers, $view, $parameters, $subject, $headers, $async);
         } else {
             throw new Kohana_Exception("The receivers model must be loaded.");
         }
