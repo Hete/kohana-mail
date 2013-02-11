@@ -76,13 +76,21 @@ class Kohana_Model_Mail extends Model_Validation {
         return implode("\r\n", $output);
     }
 
+    public function render() {
+        return $this->content->render();
+    }
+    
+    public function __toString() {
+        return $this->render();
+    }
+
     /**
      * Envoie le mail au receveur.
      * @param boolean $async si true, le mail sera stocké de façon asynchrome.
      * @return boolean le résultat de la fonction mail.
      */
     public function send() {
-        return mail($this->receiver->email, $this->generate_subject(), $this->content->render(), $this->generate_headers());
+        return mail($this->receiver->email, $this->generate_subject(), $this->render(), $this->generate_headers());
     }
 
 }
