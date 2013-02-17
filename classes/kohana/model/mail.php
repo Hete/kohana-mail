@@ -16,7 +16,7 @@ class Kohana_Model_Mail extends Model_Validation {
 
     /**
      *
-     * @var Model_Auth_User 
+     * @var Mail_Receiver 
      */
     public $receiver;
     public $content,
@@ -25,12 +25,12 @@ class Kohana_Model_Mail extends Model_Validation {
 
     /**
      * 
-     * @param Model_User $receiver people who will receive this mail.
+     * @param Mail_Receiver $receiver people who will receive this mail.
      * @param type $subject mail's subject.
      * @param View $content mail's content stored in a view.
      * @param array $headers headers
      */
-    public function __construct(Model_Auth_User $receiver, $subject, View $content, array $headers = NULL) {
+    public function __construct(Mail_Receiver $receiver, $subject, View $content, array $headers = NULL) {
 
         parent::__construct();
 
@@ -76,10 +76,22 @@ class Kohana_Model_Mail extends Model_Validation {
         return implode("\r\n", $output);
     }
 
+    public function receiver() {
+        
+    }
+
+    public function headers($key = NULL, $value = NULL) {
+        
+    }
+
+    public function subject($value = NULL);
+
+    public function content($value = NULL);
+
     public function render() {
         return $this->content->render();
     }
-    
+
     public function __toString() {
         return $this->render();
     }
@@ -90,7 +102,15 @@ class Kohana_Model_Mail extends Model_Validation {
      * @return boolean le résultat de la fonction mail.
      */
     public function send() {
-        return mail($this->receiver->email, $this->generate_subject(), $this->render(), $this->generate_headers());
+
+        $result = TRUE;
+
+        foreach ($this->receiver as $receiver) {
+            $sending_result = mail($receiver->receiver_email(), $this->generate_subject(), $this->render(), $this->generate_headers());
+            $result = $result && $sending_result;
+        }
+
+        return $result;
     }
 
 }

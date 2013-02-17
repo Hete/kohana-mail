@@ -3,7 +3,7 @@
 defined('SYSPATH') or die('No direct script access.');
 
 /**
- * Sender de mail.
+ * Mail sender.
  * 
  * @package Mail
  * @author Guillaume Poirier-Morency <guillaumepoiriermorency@gmail.com>
@@ -43,7 +43,7 @@ class Kohana_Mail_Sender {
      * 
      * @return View
      */
-    public function generate_content(Model_User $receiver, $view, array $parameters = NULL, $subject = NULL) {
+    public function generate_content(Mail_Receiver $receiver, $view, array $parameters = NULL, $subject = NULL) {
 
         if ($parameters === NULL) {
             $parameters = array();
@@ -90,7 +90,7 @@ class Kohana_Mail_Sender {
      * @param array $headers
      * @return Boolean false si au moins un envoie échoue.
      */
-    public function send($receivers, $view, $parameters = NULL, $subject = NULL, $headers = NULL, $async = FALSE) {
+    public function send(Mail_Receiver $receivers, $view, array $parameters = NULL, $subject = NULL, array $headers = NULL) {
 
         if (!Arr::is_array($parameters)) {
             $parameters = array(
@@ -98,22 +98,25 @@ class Kohana_Mail_Sender {
             );
         }
 
-        if ($receivers instanceof Database_Result) {
+        if (is_string($view)) {
+            $view = View::factory($view, $parameters);
+        }
+
+        foreach ($receivers as $receiver) {
             $result = true;
 
             foreach ($receivers as $receiver) {
-                $result = $result && $this->_send($receiver, $view, $parameters, $subject, $headers, $async);
+
+                // Updating receiver..
+                $view->set("receiver", $receiver);
+
+                $content = $this->generate_content($receivers, $view, $parameters, $subject);
+
+                $result = $result && $this->_send($receiver, $content, $subject, $headers);
             }
 
             // Résultat cumulé
             return $result;
-        }
-
-        if ($receivers->loaded()) {
-            // Envoi unitaire
-            return $this->_send($receivers, $view, $parameters, $subject, $headers, $async);
-        } else {
-            throw new Kohana_Exception("The receivers model must be loaded.");
         }
     }
 
@@ -129,54 +132,22 @@ class Kohana_Mail_Sender {
      * fails, the mail will be pushed on the queue for later sending.
      * @throws Validation_Exception
      */
-    protected function _send(Model_Auth_User $receiver, $view, array $parameters = NULL, $subject = NULL, $headers = NULL, $async = FALSE) {
-
-        $parameters["receiver"] = $receiver;
-
-        $content = $this->generate_content($receiver, $view, $parameters, $subject);
+    protected function _send(Mail_Receiver $receiver, View $content, $subject = NULL, array $headers = NULL) {
 
         $mail = new Model_Mail($receiver, $subject, $content, $headers);
 
         if ($mail->check()) {
 
-            if ($async) {
-                $this->push($mail);
-            } else {
-                $success = $mail->send($async);
-            }
+            $success = $mail->send();
 
             if (!$success) {
                 Log::instance()->add(Log::CRITICAL, "Mail failed to send. Check server configuration.");
-                $this->push($mail);
             }
 
             return $success;
         } else {
             throw new Validation_Exception($mail, "Mail failed to validate.");
         }
-    }
-
-    /**
-     * Alias de la fonction send.
-     * @param Model_User|string $receivers may be a Model_User or a valid email.
-     * @param string $view vue.
-     * @param array $parameters paramètres de la vue.
-     * @param string $subject
-     * @param array $variables variables de     * 
-     * @return Boolean résultat de la fonction mail().
-     * 
-     * @deprecated Simply use send.
-     */
-    public function send_to_one($receiver, $view, $parameters = NULL, $subject = NULL, $headers = NULL) {
-
-        // $receiver may be an email so we convert it into a user orm model.
-        if (is_string($receiver) and Valid::email($receiver)) {
-            $temp_email = $receiver;
-            $receiver = ORM::factory('user');
-            $receiver->email = $temp_email;
-        }
-
-        return $this->_send($receiver, $view, $parameters, $subject, $headers);
     }
 
 }
