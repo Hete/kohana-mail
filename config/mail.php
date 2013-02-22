@@ -1,15 +1,36 @@
 <?php
 
+defined('SYSPATH') or die('No direct script access.');
+
 return array(
-    'default' => array(
-        'from' => '', // Send mails from this address.
-        'from_name' => '',
-        'default_subject' => '',
-        
-        // Async 
-        'async' => FALSE, // If async is enabled, emails are not sent immediately but appended to a queue.
-        'queue_path' => APPPATH . 'mailqueue',
-        'salt' => NULL,
+    'sender' => array(
+        'native' => array(
+            'from' => array(
+                'name' => NULL,
+                'email' => NULL
+            ),
+            'subject' => NULL,
+        ),
+        // PEAR implementation of Mail
+        'pear' => array(
+            'sendmail' => array(
+                'from' => array(
+                    'name' => NULL,
+                    'email' => NULL
+                ),
+                'subject' => NULL,
+            ),
+            'smtp' => array(
+                'from' => array(
+                    'name' => NULL,
+                    'email' => NULL
+                ),
+                'subject' => NULL,
+            )
+        )
     ),
+    'queue' => array(
+        'file' => array()
+    )
 );
 ?>

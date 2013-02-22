@@ -1,1 +1,1 @@
-<h2><?php echo $mail->subject ?></h2>
+<h1><?php echo $title ?></h1>
