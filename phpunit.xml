@@ -1,5 +1,5 @@
 <phpunit colors="true" verbose="true" bootstrap="../unittest/bootstrap.php">
-    <testsuite name="Mail sender tests">
-        <directory suffix='.php'>tests/mail/</directory>  
+    <testsuite name="Mail tests">
+        <directory suffix='.php'>tests/</directory>  
     </testsuite>
 </phpunit>

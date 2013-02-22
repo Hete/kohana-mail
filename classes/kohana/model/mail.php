@@ -19,74 +19,89 @@ class Kohana_Model_Mail extends Model_Validation {
      * @var Mail_Receiver 
      */
     public $receiver;
+
+    /**
+     *
+     * @var View
+     */
     public $content,
-            $headers,
-            $subject;
+            /**
+             * @var string
+             */
+            $subject,
+            /**
+             * @var array
+             */
+            $headers;
 
     /**
      * 
      * @param Mail_Receiver $receiver people who will receive this mail.
-     * @param type $subject mail's subject.
      * @param View $content mail's content stored in a view.
+     * @param type $subject mail's subject.
      * @param array $headers headers
      */
     public function __construct(Mail_Receiver $receiver, $subject, View $content, array $headers = NULL) {
 
         parent::__construct();
 
-        if ($subject === NULL) {
-            $subject = Mail_Sender::instance()->config("subject");
-        }
-
-        if ($headers === NULL) {
-            $headers = array();
-        }
-
-        $basic_headers = array(
-            "To" => $receiver->nom_complet() . " <$receiver->email>",
-            "From" => Mail_Sender::instance()->config("from.name") . " <" . Mail_Sender::instance()->config("from.email") . ">",
-            "Date" => date(Date::$timestamp_format),
-            "Content-type" => 'text/html; charset=UTF-8',
-            "MIME-Version" => "1.0"
-        );
-
         $this->receiver = $receiver;
         $this->subject = $subject;
         $this->content = $content;
-        $this->headers = Arr::merge($basic_headers, $headers);
-    }
-
-    /**
-     * Generates the subject. It is encoded to accept any non-ascii characters.
-     * @return string
-     */
-    private function generate_subject() {
-        return '=?UTF-8?B?' . base64_encode($this->subject) . '?=';
+        $this->headers = $headers;
     }
 
     /**
      * 
-     * @return string
+     * @return Mail_Receiver
      */
-    private function generate_headers() {
-        $output = array();
-        foreach ($this->headers as $key => $value) {
-            $output[] = "$key: $value";
-        }
-        return implode("\r\n", $output);
-    }
-
     public function receiver() {
-        
+        return $this->receiver;
     }
 
     public function headers($key = NULL, $value = NULL) {
-        
+
+        if ($key === NULL) {
+
+            $output = array();
+            foreach ($this->headers as $key => $value) {
+                $output[] = "$key: $value";
+            }
+            return implode("\r\n", $output);
+
+            return $output;
+        }
+
+        if ($value === NULL) {
+            return Arr::get($this->headers, $key);
+        }
+
+        $this->headers[$key] = $value;
+
+        return $this;
     }
 
-    public function subject($value = NULL);
+    public function subject($value = NULL) {
 
-    public function content($value = NULL);
+        if ($value === NULL) {
+            return $this->subject;
+        }
+
+        $this->subject = '=?UTF-8?B?' . base64_encode($this->subject) . '?=';
+
+        return $this;
+    }
+
+    public function content($value = NULL) {
+
+        if ($value === NULL) {
+            return $this->content;
+        }
+
+        $this->content = $value;
+
+        return $this;
+    }
 
     public function render() {
         return $this->content->render();
@@ -94,23 +109,6 @@ class Kohana_Model_Mail extends Model_Validation {
 
     public function __toString() {
         return $this->render();
-    }
-
-    /**
-     * Envoie le mail au receveur.
-     * @param boolean $async si true, le mail sera stocké de façon asynchrome.
-     * @return boolean le résultat de la fonction mail.
-     */
-    public function send() {
-
-        $result = TRUE;
-
-        foreach ($this->receiver as $receiver) {
-            $sending_result = mail($receiver->receiver_email(), $this->generate_subject(), $this->render(), $this->generate_headers());
-            $result = $result && $sending_result;
-        }
-
-        return $result;
     }
 
 }

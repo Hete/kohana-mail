@@ -2,7 +2,7 @@
 
 defined('SYSPATH') or die('No direct script access.');
 
-class Mail extends Kohana_Mail {
+class Mail_Sender_Native extends Kohana_Mail_Sender_Native {
     
 }
 

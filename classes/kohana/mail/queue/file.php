@@ -1,5 +1,11 @@
 <?php
 
+defined('SYSPATH') or die('No direct script access.');
+
+/**
+ * 
+ * @package Mail
+ */
 class Kohana_Mail_Queue_File extends Mail_Queue {
 
     public function peek() {

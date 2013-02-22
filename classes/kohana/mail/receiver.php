@@ -9,7 +9,7 @@ defined('SYSPATH') or die('No direct script access.');
  * @author Hète.ca Team
  * @copyright (c) 2013, Hète.ca Inc.
  */
-interface Kohana_Mail_Receiver extends Iterator {
+interface Kohana_Mail_Receiver {
 
     /**
      * Returns the receiver name
