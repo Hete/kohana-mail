@@ -106,7 +106,7 @@ abstract class Kohana_Mail_Sender {
 
         $result = true;
 
-        if (!($receivers instanceof Traversable)) {
+        if (!($receivers instanceof Traversable or Arr::is_array($receivers))) {
             $receivers = array($receivers);
         }
 
