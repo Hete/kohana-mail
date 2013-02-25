@@ -8,86 +8,47 @@ defined('SYSPATH') or die('No direct script access.');
  */
 class Kohana_Mail_Queue_File extends Mail_Queue {
 
-    public function peek() {
-        $files = $this->mail_queue();
-
-        if (count($files) === 0) {
-            return FALSE;
-        }
-
-        $file_path = $this->filename_to_path(array_shift($files));
-
-        $file_content_serialized = file_get_contents($file_path);
-
-
-        if ($file_content_serialized === FALSE) {
-            Log::instance()->add(Log::CRITICAL, "Le contenu du fichier :fichier n'a pas pu être récupéré.", array(":fichier", $file_path));
-            unlink($file_path);
-            return $this->pull();
-        }
-
-        $file_content = unserialize($file_content_serialized);
-
-        if ($file_content === FALSE) {
-            Log::instance()->add(Log::CRITICAL, "La désérialization n'a pas fonctionné sur le fichier :file.", array(":file", $file_path));
-            unlink($file_path);
-            return $this->pull();
-        }
-
-        if (!($file_content instanceof Mail_Mail)) {
-            Log::instance()->add(Log::CRITICAL, "Le contenu du fichier :fichier n'est pas de type Mail_Mail.", array(":fichier", $file_path));
-            unlink($file_path);
-            return $this->pull();
-        }
-
-        return $file_content;
-    }
-
-    /**
-     * Ajoute un objet Mail_Mail à la fin de la queue.   
-     * @param Mail_Mail $mail
-     * @return int
-     */
     public function push(Model_Mail $mail) {
         $serialized_mail = serialize($mail);
         $mail_sha1 = sha1($serialized_mail);
         $filename = $this->salt($mail_sha1, time());
-        return file_put_contents($this->filename_to_path($filename), $serialized_mail);
+        return file_put_contents($this->config("path") . "/" . $filename, $serialized_mail);
     }
 
-    /**
-     * Retourne l'objet Mail_Mail au début de la queue.
-     * @param type $unlink
-     * @return boolean|Model_Mail FALSE if queue is empty, a Mail_Mail object otherwise.
-     * @throws Kohana_Exception
-     */
+    public function peek() {
+        $queue = $this->queue();
+
+        if (count($queue) < 1) {
+            return NULL;
+        }
+
+        $mail = unserialize(file_get_contents($queue[0]));
+
+
+        return $mail;
+    }
+
     public function pull() {
 
-        $this->peek();
+        $queue = $this->queue();
 
-        if ($unlink) {
-            unlink($file_path);
+        if (count($queue) < 1) {
+            return NULL;
         }
-    }
 
-    /**
-     * Pulls the element at the end of the queue and send it.
-     */
-    public function pull_and_send($unlink = TRUE) {
-        $model = $this->pull($unlink);
-        if ($model === FALSE) {
-            return TRUE;
-        } else {
-            return $model->send();
-        }
+        $mail = unserialize(file_get_contents($queue[0]));
+
+        unlink($queue[0]);
+
+        return $mail;
     }
 
     /**
      * Obtain the mail queue sorted by time and filtered by validity.
      * @return type
      */
-    public function mail_queue() {
-        $files = scandir($this->_config['async']['path']);
+    public function queue() {
+        $files = scandir($this->config("path"));
 
         $valid_files = array_filter($files, array($this, "validate_filename"));
 
@@ -102,7 +63,7 @@ class Kohana_Mail_Queue_File extends Mail_Queue {
      * @return string
      */
     private function filename_to_path($filename) {
-        return $this->_config['async']['path'] . "/" . $filename;
+        return $this->config("path") . "/" . $filename;
     }
 
     /**
@@ -111,8 +72,8 @@ class Kohana_Mail_Queue_File extends Mail_Queue {
      * @param int $timestamp 
      * @return string
      */
-    public function salt($mail_sha1, $timestamp) {
-        return $timestamp . "~" . sha1($this->_config['async']['salt'] . $mail_sha1 . $timestamp);
+    public function salt($mail_sha1) {
+        return time() . "~" . $mail_sha1;
     }
 
     /**
@@ -124,22 +85,13 @@ class Kohana_Mail_Queue_File extends Mail_Queue {
         $parts = explode("~", $name);
 
         $validation = Validation::factory($parts)
+                ->rule(0, "not_empty")
                 ->rule(0, "digit")
-                ->rule(1, "alpha_numeric");
+                ->rule(1, "not_empty")
+                ->rule(1, "alpha_numeric")
+                ->rule(1, "equals", array(":value", sha1_file($this->filename_to_path($name))));
 
-
-        if (count($parts) !== 2 | !$validation->check()) {
-            // It's not that terrible, but still we warn the user.
-            Log::instance()->add(Log::INFO, "Invalid file :file in mail queue :path.", array(":file" => $name, ":path" => $this->filename_to_path($name)));
-            return false;
-        }
-
-        $mail_sha1 = sha1_file($this->filename_to_path($name));
-
-
-
-
-        return $this->salt($mail_sha1, $parts[0]) === $name;
+        return $validation->check();
     }
 
     /**

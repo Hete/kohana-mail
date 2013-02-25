@@ -137,7 +137,7 @@ abstract class Kohana_Mail_Sender {
      * @param Model_Mail $mail  
      * @return boolean true if sending is successful, false otherwise.
      */
-    protected abstract function _send(Model_Mail $mail);
+    public abstract function _send(Model_Mail $mail);
 }
 
 ?>
