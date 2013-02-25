@@ -22,12 +22,10 @@ abstract class Kohana_Mail_Sender {
         if ($name === NULL) {
             $name = static::$default;
         }
-    
 
         $class = "Mail_Sender_$name";
-        $name = strtolower($name);
 
-        return new $class($name);
+        return new $class();
     }
 
     /**
@@ -36,9 +34,9 @@ abstract class Kohana_Mail_Sender {
      */
     private $_config;
 
-    private function __construct($name) {
+    private function __construct() {
         // Load the corresponding configuration
-        $this->_config = Kohana::$config->load("mail.sender." . str_replace("_", ".", $name));
+        $this->_config = Kohana::$config->load("mail.sender");
     }
 
     /**
@@ -77,7 +75,7 @@ abstract class Kohana_Mail_Sender {
         if ($path === NULL) {
             return $this->_config;
         }
-    
+
 
         return Arr::path($this->_config, $path, $default, $delimiter);
     }
