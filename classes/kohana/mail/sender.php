@@ -11,7 +11,7 @@ defined('SYSPATH') or die('No direct script access.');
  */
 abstract class Kohana_Mail_Sender {
 
-    public static $default = "Native";
+    public static $default = "Sendmail";
 
     /**
      *
@@ -109,6 +109,10 @@ abstract class Kohana_Mail_Sender {
         }
 
         foreach ($receivers as $receiver) {
+
+            if (!$receiver->receiver_subscribed($view)) {
+                continue;
+            }
 
             // Update receiver
             $parameters["receiver"] = $receiver;

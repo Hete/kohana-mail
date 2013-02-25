@@ -12,6 +12,10 @@ class Kohana_Model_Mail_Receiver extends Model implements Mail_Receiver {
         return $this->name;
     }
 
+    public function receiver_subscribed($view) {
+        return TRUE;
+    }
+
 }
 
 ?>
