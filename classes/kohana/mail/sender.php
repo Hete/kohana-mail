@@ -91,7 +91,7 @@ abstract class Kohana_Mail_Sender {
      * @param array $headers
      * @return boolean false si au moins un envoie échoue.
      */
-    public function send(Mail_Receiver $receivers, $view, array $parameters = NULL, $subject = NULL, array $headers = NULL) {
+    public function send($receivers, $view, array $parameters = NULL, $subject = NULL, array $headers = NULL) {
 
         if ($subject === NULL) {
             $subject = $this->config("subject");
@@ -108,7 +108,20 @@ abstract class Kohana_Mail_Sender {
             $receivers = array($receivers);
         }
 
-        foreach ($receivers as $receiver) {
+        foreach ($receivers as $key => $receiver) {
+
+            if (Valid::email($email = $receiver)) {
+                $receiver = Model::factory("Mail_Receiver");
+                $receiver->email = $email;
+                // Checking if key is a name
+                if (is_string($key)) {
+                    $receiver->name = $key;
+                }
+            }
+
+            if (!$receiver instanceof Mail_Receiver) {
+                throw new Kohana_Exception("Receiver must be an instance of Mail_Receiver");
+            }
 
             if (!$receiver->receiver_subscribed($view)) {
                 continue;
