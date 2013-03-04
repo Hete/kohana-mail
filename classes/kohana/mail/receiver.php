@@ -20,6 +20,12 @@ interface Kohana_Mail_Receiver {
      * Returns the receiver email
      */
     public function receiver_email();
+
+    /**
+     * 
+     * @param type $view
+     */
+    public function receiver_subscribed($view);
 }
 
 ?>

@@ -22,8 +22,8 @@ abstract class Kohana_Mail_Sender {
         if ($name === NULL) {
             $name = static::$default;
         }
-
-        $class = "Mail_Sender_$name";
+    
+        $class = "Mail_Sender_$name";        
 
         return new $class();
     }
@@ -75,7 +75,7 @@ abstract class Kohana_Mail_Sender {
         if ($path === NULL) {
             return $this->_config;
         }
-
+    
 
         return Arr::path($this->_config, $path, $default, $delimiter);
     }
@@ -91,7 +91,7 @@ abstract class Kohana_Mail_Sender {
      * @param array $headers
      * @return boolean false si au moins un envoie échoue.
      */
-    public function send($receivers, $view, array $parameters = NULL, $subject = NULL, array $headers = NULL) {
+    public function send(Mail_Receiver $receivers, $view, array $parameters = NULL, $subject = NULL, array $headers = NULL) {
 
         if ($subject === NULL) {
             $subject = $this->config("subject");
