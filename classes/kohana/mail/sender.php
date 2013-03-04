@@ -11,7 +11,7 @@ defined('SYSPATH') or die('No direct script access.');
  */
 abstract class Kohana_Mail_Sender {
 
-    public static $default = "Native";
+    public static $default = "Sendmail";
 
     /**
      *
@@ -22,12 +22,10 @@ abstract class Kohana_Mail_Sender {
         if ($name === NULL) {
             $name = static::$default;
         }
-    
 
         $class = "Mail_Sender_$name";
-        $name = strtolower($name);
 
-        return new $class($name);
+        return new $class();
     }
 
     /**
@@ -36,9 +34,9 @@ abstract class Kohana_Mail_Sender {
      */
     private $_config;
 
-    private function __construct($name) {
+    private function __construct() {
         // Load the corresponding configuration
-        $this->_config = Kohana::$config->load("mail.sender." . str_replace("_", ".", $name));
+        $this->_config = Kohana::$config->load("mail.sender");
     }
 
     /**
@@ -77,7 +75,7 @@ abstract class Kohana_Mail_Sender {
         if ($path === NULL) {
             return $this->_config;
         }
-    
+
 
         return Arr::path($this->_config, $path, $default, $delimiter);
     }
@@ -93,7 +91,7 @@ abstract class Kohana_Mail_Sender {
      * @param array $headers
      * @return boolean false si au moins un envoie échoue.
      */
-    public function send(Mail_Receiver $receivers, $view, array $parameters = NULL, $subject = NULL, array $headers = NULL) {
+    public function send($receivers, $view, array $parameters = NULL, $subject = NULL, array $headers = NULL) {
 
         if ($subject === NULL) {
             $subject = $this->config("subject");
@@ -110,7 +108,24 @@ abstract class Kohana_Mail_Sender {
             $receivers = array($receivers);
         }
 
-        foreach ($receivers as $receiver) {
+        foreach ($receivers as $key => $receiver) {
+
+            if (is_string($receiver) && Valid::email($email = $receiver)) {
+                $receiver = Model::factory("Mail_Receiver");
+                $receiver->email = $email;
+                // Checking if key is a name
+                if (is_string($key)) {
+                    $receiver->name = $key;
+                }
+            }
+
+            if (!$receiver instanceof Mail_Receiver) {
+                throw new Kohana_Exception("Receiver must be an instance of Mail_Receiver");
+            }
+
+            if (!$receiver->receiver_subscribed($view)) {
+                continue;
+            }
 
             // Update receiver
             $parameters["receiver"] = $receiver;
