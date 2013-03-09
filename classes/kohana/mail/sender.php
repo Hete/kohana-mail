@@ -11,10 +11,16 @@ defined('SYSPATH') or die('No direct script access.');
  */
 abstract class Kohana_Mail_Sender {
 
+    /**
+     * Default sender. 
+     * 
+     * @var string 
+     */
     public static $default = "Sendmail";
 
     /**
-     *
+     * Return an instance of the specified sender.
+     * 
      * @return Mail_Sender 
      */
     public static function factory($name = NULL) {
@@ -37,6 +43,23 @@ abstract class Kohana_Mail_Sender {
     private function __construct() {
         // Load the corresponding configuration
         $this->_config = Kohana::$config->load("mail.sender");
+    }
+
+    /**
+     * Generate headers for the specified receiver. $receiver is not yet used,
+     * but will be used to u
+     * 
+     * @param Mail_Receiver $receiver
+     * @return array
+     */
+    public function generate_headers(Mail_Receiver $receiver) {
+        return array(
+            "From" => $this->config("from.name"),
+            "To" => $receiver->receiver_name() . " <" . $receiver->receiver_email() . ">",
+            "Date" => Date::formatted_time("now"),
+            "Content-type" => "text/html; charset=UTF-8",
+            "MIME-Version" => "1.0"
+        );
     }
 
     /**
@@ -97,11 +120,6 @@ abstract class Kohana_Mail_Sender {
             $subject = $this->config("subject");
         }
 
-        $headers["From"] = $this->config("from.name");
-        $headers["Date"] = Date::formatted_time("now");
-        $headers["Content-type"] = "text/html; charset=UTF-8";
-        $headers["MIME-Version"] = "1.0";
-
         $result = true;
 
         if (!($receivers instanceof Traversable or Arr::is_array($receivers))) {
@@ -130,13 +148,13 @@ abstract class Kohana_Mail_Sender {
             // Update receiver
             $parameters["receiver"] = $receiver;
 
-            // Update headers
-            $headers["To"] = $receiver->receiver_name() . " <" . $receiver->receiver_email() . ">";
+            // Merge headers
+            $_headers = Arr::merge($this->generate_headers($receivers), $headers);
 
             // Regenerate content
             $content = $this->generate_content($receiver, $view, $parameters, $subject);
 
-            $mail = new Model_Mail($receiver, $subject, $content, $headers);
+            $mail = new Model_Mail($receiver, $subject, $content, $_headers);
 
             $result = $result && $this->_send($mail);
         }
