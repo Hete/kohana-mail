@@ -22,8 +22,8 @@ abstract class Kohana_Mail_Sender {
         if ($name === NULL) {
             $name = static::$default;
         }
-    
-        $class = "Mail_Sender_$name";        
+
+        $class = "Mail_Sender_$name";
 
         return new $class();
     }
@@ -75,7 +75,7 @@ abstract class Kohana_Mail_Sender {
         if ($path === NULL) {
             return $this->_config;
         }
-    
+
 
         return Arr::path($this->_config, $path, $default, $delimiter);
     }
@@ -83,15 +83,15 @@ abstract class Kohana_Mail_Sender {
     /**
      * Envoie un courriel à tous les utilisateurs de la variable $receivers.
      * 
-     * @param Mail_Receiver $receivers fetchable and loaded ORM model of 
-     * receivers, one loaded Model_User, or a valid string email.
+     * @param Mail_Receiver|Traversable|array $receivers set of Mail_Receiver or
+     * a Mail_Receiver object.
      * @param View $view content to be sent.
      * @param array $parameters view's parameters.
      * @param string $subject 
      * @param array $headers
      * @return boolean false si au moins un envoie échoue.
      */
-    public function send(Mail_Receiver $receivers, $view, array $parameters = NULL, $subject = NULL, array $headers = NULL) {
+    public function send($receivers, $view, array $parameters = NULL, $subject = NULL, array $headers = NULL) {
 
         if ($subject === NULL) {
             $subject = $this->config("subject");
