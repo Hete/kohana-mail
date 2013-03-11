@@ -119,6 +119,10 @@ abstract class Kohana_Mail_Sender {
         if ($subject === NULL) {
             $subject = $this->config("subject");
         }
+        
+        if ($headers === NULL) {
+            $headers = array();
+        }
 
         $result = true;
 
@@ -149,7 +153,7 @@ abstract class Kohana_Mail_Sender {
             $parameters["receiver"] = $receiver;
 
             // Merge headers
-            $_headers = Arr::merge($this->generate_headers($receivers), $headers);
+            $_headers = Arr::merge($this->generate_headers($receiver), $headers);
 
             // Regenerate content
             $content = $this->generate_content($receiver, $view, $parameters, $subject);
