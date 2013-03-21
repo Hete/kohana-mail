@@ -54,7 +54,7 @@ abstract class Kohana_Mail_Sender {
      */
     public function generate_headers(Mail_Receiver $receiver) {
         return array(
-            "From" => $this->config("from.name"),
+            "From" => $this->config("from.name") . " <" . $this->config("from.email") . ">",
             "To" => $receiver->receiver_name() . " <" . $receiver->receiver_email() . ">",
             "Date" => Date::formatted_time("now"),
             "Content-type" => "text/html; charset=UTF-8",
@@ -119,7 +119,7 @@ abstract class Kohana_Mail_Sender {
         if ($subject === NULL) {
             $subject = $this->config("subject");
         }
-        
+
         if ($headers === NULL) {
             $headers = array();
         }
