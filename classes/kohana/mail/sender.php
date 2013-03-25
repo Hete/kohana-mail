@@ -110,11 +110,14 @@ abstract class Kohana_Mail_Sender {
      * a Mail_Receiver object.
      * @param View $view content to be sent.
      * @param array $parameters view's parameters.
-     * @param string $subject 
-     * @param array $headers
+     * @param string $subject is the subject of the mail. It is UTF-8 encoded, 
+     * so you can use accents and other characters.
+     * @param array $headers is an array of mail headers.
+     * @param boolean $check_if_subscribed verifies if the receiver is 
+     * subscribed to the mail.
      * @return boolean false si au moins un envoie échoue.
      */
-    public function send($receivers, $view, array $parameters = NULL, $subject = NULL, array $headers = NULL) {
+    public function send($receivers, $view, array $parameters = NULL, $subject = NULL, array $headers = NULL, $check_if_subscribed = TRUE) {
 
         if ($subject === NULL) {
             $subject = $this->config("subject");
@@ -145,7 +148,8 @@ abstract class Kohana_Mail_Sender {
                 throw new Kohana_Exception("Receiver must be an instance of Mail_Receiver");
             }
 
-            if (!$receiver->receiver_subscribed($view)) {
+            // On vérifie si l'utilisateur est abonné
+            if ($check_if_subscribed && !$receiver->receiver_subscribed($view)) {
                 continue;
             }
 
