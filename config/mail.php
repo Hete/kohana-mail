@@ -10,7 +10,12 @@ return array(
         ),
     ),
     'queue' => array(
-        'file' => array()
+        'file' => array(
+            'path' => APPPATH . 'mails',
+        ),
+    ),
+    'database' => array(
+        'table' => 'mails'
     )
 );
 ?>

@@ -12,7 +12,7 @@ class Kohana_Mail_Queue_ORM extends Mail_Queue {
         
     }
 
-    public function push(\Mail $mail) {
+    public function push(Mail $mail) {
         
     }    
 }
