@@ -63,6 +63,19 @@ abstract class Kohana_Model_Validation extends Model {
         return $this->_validation->errors($file, $translate);
     }
 
+    public function values(array $values, array $expected = NULL) {
+
+        if ($expected === NULL) {
+            $expected = array_keys($this->_validation->as_array());
+        }
+
+        foreach ($expected as $key => $column) {
+            $this->$column = $values[$column];
+        }
+
+        return $this;
+    }
+
 }
 
 ?>
