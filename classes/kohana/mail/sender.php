@@ -34,6 +34,10 @@ abstract class Kohana_Mail_Sender {
         return new $class();
     }
 
+    public static function encode($value) {
+        return '=?UTF-8?B?' . base64_encode($value) . '?=';
+    }
+
     /**
      * Current configuration.
      * @var array 
@@ -52,10 +56,9 @@ abstract class Kohana_Mail_Sender {
      * @param Mail_Receiver $receiver
      * @return array
      */
-    public function generate_headers(Mail_Receiver $receiver) {
+    public function generate_headers() {
         return array(
-            "From" => $this->config("from.name") . " <" . $this->config("from.email") . ">",
-            "To" => $receiver->receiver_name() . " <" . $receiver->receiver_email() . ">",
+            "From" => static::encode($this->config("from.name")) . " <" . $this->config("from.email") . ">",
             "Date" => Date::formatted_time("now"),
             "Content-type" => "text/html; charset=UTF-8",
             "MIME-Version" => "1.0"
@@ -121,8 +124,8 @@ abstract class Kohana_Mail_Sender {
         if ($subject === NULL) {
             $subject = $this->config("subject");
         }
-
-        if ($headers === NULL) {
+        
+        if($headers === NULL) {
             $headers = array();
         }
 
@@ -156,16 +159,15 @@ abstract class Kohana_Mail_Sender {
             $parameters["receiver"] = $receiver;
 
             // Merge headers
-            $_headers = Arr::merge($this->generate_headers($receiver), $headers);
+            $_headers = Arr::merge($this->generate_headers(), $headers);
 
             // Regenerate content
             $content = $this->generate_content($receiver, $view, $parameters, $subject);
 
             $mail = new Model_Mail($receiver, $subject, $content, $_headers);
 
-            $result = $result && $this->_send($mail);
+            $result = $result AND $this->_send($mail);
         }
-
 
         // Cumulated result
         return $result;

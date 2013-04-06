@@ -12,14 +12,6 @@ defined('SYSPATH') or die('No direct script access.');
  */
 class Kohana_Model_Mail extends Model {
 
-    public static function encode_subject($subject) {
-        return '=?UTF-8?B?' . base64_encode($subject) . '?=';
-    }
-
-    public static function encode_headers(array $headers) {
-        return implode("\r\n", $headers);
-    }
-
     /**
      * 
      * @param Mail_Receiver $receiver people who will receive this mail.
@@ -47,13 +39,11 @@ class Kohana_Model_Mail extends Model {
 
         if ($key === NULL) {
 
-            $output = array();
-
             foreach ($this->headers as $key => $value) {
-                $output[] = "$key: $value";
+                $headers[$key] = trim("$key: " . $value);
             }
 
-            return static::encode_headers($output);
+            return implode("\r\n", $headers) . "\r\n";
         }
 
         if (Arr::is_array($key)) {
@@ -83,9 +73,6 @@ class Kohana_Model_Mail extends Model {
 
         $this->receiver = $receiver;
 
-        // Update receiver in headers
-        $this->headers("To", $receiver->receiver_name() . " <" . $receiver->receiver_email() . ">");
-
         return $this;
     }
 
@@ -98,14 +85,11 @@ class Kohana_Model_Mail extends Model {
 
         // Getter
         if ($subject === NULL) {
-            return static::encode_subject($this->subject);
+            return $this->subject;
         }
 
         // Update subject
         $this->subject = (string) $subject;
-
-        // Update subject in headers
-        $this->headers("Subject", $subject);
 
         return $this;
     }
