@@ -13,18 +13,34 @@ defined('SYSPATH') or die('No direct script access.');
 class Kohana_Model_Mail extends Model {
 
     /**
+     *
+     * @var Mail_Receiver 
+     */
+    public $receiver;
+    private $headers;
+    private $subject;
+
+    /**
      * 
      * @param Mail_Receiver $receiver people who will receive this mail.
      * @param View $content mail's content stored in a view.
      * @param type $subject mail's subject.
      * @param array $headers headers
      */
-    public function __construct(Mail_Receiver $receiver, $subject, View $content, array $headers = array()) {
+    public function __construct(Mail_Receiver $receiver, View $content, $subject = NULL, array $headers = NULL) {
+
+        if ($headers === NULL) {
+            $headers = array();
+        }
+
+        if ($subject === NULL) {
+            $subject = "";
+        }
 
         // Update internals
         $this->headers($headers)
-                ->receiver($receiver)
                 ->subject($subject)
+                ->receiver($receiver)
                 ->content($content);
     }
 

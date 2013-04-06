@@ -71,27 +71,18 @@ abstract class Kohana_Mail_Sender {
      * @todo améliorer l'implémentation pour la génération du contenu.
      * @return View
      */
-    public function generate_content(Mail_Receiver $receiver, $view, array $parameters = NULL, $subject = NULL) {
+    public function generate_content(Mail_Receiver $receiver, $view, array $parameters = NULL) {
 
         if ($parameters === NULL) {
             $parameters = array();
         }
 
-        if ($subject === NULL) {
-            $subject = $this->_config["subject"];
-        }
-
-        $parameters["title"] = $subject;
         $parameters["receiver"] = $receiver;
 
-        // We use a template clone not to corrupt the original.
         $template = View::factory("mail/layout/template", $parameters);
         $template->header = View::factory("mail/layout/header", $parameters);
-        $template->head = View::factory("mail/layout/head", $parameters);
+        $template->content = View::factory($view, $parameters);
         $template->footer = View::factory("mail/layout/footer", $parameters);
-
-        // We define the template content.
-        $template->set("content", View::factory($view, $parameters));
 
         return $template;
     }
@@ -124,8 +115,8 @@ abstract class Kohana_Mail_Sender {
         if ($subject === NULL) {
             $subject = $this->config("subject");
         }
-        
-        if($headers === NULL) {
+
+        if ($headers === NULL) {
             $headers = array();
         }
 
@@ -164,7 +155,7 @@ abstract class Kohana_Mail_Sender {
             // Regenerate content
             $content = $this->generate_content($receiver, $view, $parameters, $subject);
 
-            $mail = new Model_Mail($receiver, $subject, $content, $_headers);
+            $mail = new Model_Mail($receiver, $content, $subject, $_headers);
 
             $result = $result AND $this->_send($mail);
         }
