@@ -5,14 +5,20 @@ defined('SYSPATH') or die('No direct script access.');
 /**
  * Model for mail.
  * 
- * @see Model_Validation
- * 
  * @package Mail
  * @category Model
  * @author Guillaume Poirier-Morency
  * @copyright (c) 2013, Hète.ca Inc.
  */
-class Kohana_Model_Mail extends Model_Validation {
+class Kohana_Model_Mail extends Model {
+
+    public static function encode_subject($subject) {
+        return '=?UTF-8?B?' . base64_encode($subject) . '?=';
+    }
+
+    public static function encode_headers(array $headers) {
+        return implode("\r\n", $headers);
+    }
 
     /**
      * 
@@ -23,8 +29,7 @@ class Kohana_Model_Mail extends Model_Validation {
      */
     public function __construct(Mail_Receiver $receiver, $subject, View $content, array $headers = array()) {
 
-        parent::__construct();
-
+        // Update internals
         $this->headers($headers)
                 ->receiver($receiver)
                 ->subject($subject)
@@ -48,7 +53,7 @@ class Kohana_Model_Mail extends Model_Validation {
                 $output[] = "$key: $value";
             }
 
-            return implode("\r\n", $output);
+            return static::encode_headers($output);
         }
 
         if (Arr::is_array($key)) {
@@ -84,19 +89,32 @@ class Kohana_Model_Mail extends Model_Validation {
         return $this;
     }
 
+    /**
+     * 
+     * @param View $content
+     * @return Model_Mail
+     */
     public function subject($subject = NULL) {
 
+        // Getter
         if ($subject === NULL) {
-            return '=?UTF-8?B?' . base64_encode($this->subject) . '?=';
+            return static::encode_subject($this->subject);
         }
 
-        $this->subject = $subject;
+        // Update subject
+        $this->subject = (string) $subject;
 
+        // Update subject in headers
         $this->headers("Subject", $subject);
 
         return $this;
     }
 
+    /**
+     * 
+     * @param View $content
+     * @return Model_Mail
+     */
     public function content(View $content = NULL) {
 
         if ($content === NULL) {

@@ -99,7 +99,6 @@ abstract class Kohana_Mail_Sender {
             return $this->_config;
         }
 
-
         return Arr::path($this->_config, $path, $default, $delimiter);
     }
 
@@ -149,7 +148,7 @@ abstract class Kohana_Mail_Sender {
             }
 
             // On vérifie si l'utilisateur est abonné
-            if ($check_if_subscribed && !$receiver->receiver_subscribed($view)) {
+            if ($check_if_subscribed AND !$receiver->receiver_subscribed($view)) {
                 continue;
             }
 
