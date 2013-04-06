@@ -43,12 +43,12 @@ class Kohana_Model_Mail extends Model_Validation {
         if ($key === NULL) {
 
             $output = array();
+
             foreach ($this->headers as $key => $value) {
                 $output[] = "$key: $value";
             }
-            return implode("\r\n", $output);
 
-            return $output;
+            return implode("\r\n", $output);
         }
 
         if (Arr::is_array($key)) {
@@ -60,13 +60,8 @@ class Kohana_Model_Mail extends Model_Validation {
             return Arr::get($this->headers, $key);
         }
 
-
-
         // Always cast to string
         $this->headers[$key] = (string) $value;
-
-
-
 
         return $this;
     }
@@ -83,7 +78,8 @@ class Kohana_Model_Mail extends Model_Validation {
 
         $this->receiver = $receiver;
 
-        $this->headers("To", $receiver->receiver_name() . "<" . $receiver->receiver_email() . ">");
+        // Update receiver in headers
+        $this->headers("To", $receiver->receiver_name() . " <" . $receiver->receiver_email() . ">");
 
         return $this;
     }
