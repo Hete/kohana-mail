@@ -11,11 +11,11 @@ return array(
     ),
     'queue' => array(
         'file' => array(
-            'path' => APPPATH . 'mails',
+            'path' => APPPATH . 'mails/',
         ),
+        'database' => array(
+            'table' => 'mails'
+        )
     ),
-    'database' => array(
-        'table' => 'mails'
-    )
 );
 ?>

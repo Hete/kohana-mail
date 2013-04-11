@@ -44,7 +44,7 @@ abstract class Kohana_Mail_Sender {
      */
     private $_config;
 
-    private function __construct() {
+    protected function __construct() {
         // Load the corresponding configuration
         $this->_config = Kohana::$config->load("mail.sender");
     }
@@ -58,7 +58,7 @@ abstract class Kohana_Mail_Sender {
      */
     public function generate_headers() {
         return array(
-            "From" => static::encode($this->config("from.name")) . " <" . $this->config("from.email") . ">",
+            "From" => static::encode(Kohana::$config->load("mail.sender.from.name")) . " <" . Kohana::$config->load("mail.sender.from.email") . ">",
             "Date" => Date::formatted_time("now"),
             "Content-type" => "text/html; charset=UTF-8",
             "MIME-Version" => "1.0"
@@ -87,6 +87,14 @@ abstract class Kohana_Mail_Sender {
         return $template;
     }
 
+    /**
+     * 
+     * @deprecated useless
+     * @param type $path
+     * @param type $default
+     * @param type $delimiter
+     * @return type
+     */
     public function config($path = NULL, $default = NULL, $delimiter = NULL) {
 
         if ($path === NULL) {

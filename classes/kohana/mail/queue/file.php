@@ -12,7 +12,7 @@ class Kohana_Mail_Queue_File extends Mail_Queue {
         $serialized_mail = serialize($mail);
         $mail_sha1 = sha1($serialized_mail);
         $filename = $this->salt($mail_sha1, time());
-        return file_put_contents($this->config("path") . "/" . $filename, $serialized_mail);
+        return file_put_contents($this->filename_to_path($filename), $serialized_mail);
     }
 
     public function peek() {
@@ -63,7 +63,7 @@ class Kohana_Mail_Queue_File extends Mail_Queue {
      * @return string
      */
     private function filename_to_path($filename) {
-        return $this->config("path") . "/" . $filename;
+        return Kohana::$config->load("mail.queue.file.path") . $filename;
     }
 
     /**
