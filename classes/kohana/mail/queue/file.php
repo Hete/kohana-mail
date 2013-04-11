@@ -3,8 +3,12 @@
 defined('SYSPATH') or die('No direct script access.');
 
 /**
+ * File-based queue.
  * 
  * @package Mail
+ * @category Queues
+ * @author Hète.ca Team
+ * @copyright (c) 2013, Hète.ca Inc.
  */
 class Kohana_Mail_Queue_File extends Mail_Queue {
 
@@ -23,7 +27,6 @@ class Kohana_Mail_Queue_File extends Mail_Queue {
         }
 
         $mail = unserialize(file_get_contents($queue[0]));
-
 
         return $mail;
     }
