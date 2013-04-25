@@ -66,7 +66,7 @@ abstract class Kohana_Model_Validation extends Model {
     public function values(array $values, array $expected = NULL) {
 
         if ($expected === NULL) {
-            $expected = array_keys($this->_validation->as_array());
+            $expected = array_keys($values);
         }
 
         foreach ($expected as $key => $column) {
