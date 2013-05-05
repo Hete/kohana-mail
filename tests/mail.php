@@ -74,6 +74,21 @@ class Mail_Test extends Unittest_TestCase {
         $this->markTestIncomplete();
     }
 
+    public function test_mail_receiver() {
+        
+    }
+
+    public function test_model_mail_receiver() {
+
+        $receiver = Model::factory("Mail_Receiver");
+        
+        $receiver->name = "Foo Bar";
+        $receiver->email = "foo@foo.com";
+        
+        $this->assertTrue($receiver->check());
+    
+    }
+
 }
 
 ?>
