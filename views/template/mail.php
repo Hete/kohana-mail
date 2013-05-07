@@ -2,9 +2,9 @@
 <!DOCTYPE html>
 <html>
     <body>
-        <header><?php echo $header ?></header>
+        <header><?php echo View::factory("mail/header") ?></header>
         <section><?php echo $content ?></section>
-        <footer><?php echo $footer ?></footer>
+        <footer><?php echo View::factory("mail/footer") ?></footer>
     </body>
 </html>
 

@@ -3,7 +3,7 @@
 defined('SYSPATH') or die('No direct script access.');
 
 /**
- * Model for mail.
+ * Model for mail. Use a sender to send it.
  * 
  * @package Mail
  * @category Model
@@ -17,7 +17,17 @@ class Kohana_Model_Mail extends Model {
      * @var Mail_Receiver 
      */
     public $receiver;
+
+    /**
+     *
+     * @var type 
+     */
     private $headers;
+
+    /**
+     *
+     * @var type 
+     */
     private $subject;
 
     /**
@@ -27,14 +37,10 @@ class Kohana_Model_Mail extends Model {
      * @param type $subject mail's subject.
      * @param array $headers headers
      */
-    public function __construct(Mail_Receiver $receiver, View $content, $subject = NULL, array $headers = NULL) {
+    public function __construct(Mail_Receiver $receiver, $subject, View $content, array $headers = NULL) {
 
         if ($headers === NULL) {
             $headers = array();
-        }
-
-        if ($subject === NULL) {
-            $subject = "";
         }
 
         // Update internals
@@ -45,6 +51,7 @@ class Kohana_Model_Mail extends Model {
     }
 
     /**
+     * Getter-setter for mail headers.
      * 
      * @param string $key
      * @param variant $value
@@ -78,6 +85,7 @@ class Kohana_Model_Mail extends Model {
     }
 
     /**
+     * Set or get the receiver of this mail.
      * 
      * @return Mail_Receiver
      */
@@ -93,6 +101,7 @@ class Kohana_Model_Mail extends Model {
     }
 
     /**
+     * Get or set the subject of this mail.
      * 
      * @param View $content
      * @return Model_Mail
@@ -111,6 +120,7 @@ class Kohana_Model_Mail extends Model {
     }
 
     /**
+     * Get or set the content of this mail.
      * 
      * @param View $content
      * @return Model_Mail
@@ -126,6 +136,11 @@ class Kohana_Model_Mail extends Model {
         return $this;
     }
 
+    /**
+     * Renders the mail.
+     * 
+     * @return string
+     */
     public function render() {
         return $this->content->render();
     }
