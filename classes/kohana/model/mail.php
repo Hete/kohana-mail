@@ -37,11 +37,7 @@ class Kohana_Model_Mail extends Model {
      * @param type $subject mail's subject.
      * @param array $headers headers
      */
-    public function __construct(Mail_Receiver $receiver, $subject, View $content, array $headers = NULL) {
-
-        if ($headers === NULL) {
-            $headers = array();
-        }
+    public function __construct(Mail_Receiver $receiver, $subject, View $content, array $headers = array()) {
 
         // Update internals
         $this->headers($headers)

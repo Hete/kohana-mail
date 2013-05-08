@@ -22,7 +22,7 @@ class Kohana_Model_Mail_Receiver extends Model_Validation implements Mail_Receiv
     }
 
     public function receiver_subscribed($view) {
-        return TRUE;
+        return Valid::not_empty($view);
     }
 
     public function rules() {

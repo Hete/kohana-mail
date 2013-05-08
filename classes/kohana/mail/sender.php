@@ -76,7 +76,7 @@ abstract class Kohana_Mail_Sender {
      * 
      * @param Mail_Receiver|Traversable|array $receivers set of Mail_Receiver or
      * a Mail_Receiver object.
-     * @param View $view content to be sent.
+     * @param string $view content to be sent.
      * @param array $parameters view's parameters.
      * @param string $subject is the subject of the mail. It is UTF-8 encoded, 
      * so you can use accents and other characters.
@@ -85,11 +85,7 @@ abstract class Kohana_Mail_Sender {
      * subscribed to the mail.
      * @return boolean false si au moins un envoie échoue.
      */
-    public function send($receivers, $subject, $view, array $parameters = NULL, array $headers = NULL, $force = FALSE) {
-
-        if ($headers === NULL) {
-            $headers = array();
-        }
+    public function send($receivers, $subject, $view, array $parameters = NULL, array $headers = array(), $force = FALSE) {
 
         if (!Arr::is_array($receivers)) {
             $receivers = array($receivers);
@@ -101,24 +97,29 @@ abstract class Kohana_Mail_Sender {
 
             $receiver = $value;
 
+            // Key is an email, therefore value is a name
             if (is_string($key) && Valid::email($key)) {
+                $receiver = Model::factory("Mail_Receiver");
                 $receiver->email = $key;
                 $receiver->name = $value;
             }
 
-            if (is_string($key) && Valid::email($value)) {
+            // Value is an email, key is optionally a name
+            if (is_string($value) && Valid::email($value)) {
+                $receiver = Model::factory("Mail_Receiver");
                 $receiver->email = $value;
+
+                if (is_string($key)) {
+                    $receiver->name = $key;
+                }
             }
 
-            if (!$value instanceof Mail_Receiver) {
-                throw new Kohana_Exception("Invalid receiver :receiver", array(":receiver" => $receiver));
-            }
-
+            // Up here, we assume that $receiver implements Mail_Receiver
             // On vérifie si l'utilisateur est abonné
-            if ($value->receiver_subscribed($view) OR $force) {
+            if ($receiver->receiver_subscribed($view) OR $force) {
 
                 // Update receiver
-                $parameters["receiver"] = $value;
+                $parameters["receiver"] = $receiver;
 
                 // Update content
                 $parameters["content"] = View::factory($view, $parameters);
@@ -129,7 +130,7 @@ abstract class Kohana_Mail_Sender {
                 // Merge headers over basic ones
                 $_headers = Arr::merge($this->basic_headers(), $headers);
 
-                $mail = new Model_Mail($value, $subject, $_content, $_headers);
+                $mail = new Model_Mail($receiver, $subject, $_content, $_headers);
 
                 $result = $result AND $this->_send($mail);
             }

@@ -21,6 +21,8 @@ abstract class Kohana_Model_Validation extends Model {
     public function __construct() {
         $this->_validation = Validation::factory((array) $this);
 
+        $this->_validation->labels($this->labels());
+
         foreach ($this->rules() as $field => $rules) {
             $this->_validation->rules($field, $rules);
         }
@@ -35,9 +37,9 @@ abstract class Kohana_Model_Validation extends Model {
     }
 
     /**
-     * Reload validation.  
+     * Write new fields and values in the validation object.  
      */
-    private function reload() {
+    private function write() {
         $this->_validation = $this->_validation->copy((array) $this);
     }
 
@@ -55,7 +57,7 @@ abstract class Kohana_Model_Validation extends Model {
 
     // Bindings
     public function check() {
-        $this->reload();
+        $this->write();
         return $this->_validation->check();
     }
 
