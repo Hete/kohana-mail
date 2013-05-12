@@ -16,7 +16,14 @@ abstract class Kohana_Mail_Sender {
      * 
      * @var string 
      */
-    public static $default = "Sendmail";
+    public static $default = 'Sendmail';
+
+    /**
+     * Default styling engine.
+     * 
+     * @var string 
+     */
+    public static $default_styler = 'HTML';
 
     /**
      * Return an instance of the specified sender.
@@ -54,6 +61,49 @@ abstract class Kohana_Mail_Sender {
                     'From' => static::encode(Kohana::$config->load('mail.from_name')) . ' <' . Kohana::$config->load('mail.from_email') . '>',
                     'Date' => Date::formatted_time("now"),
         ));
+    }
+
+    /**
+     *
+     * @var \Mail_Styler 
+     */
+    public $styler;
+
+    public function __construct(Mail_Styler $styler = NULL) {
+
+        if ($styler === NULL) {
+            $styler = Mail_Styler::factory(static::$default_styler);
+        }
+
+        $this->styler = $styler;
+    }
+
+    /**
+     * 
+     * 
+     * @param Mail_Styler $styler
+     * @return Mail_Styler 
+     */
+    public function styler(Mail_Styler $styler = NULL) {
+
+        if ($styler === NULL) {
+            return $this->styler;
+        }
+
+        $this->styler = $styler;
+
+        return $this;
+    }
+
+    public function style($style = NULL) {
+
+        if ($style === NULL) {
+            return $this->styler->style();
+        }
+
+        $this->styler->style($style);
+
+        return $this;
     }
 
     /**
@@ -112,10 +162,13 @@ abstract class Kohana_Mail_Sender {
                 // Generate content
                 $_content = View::factory("template/mail", $parameters);
 
+                // Update content in styler
+                $this->styler->content($_content);
+
                 // Merge headers over basic ones
                 $_headers = Arr::merge($this->basic_headers(), $headers);
 
-                $mail = new Model_Mail($receiver, $subject, $_content, $_headers);
+                $mail = new Model_Mail($receiver, $subject, $this->styler, $_headers);
 
                 $result = $result AND $this->_send($mail);
             }

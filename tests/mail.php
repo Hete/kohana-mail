@@ -25,6 +25,13 @@ class Mail_Test extends Unittest_TestCase {
 
         $this->assertTrue(Valid::email($receiver->email));
     }
+    
+    public function test_styler() {        
+        Mail_Sender::factory()
+                ->style("html{background:blue}")
+                ->send('foo@bar.com', 'Foo subject', 'mail/test');
+        
+    }
 
     public function test_sender_sendmail() {
         $model = Model::factory("Mail_Receiver");
@@ -32,10 +39,10 @@ class Mail_Test extends Unittest_TestCase {
         $model->name = "Bertrand";
         $model->email = "foo@bar.com";
 
-        $this->assertTrue(Mail_Sender::factory("Sendmail")->send($model, "Subject", "mail/test", array("user" => ORM::factory("user"))));
+        $this->assertTrue(Mail_Sender::factory("Sendmail")->send($model, "Subject", "mail/test"));
 
         // Testing resend
-        $this->assertTrue(Mail_Sender::factory("Sendmail")->send($model, "Subject", "mail/test", array("user" => ORM::factory("user"))));
+        $this->assertTrue(Mail_Sender::factory("Sendmail")->send($model, "Subject", "mail/test"));
     }
 
     public function test_sender_imap() {
@@ -44,10 +51,10 @@ class Mail_Test extends Unittest_TestCase {
         $model->name = "Bertrand";
         $model->email = "foo@bar.com";
 
-        $this->assertTrue(Mail_Sender::factory("IMAP")->send($model, "Subject", "mail/test", array("user" => ORM::factory("user"))));
+        $this->assertTrue(Mail_Sender::factory("IMAP")->send($model, "Subject", "mail/test"));
 
         // Testing resend
-        $this->assertTrue(Mail_Sender::factory("IMAP")->send($model, "Subject", "mail/test", array("user" => ORM::factory("user"))));
+        $this->assertTrue(Mail_Sender::factory("IMAP")->send($model, "Subject", "mail/test"));
     }
 
     public function test_sender_pear_smtp() {
@@ -59,7 +66,7 @@ class Mail_Test extends Unittest_TestCase {
         $model->name = "Bertrand";
         $model->email = "bertrand@gmail.com";
 
-        Mail_Sender::factory("PEAR_SMTP")->send($model, "Subject", "mail/test", array("user" => ORM::factory("user")));
+        Mail_Sender::factory("PEAR_SMTP")->send($model, "Subject", "mail/test");
     }
 
     public function test_sender_pear_sendmail() {

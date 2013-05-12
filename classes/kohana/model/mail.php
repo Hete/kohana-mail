@@ -10,34 +10,40 @@ defined('SYSPATH') or die('No direct script access.');
  * @author Guillaume Poirier-Morency
  * @copyright (c) 2013, Hète.ca Inc.
  */
-class Kohana_Model_Mail extends Model {
+class Kohana_Model_Mail extends Model_Validation {
 
     /**
      *
      * @var Mail_Receiver 
      */
-    public $receiver;
+    private $receiver;
 
     /**
      *
-     * @var type 
+     * @var array 
      */
     private $headers;
 
     /**
      *
-     * @var type 
+     * @var string 
      */
     private $subject;
 
     /**
+     *
+     * @var string 
+     */
+    private $content;
+
+    /**
      * 
      * @param Mail_Receiver $receiver people who will receive this mail.
-     * @param View $content mail's content stored in a view.
-     * @param type $subject mail's subject.
+     * @param variant $content mail's content stored in a view.
+     * @param string $subject mail's subject.
      * @param array $headers headers
      */
-    public function __construct(Mail_Receiver $receiver, $subject, View $content, array $headers = array()) {
+    public function __construct(Mail_Receiver $receiver, $subject, $content, array $headers = array()) {
 
         // Update internals
         $this->headers($headers)
@@ -85,10 +91,17 @@ class Kohana_Model_Mail extends Model {
      * 
      * @return Mail_Receiver
      */
-    public function receiver(Mail_Receiver $receiver = NULL) {
+    public function receiver($receiver = NULL) {
 
         if ($receiver === NULL) {
             return $this->receiver;
+        }
+
+        $email = $receiver;
+
+        if (is_string($email) && Valid::email($email)) {
+            $receiver = Model::factory('Mail_Receiver');
+            $receiver->email = $email;
         }
 
         $this->receiver = $receiver;
@@ -118,16 +131,16 @@ class Kohana_Model_Mail extends Model {
     /**
      * Get or set the content of this mail.
      * 
-     * @param View $content
+     * @param variant $content
      * @return Model_Mail
      */
-    public function content(View $content = NULL) {
+    public function content($content = NULL) {
 
         if ($content === NULL) {
             return $this->content;
         }
 
-        $this->content = $content;
+        $this->content = (string) $content;
 
         return $this;
     }
@@ -138,7 +151,7 @@ class Kohana_Model_Mail extends Model {
      * @return string
      */
     public function render() {
-        return $this->content->render();
+        return (string) $this->content;
     }
 
     public function __toString() {
