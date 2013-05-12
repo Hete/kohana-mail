@@ -45,30 +45,15 @@ abstract class Kohana_Mail_Sender {
     }
 
     /**
-     * Current configuration.
-     * @var array 
-     */
-    private $_config;
-
-    protected function __construct() {
-        // Load the corresponding configuration
-        $this->_config = Kohana::$config->load("mail.sender");
-    }
-
-    /**
-     * Generate headers for the specified receiver. $receiver is not yet used,
-     * but will be used to u
-     * 
-     * @param Mail_Receiver $receiver
+     * Generates basic headers.
+     *  
      * @return array
      */
-    public function basic_headers() {
-        return array(
-            "From" => static::encode(Kohana::$config->load("mail.sender.from.name")) . " <" . Kohana::$config->load("mail.sender.from.email") . ">",
-            "Date" => Date::formatted_time("now"),
-            "Content-type" => "text/html; charset=UTF-8",
-            "MIME-Version" => "1.0"
-        );
+    public static function basic_headers() {
+        return Arr::merge(Kohana::$config->load('mail.headers'), array(
+                    'From' => static::encode(Kohana::$config->load('mail.from_name')) . ' <' . Kohana::$config->load('mail.from_email') . '>',
+                    'Date' => Date::formatted_time("now"),
+        ));
     }
 
     /**
