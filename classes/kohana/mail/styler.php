@@ -6,7 +6,8 @@ defined('SYSPATH') or die('No direct script access.');
  * 
  * @package Mail
  * @category Stylers
- * @author Guillaume Poirier-Morency <>
+ * @author Guillaume Poirier-Morency <guillaumepoiriermorency@gmail.com>
+ * @copyright (c) 2013, Hète.ca Inc.
  */
 abstract class Kohana_Mail_Styler {
 

@@ -25,67 +25,6 @@ class Mail_Test extends Unittest_TestCase {
 
         $this->assertTrue(Valid::email($receiver->email));
     }
-    
-    public function test_styler() {        
-        Mail_Sender::factory()
-                ->style("html{background:blue}")
-                ->send('foo@bar.com', 'Foo subject', 'mail/test');
-        
-    }
-
-    public function test_sender_sendmail() {
-        $model = Model::factory("Mail_Receiver");
-
-        $model->name = "Bertrand";
-        $model->email = "foo@bar.com";
-
-        $this->assertTrue(Mail_Sender::factory("Sendmail")->send($model, "Subject", "mail/test"));
-
-        // Testing resend
-        $this->assertTrue(Mail_Sender::factory("Sendmail")->send($model, "Subject", "mail/test"));
-    }
-
-    public function test_sender_imap() {
-        $model = Model::factory("Mail_Receiver");
-
-        $model->name = "Bertrand";
-        $model->email = "foo@bar.com";
-
-        $this->assertTrue(Mail_Sender::factory("IMAP")->send($model, "Subject", "mail/test"));
-
-        // Testing resend
-        $this->assertTrue(Mail_Sender::factory("IMAP")->send($model, "Subject", "mail/test"));
-    }
-
-    public function test_sender_pear_smtp() {
-
-        $this->markTestIncomplete();
-
-        $model = Model::factory("Mail_Receiver");
-
-        $model->name = "Bertrand";
-        $model->email = "bertrand@gmail.com";
-
-        Mail_Sender::factory("PEAR_SMTP")->send($model, "Subject", "mail/test");
-    }
-
-    public function test_sender_pear_sendmail() {
-        $this->markTestIncomplete();
-    }
-
-    public function test_mail_receiver() {
-        $this->markTestIncomplete();
-    }
-
-    public function test_model_mail_receiver() {
-
-        $receiver = Model::factory("Mail_Receiver");
-
-        $receiver->name = "Foo Bar";
-        $receiver->email = "foo@foo.com";
-
-        $this->assertTrue($receiver->check());
-    }
 
 }
 

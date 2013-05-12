@@ -6,6 +6,7 @@ defined('SYSPATH') or die('No direct script access.');
  * Mail sender.
  * 
  * @package Mail
+ * @category Senders
  * @author Guillaume Poirier-Morency <guillaumepoiriermorency@gmail.com>
  * @copyright (c) 2013, Hète.ca Inc.
  */
@@ -95,11 +96,7 @@ abstract class Kohana_Mail_Sender {
         return $this;
     }
 
-    public function style($style = NULL) {
-
-        if ($style === NULL) {
-            return $this->styler->style();
-        }
+    public function style($style) {
 
         $this->styler->style($style);
 
@@ -163,10 +160,10 @@ abstract class Kohana_Mail_Sender {
                 $_content = View::factory("template/mail", $parameters);
 
                 // Update content in styler
-                $this->styler->content($_content);
+                $this->styler->content($_content);                
 
                 // Merge headers over basic ones
-                $_headers = Arr::merge($this->basic_headers(), $headers);
+                $_headers = Arr::merge(static::basic_headers(), $headers);
 
                 $mail = new Model_Mail($receiver, $subject, $this->styler, $_headers);
 
