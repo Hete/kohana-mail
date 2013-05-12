@@ -39,9 +39,16 @@ class Kohana_Mail_Styler_HTML extends Mail_Styler {
 
     public function style($style) {
 
-        // Parse the css
-        $css_parser = new Sabberworm\CSS\Parser((string) $style);
-        $this->css = $css_parser->parse();
+        $cache_name = __CLASS__ . __FUNCTION__ . $style;
+
+        if ($css = Kohana::cache($cache_name)) {
+            $this->css = $css;
+        } else {
+            // Parse the css
+            $css_parser = new Sabberworm\CSS\Parser((string) $style);
+            $this->css = $css_parser->parse();
+            Kohana::cache($cache_name, $this->css);
+        }
 
         return $this;
     }

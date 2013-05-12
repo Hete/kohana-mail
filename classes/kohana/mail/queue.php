@@ -6,6 +6,7 @@ defined('SYSPATH') or die('No direct script access.');
  * Mail queue.
  * 
  * @package Mail
+ * @category Queues
  * @author Hète.ca Team
  * @copyright (c) 2013, Hète.ca Inc.
  */

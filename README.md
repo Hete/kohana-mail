@@ -66,3 +66,19 @@ Mail_Sender::factory()->send($mail);
 // You may also peek from the queue (not removing)
 Mail_Queue::factory()->peek();
 </pre>
+
+
+### Styler
+
+This sender has integrated styler capabilities for rich mail. You may also use the Auto styler which one will apply a Text::auto_p and a Text::auto_link to your mail content.
+
+You could also store your style in a view or use file_get_contents(). It is cached, so it will not be recomputed over and over.
+
+<pre>
+$styler = Mail_Styler::factory('HTML'); // Defaulted to HTML, you might omit setting your styler.
+
+Mail_Sender::factory()
+    ->styler($styler) // Get or set styler
+    ->style('div{background:blue;}') // Add css rules by aliasing ->styler()->style()
+    ->send(); // Send your goodies to the world
+</pre>
