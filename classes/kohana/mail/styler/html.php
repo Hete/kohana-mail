@@ -39,7 +39,7 @@ class Kohana_Mail_Styler_HTML extends Mail_Styler {
 
     public function style($style) {
 
-        $cache_name = __CLASS__ . __FUNCTION__ . $style;
+        $cache_name = sha1($style);
 
         if ($css = Kohana::cache($cache_name)) {
             $this->css = $css;
@@ -47,7 +47,7 @@ class Kohana_Mail_Styler_HTML extends Mail_Styler {
             // Parse the css
             $css_parser = new Sabberworm\CSS\Parser((string) $style);
             $this->css = $css_parser->parse();
-            Kohana::cache($cache_name, $this->css);
+            Kohana::cache($cache_name, $this->css, Date::HOUR); // Cache css for an hour
         }
 
         return $this;

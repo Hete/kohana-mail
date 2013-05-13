@@ -26,6 +26,17 @@ class Mail_Test extends Unittest_TestCase {
         $this->assertTrue(Valid::email($receiver->email));
     }
 
+    public function test_email() {
+
+        $this->assertTrue(Mail_Sender::factory()->send('foo@bar.com', 'hey', 'mail/test'));
+
+        $this->assertTrue(Mail_Sender::factory()->send(array('foo@bar.com'), 'hey', 'mail/test'));
+
+        $this->assertTrue(Mail_Sender::factory()->send(array('foo@bar.com' => 'Foo Bar'), 'hey', 'mail/test'));
+
+        $this->assertTrue(Mail_Sender::factory()->send(array('Foo Bar' => 'foo@bar.com'), 'hey', 'mail/test'));
+    }
+
 }
 
 ?>
