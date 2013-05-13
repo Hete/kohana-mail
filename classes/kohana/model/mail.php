@@ -37,10 +37,21 @@ class Kohana_Model_Mail extends Model_Validation {
     private $content;
 
     /**
+     * Encode a value for headers.
+     * 
+     * @param string $value a string to encode.
+     * @param string $encoding is $value encoding. Defaulted to utf-8.
+     * @return string an encoded version of this string.
+     */
+    public static function headers_encode($value, $encoding = 'utf-8') {
+        return "=?$encoding?B?" . base64_encode((string) $value) . '?=';
+    }
+
+    /**
      * 
      * @param Mail_Receiver $receiver people who will receive this mail.
-     * @param variant $content mail's content stored in a view.
      * @param string $subject mail's subject.
+     * @param variant $content mail's content stored in a view.
      * @param array $headers headers
      */
     public function __construct(Mail_Receiver $receiver, $subject, $content, array $headers = array()) {
@@ -53,55 +64,15 @@ class Kohana_Model_Mail extends Model_Validation {
     }
 
     /**
-     * Getter-setter for mail headers.
-     * 
-     * @param string $key
-     * @param variant $value
-     * @return Model_Mail|string in get mode, returns the headers value for key
-     * $key, otherwise returns this object for builder syntax.
-     */
-    public function headers($key = NULL, $value = NULL) {
-
-        if ($key === NULL) {
-
-            foreach ($this->headers as $key => $value) {
-                $headers[$key] = trim("$key: " . $value);
-            }
-
-            return implode("\r\n", $headers) . "\r\n";
-        }
-
-        if (Arr::is_array($key)) {
-            $this->headers = $key;
-            return $this;
-        }
-
-        if ($value === NULL) {
-            return Arr::get($this->headers, $key);
-        }
-
-        // Always cast to string
-        $this->headers[$key] = (string) $value;
-
-        return $this;
-    }
-
-    /**
      * Set or get the receiver of this mail.
      * 
+     * @param Mail_Receiver $receiver
      * @return Mail_Receiver
      */
-    public function receiver($receiver = NULL) {
+    public function receiver(Mail_Receiver $receiver = NULL) {
 
         if ($receiver === NULL) {
             return $this->receiver;
-        }
-
-        $email = $receiver;
-
-        if (is_string($email) && Valid::email($email)) {
-            $receiver = Model::factory('Mail_Receiver');
-            $receiver->email = $email;
         }
 
         $this->receiver = $receiver;
@@ -119,7 +90,7 @@ class Kohana_Model_Mail extends Model_Validation {
 
         // Getter
         if ($subject === NULL) {
-            return $this->subject;
+            return static::headers_encode($this->subject);
         }
 
         // Update subject
@@ -143,6 +114,52 @@ class Kohana_Model_Mail extends Model_Validation {
         $this->content = (string) $content;
 
         return $this;
+    }
+
+    /**
+     * Getter-setter for mail headers.
+     * 
+     * @param string $key
+     * @param variant $value
+     * @return Model_Mail|string in get mode, returns the headers value for key
+     * $key, otherwise returns this object for builder syntax.
+     */
+    public function headers($key = NULL, $value = NULL) {
+
+        if ($key === NULL) {
+
+            foreach ($this->headers as $key => $value) {
+                $headers[$key] = trim("$key: " . static::headers_encode($value));
+            }
+
+            return implode("\r\n", $headers);
+        }
+
+        if (Arr::is_array($key)) {
+            $this->headers = $key;
+            return $this;
+        }
+
+        if ($value === NULL) {
+            return Arr::get($this->headers, $key);
+        }
+
+        // Always cast to string
+        $this->headers[$key] = (string) $value;
+
+        return $this;
+    }
+
+    public function cc($bcc = NULL) {
+        return $this->headers('Cc', $bcc);
+    }
+
+    public function bcc($bcc = NULL) {
+        return $this->headers('Bcc', $bcc);
+    }
+
+    public function reply_to($reply_to = NULL) {
+        return $this->headers('Reply-To', $reply_to);
     }
 
     /**

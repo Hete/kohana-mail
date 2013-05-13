@@ -43,32 +43,11 @@ abstract class Kohana_Mail_Sender {
     }
 
     /**
-     * Encode a value for headers.
+     * Internal styler.
      * 
-     * @param string $value
-     * @return string
-     */
-    public static function encode($value) {
-        return '=?UTF-8?B?' . base64_encode($value) . '?=';
-    }
-
-    /**
-     * Generates basic headers.
-     *  
-     * @return array
-     */
-    public static function basic_headers() {
-        return Arr::merge(Kohana::$config->load('mail.headers'), array(
-                    'From' => static::encode(Kohana::$config->load('mail.from_name')) . ' <' . Kohana::$config->load('mail.from_email') . '>',
-                    'Date' => Date::formatted_time("now"),
-        ));
-    }
-
-    /**
-     *
      * @var \Mail_Styler 
      */
-    public $styler;
+    private $styler;
 
     public function __construct(Mail_Styler $styler = NULL) {
 
@@ -80,10 +59,10 @@ abstract class Kohana_Mail_Sender {
     }
 
     /**
-     * 
+     * Getter and setter for styling engine.
      * 
      * @param Mail_Styler $styler
-     * @return Mail_Styler 
+     * @return \Mail_Styler for builder syntax.
      */
     public function styler(Mail_Styler $styler = NULL) {
 
@@ -96,6 +75,14 @@ abstract class Kohana_Mail_Sender {
         return $this;
     }
 
+    /**
+     * Alias for styler->style().
+     * 
+     * @see Mail_Styler::style 
+     * 
+     * @param variant $style is style content to update.
+     * @return \Mail_Sender for builder syntax.
+     */
     public function style($style) {
 
         $this->styler->style($style);
@@ -104,41 +91,44 @@ abstract class Kohana_Mail_Sender {
     }
 
     /**
-     * Envoie un courriel à tous les utilisateurs de la variable $receivers.
+     * Sends an custom email to all receivers.
      * 
-     * @param Mail_Receiver|Traversable|array $receivers set of Mail_Receiver or
-     * a Mail_Receiver object.
-     * @param string $view content to be sent.
+     * @param variant $receiver can be  Model_Receiver, an email string or an 
+     * array of mixed Mail_Receiver, email => name, email and name => email 
+     * elements.
+     * @param string $view is a view file.
      * @param array $parameters view's parameters.
      * @param string $subject is the subject of the mail. It is UTF-8 encoded, 
      * so you can use accents and other characters.
-     * @param array $headers is an array of mail headers.
-     * @param boolean $force verifies if the receiver is 
-     * subscribed to the mail.
-     * @return boolean false si au moins un envoie échoue.
+     * @param array $headers are additionnal headers to override pre-configured
+     * ones in mail.headers.
+     * @param boolean $force verifies if the receiver is subscribed to the mail.
+     * @return boolean cumulated result of all sendings.
      */
-    public function send($receivers, $subject, $view, array $parameters = NULL, array $headers = array(), $force = FALSE) {
+    public function send($receiver, $subject, $view, array $parameters = NULL, array $headers = array(), $force = FALSE) {
 
-        if (!Arr::is_array($receivers)) {
-            $receivers = array($receivers);
+        if (!Arr::is_array($receiver)) {
+            $receiver = array($receiver);
         }
+
+        $headers['Date'] = Date::formatted_time(); // Now        
 
         $result = true;
 
-        foreach ($receivers as $key => $value) {
+        foreach ($receiver as $key => $value) {
 
             $receiver = $value;
 
             // Key is an email, therefore value is a name
             if (is_string($key) && Valid::email($key)) {
-                $receiver = Model::factory("Mail_Receiver");
+                $receiver = Model::factory('Mail_Receiver');
                 $receiver->email = $key;
                 $receiver->name = $value;
             }
 
             // Value is an email, key is optionally a name
             if (is_string($value) && Valid::email($value)) {
-                $receiver = Model::factory("Mail_Receiver");
+                $receiver = Model::factory('Mail_Receiver');
                 $receiver->email = $value;
 
                 if (is_string($key)) {
@@ -151,22 +141,24 @@ abstract class Kohana_Mail_Sender {
             if ($receiver->receiver_subscribed($view) OR $force) {
 
                 // Update receiver
-                $parameters["receiver"] = $receiver;
+                $parameters['receiver'] = $receiver;
 
                 // Update content
-                $parameters["content"] = View::factory($view, $parameters);
+                $parameters['content'] = View::factory($view, $parameters);
 
                 // Generate content
-                $_content = View::factory("template/mail", $parameters);
+                $_content = View::factory('template/mail', $parameters);
 
                 // Update content in styler
-                $this->styler->content($_content);                
+                $this->styler->content($_content);
 
-                // Merge headers over basic ones
-                $_headers = Arr::merge(static::basic_headers(), $headers);
+                // Merge headers over config headers
+                $_headers = Arr::merge(Kohana::$config->load('mail.headers'), $headers);
 
+                // Prepare the model
                 $mail = new Model_Mail($receiver, $subject, $this->styler, $_headers);
 
+                // Send and cumulate the result
                 $result = $result AND $this->_send($mail);
             }
         }
