@@ -1,0 +1,6 @@
+[submodule "vendor/PHP-CSS-Parser"]
+	path = vendor/PHP-CSS-Parser
+	url = https://github.com/sabberworm/PHP-CSS-Parser.git
+[submodule "vendor/simplehtmldom"]
+	path = vendor/simplehtmldom
+	url = https://github.com/arteymix/simplehtmldom.git

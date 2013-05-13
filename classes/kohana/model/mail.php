@@ -3,9 +3,7 @@
 defined('SYSPATH') or die('No direct script access.');
 
 /**
- * Model for mail.
- * 
- * @see Model_Validation
+ * Model for mail. Use a sender to send it.
  * 
  * @package Mail
  * @category Model
@@ -15,23 +13,47 @@ defined('SYSPATH') or die('No direct script access.');
 class Kohana_Model_Mail extends Model_Validation {
 
     /**
+     *
+     * @var Mail_Receiver 
+     */
+    private $receiver;
+
+    /**
+     *
+     * @var array 
+     */
+    private $headers;
+
+    /**
+     *
+     * @var string 
+     */
+    private $subject;
+
+    /**
+     *
+     * @var string 
+     */
+    private $content;
+
+    /**
      * 
      * @param Mail_Receiver $receiver people who will receive this mail.
-     * @param View $content mail's content stored in a view.
-     * @param type $subject mail's subject.
+     * @param variant $content mail's content stored in a view.
+     * @param string $subject mail's subject.
      * @param array $headers headers
      */
-    public function __construct(Mail_Receiver $receiver, $subject, View $content, array $headers = array()) {
+    public function __construct(Mail_Receiver $receiver, $subject, $content, array $headers = array()) {
 
-        parent::__construct();
-
+        // Update internals
         $this->headers($headers)
-                ->receiver($receiver)
                 ->subject($subject)
+                ->receiver($receiver)
                 ->content($content);
     }
 
     /**
+     * Getter-setter for mail headers.
      * 
      * @param string $key
      * @param variant $value
@@ -42,13 +64,11 @@ class Kohana_Model_Mail extends Model_Validation {
 
         if ($key === NULL) {
 
-            $output = array();
             foreach ($this->headers as $key => $value) {
-                $output[] = "$key: $value";
+                $headers[$key] = trim("$key: " . $value);
             }
-            return implode("\r\n", $output);
 
-            return $output;
+            return implode("\r\n", $headers) . "\r\n";
         }
 
         if (Arr::is_array($key)) {
@@ -60,60 +80,78 @@ class Kohana_Model_Mail extends Model_Validation {
             return Arr::get($this->headers, $key);
         }
 
-
-
         // Always cast to string
         $this->headers[$key] = (string) $value;
-
-
-
 
         return $this;
     }
 
     /**
+     * Set or get the receiver of this mail.
      * 
      * @return Mail_Receiver
      */
-    public function receiver(Mail_Receiver $receiver = NULL) {
+    public function receiver($receiver = NULL) {
 
         if ($receiver === NULL) {
             return $this->receiver;
         }
 
-        $this->receiver = $receiver;
+        $email = $receiver;
 
-        $this->headers("To", $receiver->receiver_name() . "<" . $receiver->receiver_email() . ">");
-
-        return $this;
-    }
-
-    public function subject($subject = NULL) {
-
-        if ($subject === NULL) {
-            return '=?UTF-8?B?' . base64_encode($this->subject) . '?=';
+        if (is_string($email) && Valid::email($email)) {
+            $receiver = Model::factory('Mail_Receiver');
+            $receiver->email = $email;
         }
 
-        $this->subject = $subject;
-
-        $this->headers("Subject", $subject);
+        $this->receiver = $receiver;
 
         return $this;
     }
 
-    public function content(View $content = NULL) {
+    /**
+     * Get or set the subject of this mail.
+     * 
+     * @param View $content
+     * @return Model_Mail
+     */
+    public function subject($subject = NULL) {
+
+        // Getter
+        if ($subject === NULL) {
+            return $this->subject;
+        }
+
+        // Update subject
+        $this->subject = (string) $subject;
+
+        return $this;
+    }
+
+    /**
+     * Get or set the content of this mail.
+     * 
+     * @param variant $content
+     * @return Model_Mail
+     */
+    public function content($content = NULL) {
 
         if ($content === NULL) {
             return $this->content;
         }
 
-        $this->content = $content;
+        $this->content = (string) $content;
 
         return $this;
     }
 
+    /**
+     * Renders the mail.
+     * 
+     * @return string
+     */
     public function render() {
-        return $this->content->render();
+        return (string) $this->content;
     }
 
     public function __toString() {

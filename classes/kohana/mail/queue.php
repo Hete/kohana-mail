@@ -6,10 +6,11 @@ defined('SYSPATH') or die('No direct script access.');
  * Mail queue.
  * 
  * @package Mail
+ * @category Queues
  * @author Hète.ca Team
  * @copyright (c) 2013, Hète.ca Inc.
  */
-abstract class Kohana_Mail_Queue {
+abstract class Kohana_Mail_Queue extends Mail_Sender {
 
     public static $default = "File";
 
@@ -18,45 +19,22 @@ abstract class Kohana_Mail_Queue {
      * @param type $name
      * @return \Mail_Queue
      */
-    public function factory($name = NULL) {
+    public static function factory($name = NULL) {
 
         if ($name === NULL) {
             $name = static::$default;
         }
 
         $class = "Mail_Queue_$name";
-        return new $class(strtolowe($name));
+        return new $class(strtolower($name));
     }
 
-    /**
-     * Specific configuration.
-     * @var array 
-     */
-    private $_config;
-
-    public function __construct($name) {
-        $this->_config = Kohana::$config->load("mail.queue.$name");
+    protected function __construct() {
+        
     }
 
-    protected function config($path, $default = NULL, $delimiter = NULL) {
-        return Arr::path($this->_config, $path, $default, $delimiter);
-    }
-
-    /**
-     * Alias for push. Allow the use of send on a queue.
-     * 
-     * @param Model_Mail $mail
-     */
-    public function send($limit = 1) {
-        while ($limit > 0 && $mail = $this->pull()) {
-            Mail_Sender::factory()->_send($mail);
-        }
-    }
-
-    public function send_all() {
-        while ($mail = $this->pull()) {
-            Mail_Sender::factory()->_send($mail);
-        }
+    public function _send(Model_Mail $mail) {
+        $this->push($mail);
     }
 
     /**
