@@ -13,10 +13,7 @@ defined('SYSPATH') or die('No direct script access.');
 class Kohana_Mail_Sender_IMAP extends Mail_Sender {
 
     public function _send(Model_Mail $mail) {
-
-        $receiver = static::encode($mail->receiver()->receiver_name()) . " <" . $mail->receiver()->receiver_email() . ">";
-
-        return (bool) imap_mail($receiver, $mail->subject(), $mail->render(), $mail->headers());
+        return (bool) imap_mail($mail->to(), $mail->subject(), $mail->render(), $mail->headers());
     }
 
 }

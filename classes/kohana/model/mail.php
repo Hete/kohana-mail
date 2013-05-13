@@ -81,6 +81,15 @@ class Kohana_Model_Mail extends Model_Validation {
     }
 
     /**
+     * Getter for to.
+     * 
+     * @return string
+     */
+    public function to() {
+        return static::headers_encode($this->receiver()->receiver_name()) . '<' . static::headers_encode($this->receiver()->receiver_name()) . '>';
+    }
+
+    /**
      * Get or set the subject of this mail.
      * 
      * @param View $content
