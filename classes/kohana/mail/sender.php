@@ -6,6 +6,7 @@ defined('SYSPATH') or die('No direct script access.');
  * Mail sender.
  * 
  * @package Mail
+ * @category Senders
  * @author Guillaume Poirier-Morency <guillaumepoiriermorency@gmail.com>
  * @copyright (c) 2013, Hète.ca Inc.
  */
@@ -16,7 +17,14 @@ abstract class Kohana_Mail_Sender {
      * 
      * @var string 
      */
-    public static $default = "Sendmail";
+    public static $default = 'Sendmail';
+
+    /**
+     * Default styling engine.
+     * 
+     * @var string 
+     */
+    public static $default_styler = 'HTML';
 
     /**
      * Return an instance of the specified sender.
@@ -35,72 +43,64 @@ abstract class Kohana_Mail_Sender {
     }
 
     /**
-     * Current configuration.
-     * @var array 
+     * Encode a value for headers.
+     * 
+     * @param string $value
+     * @return string
      */
-    private $_config;
-
-    private function __construct() {
-        // Load the corresponding configuration
-        $this->_config = Kohana::$config->load("mail.sender");
+    public static function encode($value) {
+        return '=?UTF-8?B?' . base64_encode($value) . '?=';
     }
 
     /**
-     * Generate headers for the specified receiver. $receiver is not yet used,
-     * but will be used to u
-     * 
-     * @param Mail_Receiver $receiver
+     * Generates basic headers.
+     *  
      * @return array
      */
-    public function generate_headers(Mail_Receiver $receiver) {
-        return array(
-            "From" => $this->config("from.name") . " <" . $this->config("from.email") . ">",
-            "To" => $receiver->receiver_name() . " <" . $receiver->receiver_email() . ">",
-            "Date" => Date::formatted_time("now"),
-            "Content-type" => "text/html; charset=UTF-8",
-            "MIME-Version" => "1.0"
-        );
+    public static function basic_headers() {
+        return Arr::merge(Kohana::$config->load('mail.headers'), array(
+                    'From' => static::encode(Kohana::$config->load('mail.from_name')) . ' <' . Kohana::$config->load('mail.from_email') . '>',
+                    'Date' => Date::formatted_time("now"),
+        ));
     }
 
     /**
-     * Content generation function.
-     * 
-     * @todo améliorer l'implémentation pour la génération du contenu.
-     * @return View
+     *
+     * @var \Mail_Styler 
      */
-    public function generate_content(Mail_Receiver $receiver, $view, array $parameters = NULL, $subject = NULL) {
+    public $styler;
 
-        if ($parameters === NULL) {
-            $parameters = array();
+    public function __construct(Mail_Styler $styler = NULL) {
+
+        if ($styler === NULL) {
+            $styler = Mail_Styler::factory(static::$default_styler);
         }
 
-        if ($subject === NULL) {
-            $subject = $this->_config["subject"];
-        }
-
-        $parameters["title"] = $subject;
-        $parameters["receiver"] = $receiver;
-
-        // We use a template clone not to corrupt the original.
-        $template = View::factory("mail/layout/template", $parameters);
-        $template->header = View::factory("mail/layout/header", $parameters);
-        $template->head = View::factory("mail/layout/head", $parameters);
-        $template->footer = View::factory("mail/layout/footer", $parameters);
-
-        // We define the template content.
-        $template->set("content", View::factory($view, $parameters));
-
-        return $template;
+        $this->styler = $styler;
     }
 
-    public function config($path = NULL, $default = NULL, $delimiter = NULL) {
+    /**
+     * 
+     * 
+     * @param Mail_Styler $styler
+     * @return Mail_Styler 
+     */
+    public function styler(Mail_Styler $styler = NULL) {
 
-        if ($path === NULL) {
-            return $this->_config;
+        if ($styler === NULL) {
+            return $this->styler;
         }
 
+        $this->styler = $styler;
 
-        return Arr::path($this->_config, $path, $default, $delimiter);
+        return $this;
+    }
+
+    public function style($style) {
+
+        $this->styler->style($style);
+
+        return $this;
     }
 
     /**
@@ -108,65 +108,68 @@ abstract class Kohana_Mail_Sender {
      * 
      * @param Mail_Receiver|Traversable|array $receivers set of Mail_Receiver or
      * a Mail_Receiver object.
-     * @param View $view content to be sent.
+     * @param string $view content to be sent.
      * @param array $parameters view's parameters.
      * @param string $subject is the subject of the mail. It is UTF-8 encoded, 
      * so you can use accents and other characters.
      * @param array $headers is an array of mail headers.
-     * @param boolean $check_if_subscribed verifies if the receiver is 
+     * @param boolean $force verifies if the receiver is 
      * subscribed to the mail.
      * @return boolean false si au moins un envoie échoue.
      */
-    public function send($receivers, $view, array $parameters = NULL, $subject = NULL, array $headers = NULL, $check_if_subscribed = TRUE) {
+    public function send($receivers, $subject, $view, array $parameters = NULL, array $headers = array(), $force = FALSE) {
 
-        if ($subject === NULL) {
-            $subject = $this->config("subject");
-        }
-
-        if ($headers === NULL) {
-            $headers = array();
+        if (!Arr::is_array($receivers)) {
+            $receivers = array($receivers);
         }
 
         $result = true;
 
-        if (!($receivers instanceof Traversable or Arr::is_array($receivers))) {
-            $receivers = array($receivers);
-        }
+        foreach ($receivers as $key => $value) {
 
-        foreach ($receivers as $key => $receiver) {
+            $receiver = $value;
 
-            if (is_string($receiver) && Valid::email($email = $receiver)) {
+            // Key is an email, therefore value is a name
+            if (is_string($key) && Valid::email($key)) {
                 $receiver = Model::factory("Mail_Receiver");
-                $receiver->email = $email;
-                // Checking if key is a name
+                $receiver->email = $key;
+                $receiver->name = $value;
+            }
+
+            // Value is an email, key is optionally a name
+            if (is_string($value) && Valid::email($value)) {
+                $receiver = Model::factory("Mail_Receiver");
+                $receiver->email = $value;
+
                 if (is_string($key)) {
                     $receiver->name = $key;
                 }
             }
 
-            if (!$receiver instanceof Mail_Receiver) {
-                throw new Kohana_Exception("Receiver must be an instance of Mail_Receiver");
-            }
-
+            // Up here, we assume that $receiver implements Mail_Receiver
             // On vérifie si l'utilisateur est abonné
-            if ($check_if_subscribed && !$receiver->receiver_subscribed($view)) {
-                continue;
+            if ($receiver->receiver_subscribed($view) OR $force) {
+
+                // Update receiver
+                $parameters["receiver"] = $receiver;
+
+                // Update content
+                $parameters["content"] = View::factory($view, $parameters);
+
+                // Generate content
+                $_content = View::factory("template/mail", $parameters);
+
+                // Update content in styler
+                $this->styler->content($_content);                
+
+                // Merge headers over basic ones
+                $_headers = Arr::merge(static::basic_headers(), $headers);
+
+                $mail = new Model_Mail($receiver, $subject, $this->styler, $_headers);
+
+                $result = $result AND $this->_send($mail);
             }
-
-            // Update receiver
-            $parameters["receiver"] = $receiver;
-
-            // Merge headers
-            $_headers = Arr::merge($this->generate_headers($receiver), $headers);
-
-            // Regenerate content
-            $content = $this->generate_content($receiver, $view, $parameters, $subject);
-
-            $mail = new Model_Mail($receiver, $subject, $content, $_headers);
-
-            $result = $result && $this->_send($mail);
         }
-
 
         // Cumulated result
         return $result;

@@ -12,11 +12,6 @@ defined('SYSPATH') or die('No direct script access.');
  */
 class Mail_Test extends Unittest_TestCase {
 
-    public function setUp() {
-        parent::setUp();
-        $_SERVER['SERVER_NAME'] = "phpunit";
-    }
-
     public function test_mail() {
 
         $receiver = Model::factory("Mail_Receiver");
@@ -26,52 +21,20 @@ class Mail_Test extends Unittest_TestCase {
         $mail = new Model_Mail($receiver, "This is just a test", View::factory("mail/test"));
 
         // Asserting mail content
-        $this->assertEquals($mail->subject(), '=?UTF-8?B?' . base64_encode("This is just a test") . '?=');
+        $this->assertEquals($mail->subject(), "This is just a test");
 
-        // Change subject
-        $mail->subject("tata");
-        $this->assertEquals($mail->subject(), '=?UTF-8?B?' . base64_encode("tata") . '?=');
+        $this->assertTrue(Valid::email($receiver->email));
     }
 
-    public function test_sender_sendmail() {
-        $model = Model::factory("Mail_Receiver");
+    public function test_email() {
 
-        $model->name = "Bertrand";
-        $model->email = "foo@bar.com";
+        $this->assertTrue(Mail_Sender::factory()->send('foo@bar.com', 'hey', 'mail/test'));
 
-        $this->assertTrue(Mail_Sender::factory("Sendmail")->send($model, "mail/test", array("user" => ORM::factory("user"))));
+        $this->assertTrue(Mail_Sender::factory()->send(array('foo@bar.com'), 'hey', 'mail/test'));
 
-        // Testing resend
-        $this->assertTrue(Mail_Sender::factory("Sendmail")->send($model, "mail/test", array("user" => ORM::factory("user"))));
-    }
+        $this->assertTrue(Mail_Sender::factory()->send(array('foo@bar.com' => 'Foo Bar'), 'hey', 'mail/test'));
 
-    public function test_sender_imap() {
-        $model = Model::factory("Mail_Receiver");
-
-        $model->name = "Bertrand";
-        $model->email = "foo@bar.com";
-
-        $this->assertTrue(Mail_Sender::factory("IMAP")->send($model, "mail/test", array("user" => ORM::factory("user"))));
-
-        // Testing resend
-        $this->assertTrue(Mail_Sender::factory("IMAP")->send($model, "mail/test", array("user" => ORM::factory("user"))));
-    }
-
-    public function test_sender_pear_smtp() {
-
-        $this->markTestIncomplete();
-
-        $model = Model::factory("Mail_Receiver");
-
-        $model->name = "Bertrand";
-        $model->email = "bertrand@gmail.com";
-
-        Mail_Sender::factory("PEAR_SMTP")->send($model, "mail/test", array("user" => ORM::factory("user")));
-    }
-
-    public function test_sender_pear_sendmail() {
-
-        $this->markTestIncomplete();
+        $this->assertTrue(Mail_Sender::factory()->send(array('Foo Bar' => 'foo@bar.com'), 'hey', 'mail/test'));
     }
 
 }

@@ -1,8 +1,17 @@
 <?php
 
-class Kohana_Model_Mail_Receiver extends Model implements Mail_Receiver {
+defined('SYSPATH') or die('No direct script access.');
 
-    public $email, $name;
+/**
+ * 
+ * @package Mail
+ * @category Models
+ * @author Guillaume Poirier-Morency <guillaumepoiriermorency@gmail.com>
+ * @copyright (c) 2013, Hète.ca Inc.
+ */
+class Kohana_Model_Mail_Receiver extends Model_Validation implements Mail_Receiver {
+
+    public $name, $email;
 
     public function receiver_email() {
         return $this->email;
@@ -13,7 +22,19 @@ class Kohana_Model_Mail_Receiver extends Model implements Mail_Receiver {
     }
 
     public function receiver_subscribed($view) {
-        return TRUE;
+        return Valid::not_empty($view);
+    }
+
+    public function rules() {
+        return array(
+            "name" => array(
+                array("not_empty")
+            ),
+            "email" => array(
+                array("not_empty"),
+                array("email")
+            ),
+        );
     }
 
 }
