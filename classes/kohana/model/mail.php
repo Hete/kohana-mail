@@ -38,12 +38,12 @@ class Kohana_Model_Mail extends Model_Validation {
 
     /**
      * 
-     * @param Mail_Receiver $receiver people who will receive this mail.
+     * @param variant $receiver people who will receive this mail.
      * @param variant $content mail's content stored in a view.
      * @param string $subject mail's subject.
      * @param array $headers headers
      */
-    public function __construct(Mail_Receiver $receiver, $subject, $content, array $headers = array()) {
+    public function __construct($receiver, $subject, $content, array $headers = array()) {
 
         // Update internals
         $this->headers($headers)

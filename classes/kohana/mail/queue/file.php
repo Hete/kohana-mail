@@ -51,7 +51,7 @@ class Kohana_Mail_Queue_File extends Mail_Queue {
      * @return type
      */
     public function queue() {
-        $files = scandir($this->config("path"));
+        $files = scandir(Kohana::$config->load('mail.queue.file.path'));
 
         $valid_files = array_filter($files, array($this, "validate_filename"));
 
