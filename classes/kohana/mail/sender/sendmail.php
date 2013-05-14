@@ -12,7 +12,7 @@ defined('SYSPATH') or die('No direct script access.');
  */
 class Kohana_Mail_Sender_Sendmail extends Mail_Sender {
 
-    public function _send(Model_Mail $mail) {
+    public function _send(Model_Mail $mail) {   
         return (bool) mail($mail->to(), $mail->subject(), $mail->render(), $mail->headers());
     }
 

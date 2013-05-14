@@ -20,8 +20,8 @@ class Mail_Test extends Unittest_TestCase {
 
         $mail = new Model_Mail($receiver, "This is just a test", View::factory("mail/test"));
 
-        // Asserting mail content
-        $this->assertEquals($mail->subject(), "This is just a test");
+        // Assert subject is well encoded
+        $this->assertEquals($mail->subject(), Model_Mail::headers_encode("This is just a test"));
 
         $this->assertTrue(Valid::email($receiver->email));
     }
@@ -29,7 +29,7 @@ class Mail_Test extends Unittest_TestCase {
     public function test_email() {
 
         $this->assertTrue(Mail_Sender::factory()->send('foo@bar.com', 'hey', 'mail/test'));
-
+       
         $this->assertTrue(Mail_Sender::factory()->send(array('foo@bar.com'), 'hey', 'mail/test'));
 
         $this->assertTrue(Mail_Sender::factory()->send(array('foo@bar.com' => 'Foo Bar'), 'hey', 'mail/test'));
