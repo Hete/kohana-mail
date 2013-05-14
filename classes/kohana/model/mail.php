@@ -43,8 +43,14 @@ class Kohana_Model_Mail extends Model_Validation {
      * @param string $encoding is $value encoding. Defaulted to utf-8.
      * @return string an encoded version of this string.
      */
-    public static function headers_encode($value, $encoding = 'utf-8') {
-        return "=?$encoding?B?" . base64_encode((string) $value) . '?=';
+    public static function headers_encode($value, $encoding = 'UTF-8', $output_format = 'B') {
+
+        // Name <email>
+        if (preg_match('.*<.*>')) {
+            return $value; // @todo encode name only
+        }
+
+        return "=?$encoding?$output_format?" . base64_encode((string) $value) . '?=';
     }
 
     /**
@@ -86,7 +92,7 @@ class Kohana_Model_Mail extends Model_Validation {
      * @return string
      */
     public function to() {
-        return static::headers_encode($this->receiver()->receiver_name()) . '<' . static::headers_encode($this->receiver()->receiver_name()) . '>';
+        return static::headers_encode($this->receiver()->receiver_name()) . ' <' . $this->receiver()->receiver_email() . '>';
     }
 
     /**
@@ -138,10 +144,10 @@ class Kohana_Model_Mail extends Model_Validation {
         if ($key === NULL) {
 
             foreach ($this->headers as $key => $value) {
-                $headers[$key] = trim("$key: " . static::headers_encode($value));
+                $headers[] = trim("$key: $value");
             }
 
-            return implode("\r\n", $headers);
+            return static::headers_encode(implode('\r\n', $headers) . '\r\n');
         }
 
         if (Arr::is_array($key)) {

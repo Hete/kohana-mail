@@ -15,10 +15,12 @@ class Mail_Queue_Test extends Unittest_TestCase {
 
         $mails = array();
 
-        $mails[] = new Model_Mail('bar@foo.com', 'subject', 'mail/test');
-        $mails[] = new Model_Mail('bar@foo.com', 'subject', 'mail/test');
-        $mails[] = new Model_Mail('bar@foo.com', 'subject', 'mail/test');
-        $mails[] = new Model_Mail('bar@foo.com', 'subject', 'mail/test');
+        $receiver = Model::factory('Mail_Receiver');
+
+        $mails[] = new Model_Mail($receiver, 'subject', 'mail/test');
+        $mails[] = new Model_Mail($receiver, 'subject', 'mail/test');
+        $mails[] = new Model_Mail($receiver, 'subject', 'mail/test');
+        $mails[] = new Model_Mail($receiver, 'subject', 'mail/test');
 
         $queue = Mail_Queue::factory();
 
