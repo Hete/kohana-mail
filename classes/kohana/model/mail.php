@@ -44,6 +44,12 @@ class Kohana_Model_Mail extends Model_Validation {
      * @return string an encoded version of this string.
      */
     public static function headers_encode($value, $encoding = 'UTF-8', $output_format = 'B') {
+
+        // Do not convert ascii strings
+        if (preg_match('/[\\x80-\\xff]+/', $value)) {
+            return $value;
+        }
+
         return "=?$encoding?$output_format?" . base64_encode((string) $value) . '?=';
     }
 
@@ -85,7 +91,13 @@ class Kohana_Model_Mail extends Model_Validation {
      * @return string
      */
     public function to() {
-        return $this->receiver()->receiver_name() . ' <' . $this->receiver()->receiver_email() . '>';
+
+        // Encode name if available
+        if (Valid::not_empty($this->receiver->receiver_name())) {
+            $this->headers_encode($this->receiver->receiver_name()) . ' <' . $this->receiver()->receiver_email() . '>';
+        }
+
+        return $this->receiver->receiver_email();
     }
 
     /**
@@ -137,7 +149,7 @@ class Kohana_Model_Mail extends Model_Validation {
         if ($key === NULL) {
 
             foreach ($this->headers as $key => $value) {
-                $headers[] = trim("$key: $value");
+                $headers[] = trim("$key: " . static::headers_encode($value));
             }
 
             return implode('\r\n', $headers) . '\r\n';
