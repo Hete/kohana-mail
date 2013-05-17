@@ -152,7 +152,7 @@ class Kohana_Model_Mail extends Model_Validation {
                 $headers[] = trim("$key: " . static::headers_encode($value));
             }
 
-            return implode('\r\n', $headers) . '\r\n';
+            return implode('\r\n', $headers);
         }
 
         if (Arr::is_array($key)) {
