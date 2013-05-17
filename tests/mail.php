@@ -36,6 +36,12 @@ class Mail_Test extends Unittest_TestCase {
 
         $this->assertTrue(Mail_Sender::factory()->send(array('Foo Bar' => 'foo@bar.com'), 'hey', 'mail/test'));
     }
+    
+    public function test_headers_encode() {
+        
+        $this->assertEquals(Model_Mail::headers_encode("askd9922 ewas"), "askd9922 ewas");
+        
+    }
 
 }
 
