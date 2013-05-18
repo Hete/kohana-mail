@@ -46,7 +46,7 @@ class Kohana_Model_Mail extends Model_Validation {
     public static function headers_encode($value, $encoding = 'UTF-8', $output_format = 'B') {
 
         // Do not convert ascii strings
-        if (preg_match('/^[[:ascii:]]*$/', $value)) {
+        if (preg_match('/^[[:ascii:]]+$/', $value)) {
             return $value;
         }
 

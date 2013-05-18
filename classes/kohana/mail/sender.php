@@ -96,9 +96,9 @@ abstract class Kohana_Mail_Sender {
      * @param variant $receiver can be  Model_Receiver, an email string or an 
      * array of mixed Mail_Receiver, email => name, email and name => email 
      * elements.
+     * @param string $subject is the subject of the mail. It is UTF-8 encoded.
      * @param string $view is a view file.
      * @param array $parameters view's parameters.
-     * @param string $subject is the subject of the mail. It is UTF-8 encoded, 
      * so you can use accents and other characters.
      * @param array $headers are additionnal headers to override pre-configured
      * ones in mail.headers.
@@ -113,7 +113,7 @@ abstract class Kohana_Mail_Sender {
 
         $headers['Date'] = Date::formatted_time(); // Now        
 
-        $result = true;
+        $result = TRUE;
 
         foreach ($receiver as $key => $value) {
 
@@ -171,7 +171,7 @@ abstract class Kohana_Mail_Sender {
      * Implemented by the sender.
      * 
      * @param Model_Mail $mail  
-     * @return boolean true if sending is successful, false otherwise.
+     * @return boolean TRUE if sending is successful, FALSE otherwise.
      */
     public abstract function _send(Model_Mail $mail);
 }

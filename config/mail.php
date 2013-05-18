@@ -3,8 +3,6 @@
 defined('SYSPATH') or die('No direct script access.');
 
 return array(
-    'from_name' => NULL, // Foo Bar
-    'from_email' => NULL, // foo@bar.com
     // Additionnal headers
     'headers' => array(
         'Content-type' => 'text/html; charset=UTF-8', // You may change this for non-HTML mails
