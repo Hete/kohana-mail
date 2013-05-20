@@ -22,7 +22,7 @@ $mail->receiver($receiver)
     ->headers('Content-type', 'text')
     ->reply_to('bar@example.com');
     
-Mail_Sender('any sender of your choice defaulted to Sendmail')->send($mail);    
+Mail_Sender::factory('any sender of your choice defaulted to Sendmail')->send($mail);    
 </pre>
 
 ### Senders
