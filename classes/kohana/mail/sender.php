@@ -95,7 +95,7 @@ abstract class Kohana_Mail_Sender {
      * 
      * @param variant $receiver can be  Model_Receiver, an email string or an 
      * array of mixed Mail_Receiver, email => name, email and name => email 
-     * elements.
+     * elements. It can also be a Model_Mail.
      * @param string $subject is the subject of the mail. It is UTF-8 encoded.
      * @param string $view is a view file.
      * @param array $parameters view's parameters.
@@ -106,6 +106,11 @@ abstract class Kohana_Mail_Sender {
      * @return boolean cumulated result of all sendings.
      */
     public function send($receiver, $subject, $view, array $parameters = NULL, array $headers = array(), $force = FALSE) {
+
+        // Receiver is a mail
+        if ($receiver instanceof Model_Mail) {
+            return $this->_send($receiver);
+        }
 
         if (!Arr::is_array($receiver)) {
             $receiver = array($receiver);
@@ -173,7 +178,7 @@ abstract class Kohana_Mail_Sender {
      * @param Model_Mail $mail  
      * @return boolean TRUE if sending is successful, FALSE otherwise.
      */
-    public abstract function _send(Model_Mail $mail);
+    protected abstract function _send(Model_Mail $mail);
 }
 
 ?>

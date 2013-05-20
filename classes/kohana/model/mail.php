@@ -13,6 +13,15 @@ defined('SYSPATH') or die('No direct script access.');
 class Kohana_Model_Mail extends Model_Validation {
 
     /**
+     * List of encoding format to callback used to encode them.
+     * 
+     * @var array 
+     */
+    public static $output_format_callbacks = array(
+        'B' => 'base64_encode',
+    );
+
+    /**
      *
      * @var Mail_Receiver 
      */
@@ -37,7 +46,8 @@ class Kohana_Model_Mail extends Model_Validation {
     private $content;
 
     /**
-     * Encode a value for headers.
+     * Encode a value for headers. Has specific consideration for email 
+     * addresses in the "name <email>" format.
      * 
      * @param string $value a string to encode.
      * @param string $encoding is $value encoding. Defaulted to utf-8.
@@ -45,12 +55,45 @@ class Kohana_Model_Mail extends Model_Validation {
      */
     public static function headers_encode($value, $encoding = 'UTF-8', $output_format = 'B') {
 
+        // Special encoding for lists
+        if (preg_match('/,/', $value)) {
+
+            $parts = explode(',', $value);
+
+            foreach ($parts as &$part) {
+                $part = static::headers_encode($part);
+            }
+
+            return implode(',', $parts);
+        }
+
         // Do not convert ascii strings
         if (preg_match('/^[[:ascii:]]+$/', $value)) {
             return $value;
         }
 
-        return "=?$encoding?$output_format?" . base64_encode((string) $value) . '?=';
+        $email_regex = '\w+@\w+\.\w+';        
+
+        // Special encoding for name <email>
+        if (preg_match("/[\w\s]+<$email_regex>/", $value)) {
+
+            // Match only email including <>
+            $matches = array();
+
+            preg_match("/<$email_regex>/", $value, $matches);
+
+            $email = $matches[0];
+
+            $name = trim(preg_replace("/<$email_regex>/", '', $value));
+
+            // Reencode name, email must be ascii-compliant
+            return static::headers_encode($name) . ' ' . $email;
+        }
+
+        // Call the right encoding function over the value
+        $encoded_value = call_user_func(static::$output_format_callbacks[$output_format], $value);
+
+        return "=?$encoding?$output_format?$encoded_value?=";
     }
 
     /**

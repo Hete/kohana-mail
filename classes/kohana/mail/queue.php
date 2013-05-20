@@ -32,7 +32,12 @@ abstract class Kohana_Mail_Queue extends Mail_Sender implements Iterator {
 
     private $index = 0;
 
-    public function _send(Model_Mail $mail) {
+    /**
+     * Override _send to push.
+     * 
+     * @param Model_Mail $mail
+     */
+    protected function _send(Model_Mail $mail) {
         $this->push($mail);
     }
 

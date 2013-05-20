@@ -10,21 +10,7 @@ defined('SYSPATH') or die('No direct script access.');
  * @author Hète.ca Team
  * @copyright (c) 2013, Hète.ca Inc.
  */
-class Mail_Test extends Unittest_TestCase {
-
-    public function test_mail() {
-
-        $receiver = Model::factory("Mail_Receiver");
-        $receiver->name = "Foo Bar";
-        $receiver->email = "foo@bar.com";
-
-        $mail = new Model_Mail($receiver, "This is just a test", View::factory("mail/test"));
-
-        // Assert subject is well encoded
-        $this->assertEquals($mail->subject(), Model_Mail::headers_encode("This is just a test"));
-
-        $this->assertTrue(Valid::email($receiver->email));
-    }
+class Mail_Test extends Unittest_TestCase {    
 
     public function test_email() {
 
@@ -44,6 +30,9 @@ class Mail_Test extends Unittest_TestCase {
 
         // Encode non-ascii string
         $this->assertEquals(Model_Mail::headers_encode('aslkd*2378*(*&2ééé'), '=?UTF-8?B?YXNsa2QqMjM3OCooKiYyw6nDqcOp?=');
+        
+        $this->assertEquals(Model_Mail::headers_encode('Jamès <foo@bar.com>'), Model_Mail::headers_encode('Jamès') . ' <foo@bar.com>');
+        
     }
 
 }

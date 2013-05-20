@@ -12,10 +12,6 @@ defined('SYSPATH') or die('No direct script access.');
  */
 class Mail_Receiver_Test extends Unittest_TestCase {
 
-    public function test_mail_receiver() {
-        $this->markTestIncomplete();
-    }
-
     public function test_model_mail_receiver() {
 
         $receiver = Model::factory("Mail_Receiver");
