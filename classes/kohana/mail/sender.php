@@ -105,7 +105,7 @@ abstract class Kohana_Mail_Sender {
      * @param boolean $force verifies if the receiver is subscribed to the mail.
      * @return boolean cumulated result of all sendings.
      */
-    public function send($receiver, $subject, $view, array $parameters = NULL, array $headers = array(), $force = FALSE) {
+    public function send($receiver, $subject, $view, array $parameters = NULL, array $headers = NULL, $force = FALSE) {
 
         // Receiver is a mail
         if ($receiver instanceof Model_Mail) {
