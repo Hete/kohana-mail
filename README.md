@@ -4,7 +4,25 @@ Mail sender for kohana. It is based on 3 structures : Mail_Sender, Mail_Receiver
 
 ### It is as easy as
 <pre>
-Mail_Sender::factory()->send($receiver, $view, $subject, $headers);
+Mail_Sender::factory()->send($receiver, $subject, $view, $parameters, $headers);
+</pre>
+
+
+### Or in a more configurable way..
+<pre>
+$receiver = Model::factory('Mail_Receiver');
+$receiver->name = 'Foo';
+$receiver->email = 'foO@example.com';
+
+$mail = Model::factory('Mail');
+
+$mail->receiver($receiver)
+    ->subject('Bar is a good friend')
+    ->content('As I told you..')
+    ->headers('Content-type', 'text')
+    ->reply_to('bar@example.com');
+    
+Mail_Sender::factory('any sender of your choice defaulted to Sendmail')->send($mail);    
 </pre>
 
 ### Senders
