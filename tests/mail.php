@@ -34,6 +34,14 @@ class Mail_Test extends Unittest_TestCase {
         $this->assertEquals(Model_Mail::headers_encode('Jamès <foo@bar.com>'), Model_Mail::headers_encode('Jamès') . ' <foo@bar.com>');
         
     }
+    
+    public function test_model_mail() {
+        
+        $mail = new Model_Mail(Model::factory('Mail_Receiver'), 'Subject', 'LOL!');
+        
+        $this->assertEmpty($mail->headers());
+        
+    }
 
 }
 

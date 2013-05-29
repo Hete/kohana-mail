@@ -190,6 +190,8 @@ class Kohana_Model_Mail extends Model_Validation {
     public function headers($key = NULL, $value = NULL) {
 
         if ($key === NULL) {
+            
+            $headers = array();
 
             foreach ($this->headers as $key => $value) {
                 $headers[] = trim("$key: " . static::headers_encode($value));
