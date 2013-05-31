@@ -49,6 +49,13 @@ abstract class Kohana_Mail_Sender {
      */
     private $styler;
 
+    /**
+     * Internal headers.
+     * 
+     * @var array 
+     */
+    private $headers;
+
     public function __construct(Mail_Styler $styler = NULL) {
 
         if ($styler === NULL) {
@@ -56,6 +63,8 @@ abstract class Kohana_Mail_Sender {
         }
 
         $this->styler = $styler;
+
+        $this->headers = Kohana::$config->load('mail.headers');
     }
 
     /**
@@ -88,6 +97,55 @@ abstract class Kohana_Mail_Sender {
         $this->styler->style($style);
 
         return $this;
+    }
+
+    /**
+     * Getter-setter for mail headers.
+     * 
+     * @param string $key
+     * @param variant $value
+     * @return variant
+     */
+    public function headers($key = NULL, $value = NULL) {
+
+        if ($key === NULL) {
+            return $this->headers;
+        }
+
+        if ($value === NULL) {
+            return Arr::get($this->headers, $key);
+        }
+
+        $this->headers[$key] = (string) $value;
+
+        return $this;
+    }
+
+    /**
+     * 
+     * @param string $cc
+     * @return \Mail_Sender
+     */
+    public function cc($cc = NULL) {
+        return $this->headers('Cc', $cc);
+    }
+
+    /**
+     * 
+     * @param string $bcc
+     * @return \Mail_Sender
+     */
+    public function bcc($bcc = NULL) {
+        return $this->headers('Bcc', $bcc);
+    }
+
+    /**
+     * 
+     * @param string $reply_to
+     * @return \Mail_Sender
+     */
+    public function reply_to($reply_to = NULL) {
+        return $this->headers('Reply-To', $reply_to);
     }
 
     /**
@@ -158,7 +216,7 @@ abstract class Kohana_Mail_Sender {
                 $this->styler->content($_content);
 
                 // Merge headers over config headers
-                $_headers = Arr::merge(Kohana::$config->load('mail.headers'), $headers);
+                $_headers = Arr::merge($this->headers, $headers);
 
                 // Prepare the model
                 $mail = new Model_Mail($receiver, $subject, $this->styler, $_headers);
