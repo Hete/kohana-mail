@@ -13,6 +13,7 @@ defined('SYSPATH') or die('No direct script access.');
 class Kohana_Mail_Queue_File extends Mail_Queue {
 
     public function push(Model_Mail $mail) {
+
         $serialized_mail = serialize($mail);
         $mail_sha1 = sha1($serialized_mail);
         $filename = $this->salt($mail_sha1, time());
@@ -20,15 +21,16 @@ class Kohana_Mail_Queue_File extends Mail_Queue {
     }
 
     public function peek() {
+
         $queue = $this->queue();
 
         if (count($queue) < 1) {
             return NULL;
         }
 
-        $mail = unserialize(file_get_contents($queue[0]));
+        $path = $this->filename_to_path($queue[0]);
 
-        return $mail;
+        return unserialize(file_get_contents($path));
     }
 
     public function pull() {
@@ -39,9 +41,12 @@ class Kohana_Mail_Queue_File extends Mail_Queue {
             return NULL;
         }
 
-        $mail = unserialize(file_get_contents($queue[0]));
+        $path = $this->filename_to_path($queue[0]);
 
-        unlink($queue[0]);
+        $mail = unserialize(file_get_contents($path));
+
+        // Remove from the queue
+        unlink($path);
 
         return $mail;
     }
@@ -51,11 +56,10 @@ class Kohana_Mail_Queue_File extends Mail_Queue {
      * @return type
      */
     public function queue() {
+
         $files = scandir(Kohana::$config->load('mail.queue.file.path'));
 
         $valid_files = array_filter($files, array($this, "validate_filename"));
-
-        usort($valid_files, array($this, "compare_filenames"));
 
         return $valid_files;
     }
@@ -80,7 +84,8 @@ class Kohana_Mail_Queue_File extends Mail_Queue {
     }
 
     /**
-     * Validate a file name against its content.
+     * Validate a file name
+     * 
      * @param string $name is the file name, not its path.
      * @return boolean true if the content represents its name, false otherwise.
      */
@@ -95,26 +100,6 @@ class Kohana_Mail_Queue_File extends Mail_Queue {
                 ->rule(1, "equals", array(":value", sha1_file($this->filename_to_path($name))));
 
         return $validation->check();
-    }
-
-    /**
-     * Compare two filenames for usort function.
-     * @param type $name1
-     * @param type $name2
-     * @return int
-     */
-    public function compare_filenames($name1, $name2) {
-
-        $parts1 = explode("~", $name1);
-        $parts2 = explode("~", $name2);
-
-        $name1 = $parts1[0];
-        $name2 = $parts2[0];
-
-        if ($name1 == $name2) {
-            return 0;
-        }
-        return ($name1 < $name2) ? -1 : 1;
     }
 
 }
