@@ -68,11 +68,11 @@ class Kohana_Model_Mail extends Model_Validation {
         }
 
         // Do not convert ascii strings
-        if (preg_match('/^[[:ascii:]]+$/', $value)) {
+        if (!preg_match('/[^\x00-\x7F]/', $value)) {
             return $value;
         }
 
-        $email_regex = '\w+@\w+\.\w+';        
+        $email_regex = '\w+@\w+\.\w+';
 
         // Special encoding for name <email>
         if (preg_match("/[\w\s]+<$email_regex>/", $value)) {
@@ -190,14 +190,14 @@ class Kohana_Model_Mail extends Model_Validation {
     public function headers($key = NULL, $value = NULL) {
 
         if ($key === NULL) {
-            
+
             $headers = array();
 
             foreach ($this->headers as $key => $value) {
                 $headers[] = trim("$key: " . static::headers_encode($value));
             }
 
-            return implode('\r\n', $headers);
+            return implode("\r\n", $headers);
         }
 
         if (Arr::is_array($key)) {
@@ -215,8 +215,12 @@ class Kohana_Model_Mail extends Model_Validation {
         return $this;
     }
 
-    public function cc($bcc = NULL) {
-        return $this->headers('Cc', $bcc);
+    public function from($from = NULL) {
+        return $this->headers('From', $from);
+    }
+
+    public function cc($cc = NULL) {
+        return $this->headers('Cc', $cc);
     }
 
     public function bcc($bcc = NULL) {

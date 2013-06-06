@@ -141,6 +141,15 @@ abstract class Kohana_Mail_Sender {
 
     /**
      * 
+     * @param string $from
+     * @return \Mail_Sender
+     */
+    public function from($from = NULL) {
+        return $this->headers('From', $from);
+    }
+
+    /**
+     * 
      * @param string $reply_to
      * @return \Mail_Sender
      */
