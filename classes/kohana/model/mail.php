@@ -10,7 +10,7 @@ defined('SYSPATH') or die('No direct script access.');
  * @author Guillaume Poirier-Morency
  * @copyright (c) 2013, Hète.ca Inc.
  */
-class Kohana_Model_Mail extends Model_Validation {
+class Kohana_Model_Mail extends Model {
 
     /**
      * List of encoding format to callback used to encode them.

@@ -5,9 +5,11 @@ defined('SYSPATH') or die('No direct script access.');
 /**
  * Interface to define receivers.
  * 
- * @package Mail
- * @category Receivers
- * @author Hète.ca Team
+ * Implement this interface on your models so they can be used as receivers
+ * in Mail_Sender.
+ * 
+ * @package   Mail
+ * @author    Hète.ca Team
  * @copyright (c) 2013, Hète.ca Inc.
  */
 interface Kohana_Mail_Receiver {

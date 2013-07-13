@@ -3,9 +3,12 @@
 defined('SYSPATH') or die('No direct script access.');
 
 /**
- * @package Mail
- * @category Stylers
- * @author Guillaume Poirier-Morency <guillaumepoiriermorency@gmail.com>
+ * Auto styling engine.
+ * 
+ * Applies a Text::auto_p and a Text::auto_link to its content.
+ * 
+ * @package   Mail
+ * @author    Guillaume Poirier-Morency <guillaumepoiriermorency@gmail.com>
  * @copyright (c) 2013, Hète.ca Inc.
  */
 class Kohana_Mail_Styler_Auto extends Mail_Styler {

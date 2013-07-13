@@ -5,9 +5,9 @@ defined('SYSPATH') or die('No direct script access.');
 /**
  * Mail sender.
  * 
- * @package Mail
- * @category Senders
- * @author Guillaume Poirier-Morency <guillaumepoiriermorency@gmail.com>
+ * @package   Mail
+ * @category  Senders
+ * @author    Guillaume Poirier-Morency <guillaumepoiriermorency@gmail.com>
  * @copyright (c) 2013, Hète.ca Inc.
  */
 abstract class Kohana_Mail_Sender {
@@ -18,13 +18,6 @@ abstract class Kohana_Mail_Sender {
      * @var string 
      */
     public static $default = 'Sendmail';
-
-    /**
-     * Default styling engine.
-     * 
-     * @var string 
-     */
-    public static $default_styler = 'HTML';
 
     /**
      * Return an instance of the specified sender.
@@ -56,47 +49,8 @@ abstract class Kohana_Mail_Sender {
      */
     private $headers;
 
-    public function __construct(Mail_Styler $styler = NULL) {
-
-        if ($styler === NULL) {
-            $styler = Mail_Styler::factory(static::$default_styler);
-        }
-
-        $this->styler = $styler;
-
+    public function __construct() {
         $this->headers = Kohana::$config->load('mail.headers');
-    }
-
-    /**
-     * Getter and setter for styling engine.
-     * 
-     * @param Mail_Styler $styler
-     * @return \Mail_Styler for builder syntax.
-     */
-    public function styler(Mail_Styler $styler = NULL) {
-
-        if ($styler === NULL) {
-            return $this->styler;
-        }
-
-        $this->styler = $styler;
-
-        return $this;
-    }
-
-    /**
-     * Alias for styler->style().
-     * 
-     * @see Mail_Styler::style 
-     * 
-     * @param variant $style is style content to update.
-     * @return \Mail_Sender for builder syntax.
-     */
-    public function style($style) {
-
-        $this->styler->style($style);
-
-        return $this;
     }
 
     /**
@@ -158,6 +112,23 @@ abstract class Kohana_Mail_Sender {
     }
 
     /**
+     * Getter and setter for styling engine.
+     * 
+     * @param Mail_Styler $styler
+     * @return \Mail_Styler for builder syntax.
+     */
+    public function styler(Mail_Styler $styler = NULL) {
+
+        if ($styler === NULL) {
+            return $this->styler;
+        }
+
+        $this->styler = $styler;
+
+        return $this;
+    }
+
+    /**
      * Sends an custom email to all receivers.
      * 
      * @param variant $receiver can be  Model_Receiver, an email string or an 
@@ -183,7 +154,10 @@ abstract class Kohana_Mail_Sender {
             $receiver = array($receiver);
         }
 
-        $headers['Date'] = Date::formatted_time(); // Now        
+        $headers['Date'] = Date::formatted_time();
+
+        // Merge headers over config headers
+        $headers = Arr::merge($this->headers, $headers);
 
         $result = TRUE;
 
@@ -191,18 +165,17 @@ abstract class Kohana_Mail_Sender {
 
             $receiver = $value;
 
-            // Key is an email, therefore value is a name
             if (is_string($key) && Valid::email($key)) {
                 $receiver = Model::factory('Mail_Receiver');
                 $receiver->email = $key;
                 $receiver->name = $value;
             }
 
-            // Value is an email, key is optionally a name
             if (is_string($value) && Valid::email($value)) {
                 $receiver = Model::factory('Mail_Receiver');
                 $receiver->email = $value;
 
+                // Key can also be an index
                 if (is_string($key)) {
                     $receiver->name = $key;
                 }
@@ -219,16 +192,17 @@ abstract class Kohana_Mail_Sender {
                 $parameters['content'] = View::factory($view, $parameters);
 
                 // Generate content
-                $_content = View::factory('template/mail', $parameters);
+                $content = View::factory('template/mail', $parameters);
 
-                // Update content in styler
-                $this->styler->content($_content);
-
-                // Merge headers over config headers
-                $_headers = Arr::merge($this->headers, $headers);
+                if ($this->styler !== NULL) {
+                    // Update content in styler
+                    $content = $this->styler
+                            ->content($content)
+                            ->render();
+                }
 
                 // Prepare the model
-                $mail = new Model_Mail($receiver, $subject, $this->styler, $_headers);
+                $mail = new Model_Mail($receiver, $subject, $content, $headers);
 
                 // Send and cumulate the result
                 $result = $result AND $this->_send($mail);

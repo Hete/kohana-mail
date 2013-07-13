@@ -11,14 +11,11 @@ return array(
     'sender' => array(
         'sendmail' => array(),
         'imap' => array()
-    ),
-    'queue' => array(
-        'file' => array(
-            'path' => APPPATH . 'mails/',
-        ),
-        'database' => array(
-            'table' => 'mails'
+    ),    
+    'styler' => array(
+        'html' => array(
+            'style_file' => NULL
         )
-    ),
+    )
 );
 ?>

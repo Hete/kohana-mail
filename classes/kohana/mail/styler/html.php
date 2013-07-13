@@ -7,9 +7,9 @@ require_once Kohana::find_file('vendor', 'simplehtmldom/simple_html_dom');
 /**
  * 
  *
- * @package Mail
+ * @package  Mail
  * @category Stylers
- * @author Guillaume Poirier-Morency <guillaumepoiriermorency@gmail.com>
+ * @author   Guillaume Poirier-Morency <guillaumepoiriermorency@gmail.com>
  */
 class Kohana_Mail_Styler_HTML extends Mail_Styler {
 
@@ -18,6 +18,10 @@ class Kohana_Mail_Styler_HTML extends Mail_Styler {
 
     public function __construct() {
         spl_autoload_register(array($this, 'auto_load'));
+
+        if ($style_file = Kohana::$config->load('mail.styler.html.style_file')) {
+            $this->style(file_get_contents($style_file));
+        }
     }
 
     /**

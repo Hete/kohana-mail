@@ -13,8 +13,12 @@ defined('SYSPATH') or die('No direct script access.');
 class Mail_Styler_HTML_Test extends Unittest_TestCase {
 
     public function test_css() {
+
+        $styler = Mail_Styler::factory('HTML')
+                ->style('html{background:blue}');
+
         Mail_Sender::factory()
-                ->style("html{background:blue}")
+                ->styler($styler)
                 ->send('foo@bar.com', 'Foo subject', 'mail/test');
     }
 

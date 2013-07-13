@@ -9,7 +9,7 @@ defined('SYSPATH') or die('No direct script access.');
  * @author Guillaume Poirier-Morency <guillaumepoiriermorency@gmail.com>
  * @copyright (c) 2013, Hète.ca Inc.
  */
-class Kohana_Model_Mail_Receiver extends Model_Validation implements Mail_Receiver {
+class Kohana_Model_Mail_Receiver implements Mail_Receiver {
 
     public $name, $email;
 
@@ -24,19 +24,6 @@ class Kohana_Model_Mail_Receiver extends Model_Validation implements Mail_Receiv
     public function receiver_subscribed($view) {
         return Valid::not_empty($view);
     }
-
-    public function rules() {
-        return array(
-            "name" => array(
-                array("not_empty")
-            ),
-            "email" => array(
-                array("not_empty"),
-                array("email")
-            ),
-        );
-    }
-
 }
 
 ?>

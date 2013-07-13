@@ -3,10 +3,10 @@
 defined('SYSPATH') or die('No direct script access.');
 
 /**
+ * Styling engine.
  * 
- * @package Mail
- * @category Stylers
- * @author Guillaume Poirier-Morency <guillaumepoiriermorency@gmail.com>
+ * @package   Mail
+ * @author    Guillaume Poirier-Morency <guillaumepoiriermorency@gmail.com>
  * @copyright (c) 2013, Hète.ca Inc.
  */
 abstract class Kohana_Mail_Styler {
@@ -18,10 +18,23 @@ abstract class Kohana_Mail_Styler {
         return new $class;
     }
 
+    /**
+     * Update or get content of this styler.
+     * 
+     * @return \Mail_Styler
+     */
     public abstract function content($content);
 
+    /**
+     * Update or get style for this styler.
+     * 
+     * @return \Mail_Styler
+     */
     public abstract function style($style);
 
+    /**
+     * Renders the style over the content.
+     */
     public abstract function render();
 
     public function __toString() {
