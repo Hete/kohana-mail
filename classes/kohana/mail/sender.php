@@ -27,7 +27,7 @@ abstract class Kohana_Mail_Sender {
     public static function factory($name = NULL) {
 
         if ($name === NULL) {
-            $name = static::$default;
+            $name = Mail_Sender::$default;
         }
 
         $class = "Mail_Sender_$name";
@@ -40,17 +40,51 @@ abstract class Kohana_Mail_Sender {
      * 
      * @var \Mail_Styler 
      */
-    private $styler;
+    protected $styler;
 
     /**
      * Internal headers.
      * 
      * @var array 
      */
-    private $headers;
+    protected $headers;
+
+    /**
+     * Attachements
+     * 
+     * @var array 
+     */
+    protected $attachements = array();
 
     public function __construct() {
+
         $this->headers = Kohana::$config->load('mail.headers');
+
+        $this->styler = Mail_Styler::factory();
+    }
+
+    /**
+     * Adds or get attachements to this mail.
+     * 
+     * Attachements can be a single file content or multiple files contents
+     * stored in an array.
+     * 
+     * @param  variant $attachements
+     * @return array
+     */
+    public function attachements($attachement = NULL) {
+
+        if ($attachement === NULL) {
+            return $this->attachements;
+        }
+
+        if (Arr::is_array($attachement)) {
+            $this->attachements = $attachement;
+        } else {
+            $this->attachements[] = (string) $attachement;
+        }
+        
+        return $this;
     }
 
     /**
@@ -182,7 +216,6 @@ abstract class Kohana_Mail_Sender {
             }
 
             // Up here, we assume that $receiver implements Mail_Receiver
-            // On vérifie si l'utilisateur est abonné
             if ($receiver->receiver_subscribed($view) OR $force) {
 
                 // Update receiver
@@ -191,18 +224,15 @@ abstract class Kohana_Mail_Sender {
                 // Update content
                 $parameters['content'] = View::factory($view, $parameters);
 
-                // Generate content
-                $content = View::factory('template/mail', $parameters);
+                // Update styler content
+                $this->styler->content(View::factory('template/mail', $parameters));
 
-                if ($this->styler !== NULL) {
-                    // Update content in styler
-                    $content = $this->styler
-                            ->content($content)
-                            ->render();
-                }
-
-                // Prepare the model
-                $mail = new Model_Mail($receiver, $subject, $content, $headers);
+                $mail = Model::factory('Mail')
+                        ->receiver($receiver)
+                        ->subject($subject)
+                        ->body($this->styler)
+                        ->attachements($this->attachements)
+                        ->headers($headers);
 
                 // Send and cumulate the result
                 $result = $result AND $this->_send($mail);

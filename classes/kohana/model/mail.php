@@ -13,13 +13,19 @@ defined('SYSPATH') or die('No direct script access.');
 class Kohana_Model_Mail extends Model {
 
     /**
-     * List of encoding format to callback used to encode them.
+     * List of formats to callback.
      * 
      * @var array 
      */
-    public static $output_format_callbacks = array(
+    public static $formats = array(
         'B' => 'base64_encode',
     );
+
+    /**
+     *
+     * @var type 
+     */
+    public static $headers_eol = "\r\n";
 
     /**
      *
@@ -31,7 +37,7 @@ class Kohana_Model_Mail extends Model {
      *
      * @var array 
      */
-    private $headers;
+    private $headers = array();
 
     /**
      *
@@ -43,7 +49,13 @@ class Kohana_Model_Mail extends Model {
      *
      * @var string 
      */
-    private $content;
+    private $body;
+
+    /**
+     *
+     * @var array 
+     */
+    private $attachements = array();
 
     /**
      * Encode a value for headers. Has specific consideration for email 
@@ -53,7 +65,7 @@ class Kohana_Model_Mail extends Model {
      * @param string $encoding is $value encoding. Defaulted to utf-8.
      * @return string an encoded version of this string.
      */
-    public static function headers_encode($value, $encoding = 'UTF-8', $output_format = 'B') {
+    public static function headers_encode($value, $encoding = 'UTF-8', $format = 'B') {
 
         // Special encoding for lists
         if (preg_match('/,/', $value)) {
@@ -87,28 +99,13 @@ class Kohana_Model_Mail extends Model {
             $name = trim(preg_replace("/<$email_regex>/", '', $value));
 
             // Reencode name, email must be ascii-compliant
-            return static::headers_encode($name) . ' ' . $email;
+            return Model_Mail::headers_encode($name) . ' ' . $email;
         }
 
         // Call the right encoding function over the value
-        $encoded_value = call_user_func(static::$output_format_callbacks[$output_format], $value);
+        $encoded_value = call_user_func(Model_Mail::$formats[$format], $value);
 
-        return "=?$encoding?$output_format?$encoded_value?=";
-    }
-
-    /**
-     * 
-     * @param Mail_Receiver $receiver people who will receive this mail.
-     * @param string $subject mail's subject.
-     * @param variant $content mail's content stored in a view.
-     * @param array $headers headers
-     */
-    public function __construct($receiver, $subject, $content, array $headers = array()) {
-        // Update internals
-        $this->headers($headers)
-                ->subject($subject)
-                ->receiver($receiver)
-                ->content($content);
+        return "=?$encoding?$format?$encoded_value?=";
     }
 
     /**
@@ -135,12 +132,14 @@ class Kohana_Model_Mail extends Model {
      */
     public function to() {
 
-        // Encode name if available
-        if (Valid::not_empty($this->receiver->receiver_name())) {
-            $this->headers_encode($this->receiver->receiver_name()) . ' <' . $this->receiver()->receiver_email() . '>';
+        $name = $this->receiver->receiver_name();
+        $email = $this->receiver->receiver_email();
+
+        if ($name === NULL) {
+            return $email;
         }
 
-        return $this->receiver->receiver_email();
+        return Model_Mail::headers_encode($name) . " <$email>";
     }
 
     /**
@@ -168,14 +167,38 @@ class Kohana_Model_Mail extends Model {
      * @param variant $content
      * @return Model_Mail
      */
-    public function content($content = NULL) {
+    public function body($body = NULL) {
 
-        if ($content === NULL) {
-            return $this->content;
+        if ($body === NULL) {
+            return $this->body;
         }
 
-        $this->content = (string) $content;
+        $this->body = (string) $body;
 
+        return $this;
+    }
+
+    /**
+     * Adds or get attachements to this mail.
+     * 
+     * Attachements can be a single file content or multiple files contents
+     * stored in an array.
+     * 
+     * @param  variant $attachements
+     * @return array
+     */
+    public function attachements($attachement = NULL) {
+
+        if ($attachement === NULL) {
+            return $this->attachements;
+        }
+
+        if (Arr::is_array($attachement)) {
+            $this->attachements = $attachement;
+        } else {
+            $this->attachements[] = (string) $attachement;
+        }
+        
         return $this;
     }
 
@@ -190,14 +213,7 @@ class Kohana_Model_Mail extends Model {
     public function headers($key = NULL, $value = NULL) {
 
         if ($key === NULL) {
-
-            $headers = array();
-
-            foreach ($this->headers as $key => $value) {
-                $headers[] = trim("$key: " . static::headers_encode($value));
-            }
-
-            return implode("\r\n", $headers);
+            return $this->headers;
         }
 
         if (Arr::is_array($key)) {
@@ -213,6 +229,23 @@ class Kohana_Model_Mail extends Model {
         $this->headers[$key] = (string) $value;
 
         return $this;
+    }
+
+    /**
+     * Get encoded headers for this mail.
+     * 
+     * @return array
+     */
+    public function headers_encoded() {
+        // Renderig headers
+
+        $headers = array();
+
+        foreach ($this->headers as $key => $value) {
+            $headers[] = trim("$key: " . Model_Mail::headers_encode($value));
+        }
+
+        return implode(Model_Mail::$headers_eol, $headers);
     }
 
     public function from($from = NULL) {
@@ -237,7 +270,7 @@ class Kohana_Model_Mail extends Model {
      * @return string
      */
     public function render() {
-        return (string) $this->content;
+        return $this->body;
     }
 
     public function __toString() {

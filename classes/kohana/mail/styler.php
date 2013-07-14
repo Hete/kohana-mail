@@ -11,7 +11,18 @@ defined('SYSPATH') or die('No direct script access.');
  */
 abstract class Kohana_Mail_Styler {
 
-    public static function factory($name) {
+    /**
+     * Default styler.
+     * 
+     * @var string 
+     */
+    public static $default = 'HTML';
+
+    public static function factory($name = NULL) {
+
+        if ($name === NULL) {
+            $name = Mail_Styler::$default;
+        }
 
         $class = "Mail_Styler_$name";
 
