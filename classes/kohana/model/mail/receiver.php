@@ -38,5 +38,3 @@ class Kohana_Model_Mail_Receiver extends Model_Validation implements Mail_Receiv
     }
 
 }
-
-?>

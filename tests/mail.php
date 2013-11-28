@@ -44,5 +44,3 @@ class Mail_Test extends Unittest_TestCase {
     }
 
 }
-
-?>

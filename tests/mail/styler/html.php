@@ -19,5 +19,3 @@ class Mail_Styler_HTML_Test extends Unittest_TestCase {
     }
 
 }
-
-?>

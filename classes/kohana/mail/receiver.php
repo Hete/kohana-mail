@@ -28,5 +28,3 @@ interface Kohana_Mail_Receiver {
      */
     public function receiver_subscribed($view);
 }
-
-?>

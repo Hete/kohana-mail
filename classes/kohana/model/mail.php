@@ -245,5 +245,3 @@ class Kohana_Model_Mail extends Model_Validation {
     }
 
 }
-
-?>

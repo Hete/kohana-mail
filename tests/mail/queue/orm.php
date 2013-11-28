@@ -17,5 +17,3 @@ class Mail_Queue_ORM_Test extends Unittest_TestCase {
     }
 
 }
-
-?>

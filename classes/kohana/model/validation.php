@@ -79,5 +79,3 @@ abstract class Kohana_Model_Validation extends Model {
     }
 
 }
-
-?>

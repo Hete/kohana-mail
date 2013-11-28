@@ -9,5 +9,3 @@ class Kohana_Mail_Sender_PEAR_Sendmail extends Mail_Sender {
     }
 
 }
-
-?>

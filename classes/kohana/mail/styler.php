@@ -3,6 +3,10 @@
 defined('SYSPATH') or die('No direct script access.');
 
 /**
+ * Definition of a mail styler.
+ * 
+ * A styler takes a content and a style and applies the style on the content on
+ * rendering.
  * 
  * @package Mail
  * @category Stylers
@@ -29,5 +33,3 @@ abstract class Kohana_Mail_Styler {
     }
 
 }
-
-?>

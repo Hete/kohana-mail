@@ -19,5 +19,3 @@ class Mail_Sender_IMAP_Test extends Unittest_TestCase {
     }
     
 }
-
-?>

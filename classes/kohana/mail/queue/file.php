@@ -103,5 +103,3 @@ class Kohana_Mail_Queue_File extends Mail_Queue {
     }
 
 }
-
-?>

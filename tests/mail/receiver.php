@@ -23,5 +23,3 @@ class Mail_Receiver_Test extends Unittest_TestCase {
     }
 
 }
-
-?>

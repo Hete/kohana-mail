@@ -51,5 +51,3 @@ class Kohana_Mail_Queue_ORM extends Mail_Queue {
     
 
 }
-
-?>

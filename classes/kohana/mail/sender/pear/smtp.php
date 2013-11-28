@@ -4,7 +4,9 @@ defined('SYSPATH') or die('No direct script access.');
 
 /**
  * 
- * @package Mail
+ * @package  Mail
+ * @category Sender
+ * @author   Guillaume Poirier-Morency <guillaumepoiriermorency@gmail.com>
  */
 class Kohana_Mail_Sender_PEAR_SMTP extends Mail_Sender {
 
@@ -13,5 +15,3 @@ class Kohana_Mail_Sender_PEAR_SMTP extends Mail_Sender {
     }
 
 }
-
-?>

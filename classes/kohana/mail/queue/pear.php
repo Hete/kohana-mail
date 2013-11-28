@@ -26,5 +26,3 @@ class Kohana_Mail_Queue_PEAR extends Mail_Queue {
     }
 
 }
-
-?>

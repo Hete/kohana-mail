@@ -14,18 +14,21 @@ class Kohana_Mail_Styler_Auto extends Mail_Styler {
 
     public function content($content) {
         $this->content = $content;
+        
+        return $this;
     }
 
     public function style($style) {
         throw new Kohana_Exception('Style is automatically generated.');
     }
 
+    /**
+     * Applies paragraphs and links to its content.
+     * 
+     * @return string
+     */
     public function render() {
-        $output = Text::auto_p($this->content);
-        $output = Text::auto_link($output);
-        return $output;
+        return Text::auto_link(Text::auto_p($this->content));
     }
 
 }
-
-?>

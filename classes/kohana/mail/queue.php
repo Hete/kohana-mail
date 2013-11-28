@@ -86,5 +86,3 @@ abstract class Kohana_Mail_Queue extends Mail_Sender implements Iterator {
      */
     abstract function push(Model_Mail $mail);
 }
-
-?>

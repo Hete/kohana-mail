@@ -22,5 +22,3 @@ class Mail_Sender_Sendmail_Test extends Unittest_TestCase {
     }
 
 }
-
-?>

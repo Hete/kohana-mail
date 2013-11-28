@@ -247,5 +247,3 @@ abstract class Kohana_Mail_Sender {
      */
     protected abstract function _send(Model_Mail $mail);
 }
-
-?>

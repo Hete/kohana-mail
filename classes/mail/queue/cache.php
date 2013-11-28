@@ -21,5 +21,3 @@ class Kohana_Mail_Queue_Cache implements Mail_Queue {
     }
 
 }
-
-?>

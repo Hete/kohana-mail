@@ -34,5 +34,3 @@ class Mail_Queue_Test extends Unittest_TestCase {
     }
 
 }
-
-?>

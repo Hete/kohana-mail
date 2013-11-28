@@ -17,5 +17,3 @@ class Kohana_Mail_Sender_Sendmail extends Mail_Sender {
     }
 
 }
-
-?>
