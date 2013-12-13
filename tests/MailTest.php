@@ -12,8 +12,15 @@ defined('SYSPATH') or die('No direct script access.');
  */
 class Mail_Test extends Unittest_TestCase {    
 
-    public function test_email() {
+    public function test_send() {
 
+        Mail_Sender::factory()->send('foo@example.com', 'i am a foobar!', 'Yes! Here we are :)');
+
+        Mail_Sender::factory()->send(array(
+            'foo@example.com' => ''
+        ));
+
+        Mail_Sender::factory()->send('foo@example.com');
         $this->assertTrue(Mail_Sender::factory()->send('foo@bar.com', 'hey', 'mail/test'));
 
         $this->assertTrue(Mail_Sender::factory()->send(array('foo@bar.com'), 'hey', 'mail/test'));
@@ -34,13 +41,17 @@ class Mail_Test extends Unittest_TestCase {
         $this->assertEquals(Model_Mail::headers_encode('Jamès <foo@bar.com>'), Model_Mail::headers_encode('Jamès') . ' <foo@bar.com>');
         
     }
-    
-    public function test_model_mail() {
-        
-        $mail = new Model_Mail(Model::factory('Mail_Receiver'), 'Subject', 'LOL!');
-        
-        $this->assertEmpty($mail->headers());
-        
+
+    public function test_Styler_None() {
+
     }
 
+    public function test_Styler_Auto() {
+
+    }
+
+    public function test_Styler_HTML() {
+
+    }
+    
 }

@@ -15,21 +15,19 @@ defined('SYSPATH') or die('No direct script access.');
  */
 abstract class Kohana_Mail_Styler {
 
+    public static $default = 'None';
+
     public static function factory($name) {
 
         $class = "Mail_Styler_$name";
 
         return new $class;
     }
-
-    public abstract function content($content);
-
-    public abstract function style($style);
-
-    public abstract function render();
-
-    public function __toString() {
-        return $this->render();
-    }
+    
+    /**
+     *
+     * @return string styled body
+     */
+    public abstract function style($body);
 
 }

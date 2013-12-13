@@ -1,102 +1,72 @@
 # Kohana Mail Sender
+Simple mail sender for the Kohana framework.
 
-Mail sender for kohana. It is based on 3 structures : Mail_Sender, Mail_Receiver and Mail_Queue. This sender allow you to easily send View based mails.
+## Basic usage
 
-### It is as easy as
-<pre>
-Mail_Sender::factory()->send($receiver, $subject, $view, $parameters, $headers);
-</pre>
-
-
-### Or in a more configurable way..
-<pre>
-$receiver = Model::factory('Mail_Receiver');
-$receiver->name = 'Foo';
-$receiver->email = 'foO@example.com';
-
-$mail = Model::factory('Mail');
-
-$mail->receiver($receiver)
-    ->subject('Bar is a good friend')
-    ->content('As I told you..')
-    ->headers('Content-type', 'text')
-    ->reply_to('bar@example.com');
-    
-Mail_Sender::factory('any sender of your choice defaulted to Sendmail')->send($mail);    
-</pre>
-
-### Senders
-
-It is designed with drivers, so you may use sendmail and smtp from PEAR Mail or the native mail function.
-
-<pre>
-Mail_Sender::factory("Native");
-
-Mail_Sender::factory("PEAR_Sendmail");
-
-Mail_Sender::factory("PEAR_SMTP");
-
-$force = TRUE; // Force mail sending, event if user is not subscribed (changes nothing here, unless we use Mail_Receiver interface).
-$result = Mail_Sender::factory()->send('foo@bar.com', 'Hey Foo, here is your activation key!', 'mail/activation', array('key' => $key), array('Bcc' => 'admin@bar.com'), $force);
-
-if($result) {
-    // Congratulations!
-} else {
-    // Try again :P (and check your mail setup..)
-}
-
-</pre>
+    Mail_Sender::factory()->send($receivers, $subject, $body, $headers);
 
 ### Receivers
+Receivers could be 4 things
 
-Mail_Receiver is an interface that you may implement on your user models. You have to imlement a function returning its name, email and subscribtion to the specified view.
+A simple email
 
-This module also provides a Model_MaiL_Receiver model and the ability to send to users specified in an mixed array of user => email, email => user, email and Mail_Receiver.
+    $receiver = "john@example.com";
 
-<pre>
-$foo = Model::factory('MaiL_Receiver');
-$foo->email = 'foo@bar.com';
-$foo->name = 'Foo Bar';
+A list of emails
 
-Mail_Sender::factory()->send(array(
-    'foo@bar.com' => 'Foo Bar',
-    'Foo Bar' => 'foo@bar.com',
-    $foo,
+    $receivers = array("john@example.com", "james@example.com");
+
+An associative array
+
+    $receivers = array("john@example.com" => "John Doe");
+
+Or a mixed array
+
+    $receivers = array("john@example.com", "james@example.com" => "James Doe");
+
+It is pretty convinient with the ORM
+
+    $receivers = ORM::factory('user')->find_all()->as_array('email', 'full_name');
+
+### Subject
+The subject have to be a string. It will be translated with a substitution for :email and :name.
+
+    $subject = ':name, you have just subscribed with :email to my wonderful website!'
+    
+    $subject = 'mail.subject.subscription';
+
+### Body
+The body could be a string or a View, or anything that can be cased to string.
+
+    $body = View::factory('mail.subscription');
+  
+    $body = "Hey John Doe! Thanks for subscribing!";
+
+### Headers
+The headers must be an array
+
+    $headers = array('From' => 'noreply@example.com');
     'foo@bar.com'
 ));
 </pre>
 
-### Queues
+## HTML templating
+You can easily do HTML templating and even styling! There is a CSS inliner included :)
 
-This sender allow queue usage. Instead of sending a mail to a transport agent, you may store it temporairly using the Queue driver. Queue inherit from Sender, so you may send a mail to a queue. You can also retreive mail for sending them later or by setting a cron task.
+To activate that feature,
 
-<pre>
-// Send like if you would use a Sender
-Mail_Queue::factory()->send($receiver, $subject, $view, $parameters, $headers, $force);
+    Mail_Styler::$default = 'Styler_HTML';
 
-// Push prepared mail
-Mail_Queue::factory()->push($mail);
+You should also set the Content-Type to text/html in the configuration. It comes with a light bootstrap css.
 
-// You can retreive the mail later and send it
-$mail = Mail_Queue::factory("File")->pull();
-Mail_Sender::factory()->send($mail);
+## Processing stuff
+If you override Mail_Sender, you should really look for the subject, body and headers process function.
 
-// You may also peek from the queue (not removing)
-Mail_Queue::factory()->peek();
-</pre>
+If you need to access the user who's getting your mail:
 
+    protected function process_body($body, $email, $name = NULL) {
 
-### Styler
+        $body->user = ORM::factory('user', array('email' => $email));
 
-This sender has integrated styler capabilities for rich mail. You may also use the Auto styler which one will apply a Text::auto_p and a Text::auto_link to your mail content.
-
-You could also store your style in a view or use file_get_contents(). It is cached, so it will not be recomputed over and over.
-
-<pre>
-$styler = Mail_Styler::factory('HTML'); // Defaulted to HTML, you might omit setting your styler.
-
-Mail_Sender::factory()
-    ->styler($styler) // Get or set styler
-    ->style('div{background:blue;}') // Add css rules by aliasing ->styler()->style()
-    ->send(); // Send your goodies to the world
-</pre>
+        return parent::process_body($body, $email, $name);
+    }

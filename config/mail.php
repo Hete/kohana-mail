@@ -3,21 +3,21 @@
 defined('SYSPATH') or die('No direct script access.');
 
 return array(
-    // Additionnal headers
+    /**
+     * Default headers
+     */
     'headers' => array(
-        'Content-type' => 'text/html; charset=UTF-8', // You may change this for non-HTML mails
+        'Content-Type' => 'text/plain',
+        'Content-Encoding' => 'utf-8',
         'MIME-Version' => '1.0'
     ),
     'sender' => array(
-        'sendmail' => array(),
-        'imap' => array()
+        'Sendmail' => array(),
+        'IMAP' => array(),
     ),
-    'queue' => array(
-        'file' => array(
-            'path' => APPPATH . 'mails/',
-        ),
-        'database' => array(
-            'table' => 'mails'
+    'styler' => array(
+        'HTML' => array(
+            'css_file' => MODPATH . 'mail/bootstrap-mail.min.css' 
         )
     ),
 );
