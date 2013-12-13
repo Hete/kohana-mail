@@ -5,9 +5,9 @@ defined('SYSPATH') or die('No direct script access.');
 /**
  * Mail sender.
  * 
- * @package Mail
- * @category Senders
- * @author Guillaume Poirier-Morency <guillaumepoiriermorency@gmail.com>
+ * @package   Mail
+ * @category  Senders
+ * @author    Guillaume Poirier-Morency <guillaumepoiriermorency@gmail.com>
  * @copyright (c) 2013, Hète.ca Inc.
  */
 abstract class Kohana_Mail_Sender {
@@ -37,6 +37,7 @@ abstract class Kohana_Mail_Sender {
 
     public function __construct() {
         $this->headers = Kohana::$config->load('mail.headers');
+        $this->styler = Mail_Styler::factory();
     }
 
     /**
@@ -57,6 +58,17 @@ abstract class Kohana_Mail_Sender {
         }
 
         $this->headers[$key] = (string) $value;
+
+        return $this;
+    }
+
+    public function styler(Mail_Styler $styler = NULL) {
+    
+        if($styler === NULL) {
+            return $this->styler;
+        }
+
+        $this->styler = $styler;
 
         return $this;
     }
@@ -220,8 +232,8 @@ abstract class Kohana_Mail_Sender {
     /**
      * Process the body of the mail.
      *
-     * It applies the default Mail_Styler (which does nothing) and 
-     * converts it to string.
+     * It applies the styler to the body of the mail. The default styler
+     * does absolutely nothing unless it's changed.
      * 
      * Override this class in your own application if you want to load
      * your view or process stuff in your body.
@@ -233,7 +245,7 @@ abstract class Kohana_Mail_Sender {
      */
     protected function process_body($body, $email, $name = NULL) {
 
-        $body = Mail_Styler::factory()->style($body);
+        $body = $this->styler->style($body);
 
         return (string) $body;
     }

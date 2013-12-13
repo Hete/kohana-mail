@@ -15,7 +15,7 @@ defined('SYSPATH') or die('No direct script access.');
  */
 abstract class Kohana_Mail_Styler {
 
-    public static $default = 'None';
+    public static $default = 'Plain';
 
     public static function factory($name) {
 
