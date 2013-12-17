@@ -17,7 +17,11 @@ abstract class Kohana_Mail_Styler {
 
     public static $default = 'Plain';
 
-    public static function factory($name) {
+    public static function factory($name = NULL) {
+
+        if ($name === NULL) {
+            $name = Mail_Styler::$default;
+        }
 
         $class = "Mail_Styler_$name";
 

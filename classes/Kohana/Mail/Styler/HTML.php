@@ -23,7 +23,8 @@ class Kohana_Mail_Styler_HTML extends Mail_Styler {
 
     /**
      * Namespace autoloader for vendor files
-     * @param type $class_name
+     *
+     * @param string $class_name
      */
     public function auto_load($class_name) {
         if ($file = Kohana::find_file('vendor/PHP-CSS-Parser/lib', str_replace('\\', '/', $class_name))) {
@@ -35,8 +36,9 @@ class Kohana_Mail_Styler_HTML extends Mail_Styler {
 
         $dom = str_get_html((string) $body);
 
-        $css_parser = new Sabberworm\CSS\Parser();
-        $css_parser->input(Kohana::$config->load('mail.styler.HTML.css_file'));
+        $css = file_get_contents(Kohana::$config->load('mail.styler.HTML.css_file'));
+ 
+        $css_parser = new Sabberworm\CSS\Parser($css);
 
         $declaration_blocks = $css_parser->parse()->getAllDeclarationBlocks();
 

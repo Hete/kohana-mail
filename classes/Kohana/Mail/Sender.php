@@ -17,7 +17,7 @@ abstract class Kohana_Mail_Sender {
      * 
      * @var string 
      */
-    public static $default = 'Sendmail';
+    public static $default = 'Mail';
 
     /**
      * Return an instance of the specified sender.
@@ -211,6 +211,31 @@ abstract class Kohana_Mail_Sender {
     public function references($references = NULL) {
         return $this->headers('References', $in_reply_to);
     }
+ 
+    /**
+     * Process a receiver from the $receivers parameters.
+     */   
+    protected function process_receiver($index, $email) {
+
+        // $key is an email, so $email is a name
+        if (is_string($index) && Valid::email($index)) {
+            return array($index, $email);
+        }
+
+        return array($email, NULL);
+    }
+
+    /**
+     * Process an email and name into a valid RFC address list item.
+     */
+    protected function process_email($email, $name = NULL) {
+
+        if ($name === NULL) {
+            return $email;
+        }
+
+        return mb_encode_mimeheader($name) . ' ' . "<$email>";
+    }
    
     /**
      * Process the subject of the maik
@@ -225,7 +250,7 @@ abstract class Kohana_Mail_Sender {
      * @param  variant $name
      * @return string          a processed subject.
      */
-    protected function process_subject($subject, $email, $name = NULL) {
+    protected function process_subject($subject, $email = NULL, $name = NULL) {
         return __($subject, array(':email' => $email, ':name' => $name));
     }
 
@@ -243,7 +268,7 @@ abstract class Kohana_Mail_Sender {
      * @param  variant $name
      * @return string         the processed body.
      */
-    protected function process_body($body, $email, $name = NULL) {
+    protected function process_body($body, $email = NULL, $name = NULL) {
 
         $this->headers('Content-Type', $this->styler->content_type);
 
@@ -262,10 +287,10 @@ abstract class Kohana_Mail_Sender {
      * @param  variant $name     
      * @return array             the processed headers.
      */
-    protected function process_headers(array $headers, $email, $name = NULL) {
+    protected function process_headers(array $headers, $email = NULL, $name = NULL) {
        
-        if (!array_key_exists('To', $headers)) {
-            $headers['To'] = $name === NULL ? $email : "$name <$email>";
+        if (!array_key_exists('To', $headers) AND $email !== NULL) {
+            $headers['To'] = $this->process_email($email, $name);
         }
          
         if (!array_key_exists('Message-ID', $headers)) {
@@ -284,33 +309,50 @@ abstract class Kohana_Mail_Sender {
      * @param  string  $subject  is the subject of the mail.
      * @param  variant $body     a string containing the body or preferably a View.
      * @param  array   $headers  are additionnal headers to override pre-configured
+     * @param  boolean $once     send all mails at once.
      * ones in mail.headers and internal sender headers.
      * @return array   an array of states when sending; keys match $receivers keys.
      */
-    public function send($receivers, $subject, $body, array $headers = array()) {
+    public function send($receivers, $subject, $body, array $headers = array(), $once = FALSE) {
        
         // Check if the receiver is a traversable structure
         if (!Arr::is_array($receivers)) {
-            $receiver = array($receivers);
+            $receivers = array($receivers);
         }
 
-        $headers = Arr::merge($this->headers(), $headers);
+        if($once === TRUE) {
+
+            $subject = $this->process_subject($subject);
+             
+            $body = $this->process_body($body);
+
+            $headers = Arr::merge($this->headers(), $headers);
+
+            $headers = $this->process_headers($headers);
+
+            $emails = array();
+
+            foreach($receivers as $index => $email) {
+                list($email, $name) = $this->process_receiver($index, $email);
+                $emails[] = $this->process_email($email, $name);
+            }
+
+            return $this->_send($emails, $subject, $body, $headers);
+        }
         
         foreach ($receivers as $index => $email) {
             
-            $name = NULL;
-   
-            // $key is an email, so $email is a name
-            if (is_string($index) && Valid::email($index)) {
-                $name = $email;
-                $email = $index;
-            }
+            list($email, $name) = $this->process_receiver($index, $email);
 
             $subject = $this->process_subject($subject, $email, $name);
              
             $body = $this->process_body($body, $email, $name);
 
+            $headers = Arr::merge($this->headers(), $headers);
+
             $headers = $this->process_headers($headers, $email, $name);
+
+            $email = $this->process_email($email, $name);
 
             $receivers[$index] = $this->_send($email, $subject, $body, $headers);
         }
