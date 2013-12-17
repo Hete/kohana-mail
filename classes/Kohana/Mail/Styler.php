@@ -23,10 +23,17 @@ abstract class Kohana_Mail_Styler {
 
         return new $class;
     }
+
+    /**
+     * Content-Type header.
+     */
+    public $content_type = 'text/plain';
     
     /**
+     * Style up a given body
      *
-     * @return string styled body
+     * @param  string $body  an ugly mail body :(
+     * @return string        a beautiful mail body!
      */
     public abstract function style($body);
 

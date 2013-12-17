@@ -245,6 +245,8 @@ abstract class Kohana_Mail_Sender {
      */
     protected function process_body($body, $email, $name = NULL) {
 
+        $this->headers('Content-Type', $this->styler->content_type);
+
         $body = $this->styler->style($body);
 
         return (string) $body;

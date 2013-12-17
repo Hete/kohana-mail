@@ -7,11 +7,15 @@ require_once Kohana::find_file('vendor', 'simplehtmldom/simple_html_dom');
 /**
  * HTML styler with CSS.
  *
+ * The given mail body must be a valid HTML document.
+ *
  * @package Mail
  * @category Stylers
  * @author Guillaume Poirier-Morency <guillaumepoiriermorency@gmail.com>
  */
 class Kohana_Mail_Styler_HTML extends Mail_Styler {
+
+    public $content_type = 'text/html';
 
     public function __construct() {
         spl_autoload_register(array($this, 'auto_load'));
