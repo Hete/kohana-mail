@@ -269,12 +269,7 @@ abstract class Kohana_Mail_Sender {
      * @return string         the processed body.
      */
     protected function process_body($body, $email = NULL, $name = NULL) {
-
-        $this->headers('Content-Type', $this->styler->content_type);
-
-        $body = $this->styler->style($body);
-
-        return (string) $body;
+        return $this->styler->style($body);
     }
 
     /**
@@ -289,6 +284,10 @@ abstract class Kohana_Mail_Sender {
      */
     protected function process_headers(array $headers, $email = NULL, $name = NULL) {
        
+        if (!array_key_exists('Content-Type', $headers)) {
+            $headers['Content-Type'] = $this->styler->content_type;  
+        }
+
         if (!array_key_exists('To', $headers) AND $email !== NULL) {
             $headers['To'] = $this->process_email($email, $name);
         }
@@ -301,15 +300,28 @@ abstract class Kohana_Mail_Sender {
     }
 
     /**
+     * Append an attachment to this mail.
+     */
+    public function attachment($attachment, $type) {
+
+        $this->attachments[] = array(
+            'attachment' => $attachment,
+            'type' => $type
+        );
+
+        return $this;
+    }
+
+    /**
      * Send an email to its receivers.
      * 
-     * When fetching an ORM, it is somewhat useful to do $model->as_array('name', 'email').
+     * When fetching an ORM, it is somewhat useful to do $model->as_array('email', 'name').
      *
      * @param  variant $receiver a list of emails or an associative array of email to name.
      * @param  string  $subject  is the subject of the mail.
      * @param  variant $body     a string containing the body or preferably a View.
      * @param  array   $headers  are additionnal headers to override pre-configured
-     * @param  boolean $once     send all mails at once.
+     * @param  boolean $once     send all mails at once or process each mail one by one.
      * ones in mail.headers and internal sender headers.
      * @return array   an array of states when sending; keys match $receivers keys.
      */
@@ -320,7 +332,7 @@ abstract class Kohana_Mail_Sender {
             $receivers = array($receivers);
         }
 
-        if($once === TRUE) {
+        if ($once === TRUE) {
 
             $subject = $this->process_subject($subject);
              
@@ -332,12 +344,12 @@ abstract class Kohana_Mail_Sender {
 
             $emails = array();
 
-            foreach($receivers as $index => $email) {
+            foreach ($receivers as $index => $email) {
                 list($email, $name) = $this->process_receiver($index, $email);
                 $emails[] = $this->process_email($email, $name);
             }
 
-            return $this->_send($emails, $subject, $body, $headers);
+            return $this->_send($emails, $subject, $body, $headers, $attachments);
         }
         
         foreach ($receivers as $index => $email) {
@@ -354,7 +366,8 @@ abstract class Kohana_Mail_Sender {
 
             $email = $this->process_email($email, $name);
 
-            $receivers[$index] = $this->_send($email, $subject, $body, $headers);
+            // replace receiver by the result of the sent
+            $receivers[$index] = $this->_send($email, $subject, $body, $headers, $attachments;
         }
 
         return $receivers;
@@ -363,7 +376,12 @@ abstract class Kohana_Mail_Sender {
     /**
      * Implemented by the sender.
      *
+     * @param  string  email       email
+     * @param  string  subject     subject
+     * @param  string  body        mail's body
+     * @param  array   headers     headers
+     * @param  array   attachments an array of mail attachments
      * @return boolean TRUE if sending is successful, FALSE otherwise.
      */
-    protected abstract function _send($email, $subject, $body, array $headers);
+    protected abstract function _send($email, $subject, $body, array $headers, array $attachments);
 }

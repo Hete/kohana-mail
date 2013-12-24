@@ -3,6 +3,7 @@
 defined('SYSPATH') or die('No direct script access.');
 
 require_once 'Mail.php';
+require_once 'Mail/MIME.php';
 
 /**
  * PEAR wrapper for the Mail module.
@@ -15,4 +16,28 @@ require_once 'Mail.php';
  */
 abstract class Kohana_Mail_Sender_PEAR extends Mail_Sender {
 
+    protected function _send($email, $subject, $body, array $headers, array $attachments) {
+
+        $headers['Subject'] = $subject;
+
+        $mime = new Mail_mime();
+
+        if($headers['Content-Type'] === 'text/html') {
+            $mime->setHTMLBody($body);
+        } else {
+            $mime->setTxtBody($body);
+        }
+
+        foreach($attachments as $attachment) {
+
+            list($attachment, $type) = $attachment;
+
+            $mime->addAttachment($attachment, $type, FALSE);
+        }
+
+        return $this->PEAR_send($email, $mime, $headers);
+
+    }
+
+    protected abstract function PEAR_send($email, Mail_MIME $body, array $headers);
 }

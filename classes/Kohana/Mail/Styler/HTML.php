@@ -34,11 +34,15 @@ class Kohana_Mail_Styler_HTML extends Mail_Styler {
 
     public function style($body) {
 
+        $css = Kohana::$config->load('mail.styler.HTML.css_file');
+
+        if ($css === FALSE) {
+            return (string) $body;
+        }
+
         $dom = str_get_html((string) $body);
 
-        $css = file_get_contents(Kohana::$config->load('mail.styler.HTML.css_file'));
- 
-        $css_parser = new Sabberworm\CSS\Parser($css);
+        $css_parser = new Sabberworm\CSS\Parser(file_get_contents($css));
 
         $declaration_blocks = $css_parser->parse()->getAllDeclarationBlocks();
 

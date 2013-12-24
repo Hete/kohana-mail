@@ -12,16 +12,40 @@ defined('SYSPATH') or die('No direct script access.');
  */
 class Kohana_Mail_Sender_Mail extends Mail_Sender {
 
-    protected function _send($email, $subject, $body, array $headers) {  
+    protected function _send($email, $subject, $body, array $headers, array $attachments) {  
 
         if(Arr::is_array($email)) {
             $email = implode(', ', $email);
         }
 
-        $subject = mb_encode_mimeheader($subject, mb_internal_encoding(), 'B', '');
+        $subject = mb_encode_mimeheader($subject);
+
+        if ($attachments) {
+
+            // The body is base64 encoded since it could break the multipart.
+            $body = implode("\r\n", array(
+                '--' . Security::token(),
+                'Content-Type: ' . mb_encode_mimeheader($headers['Content-Type']),
+                'Content-Transfer-Encoding: base64',
+                "\r\n",
+                base64_encode($body)
+            ));
+
+            $headers['Content-Type'] = 'multipart/mixed; boundary=' . Security::token();
+        }
+
+        foreach($attachments as $attachment) {
+            $body .= implode("\r\n", array(
+                '--' . Security::token() . (($index + 1 === count($attachment)) ? '--' : ''),
+                'Content-Type: ' . mb_encode_mimeheader($attachment['type']),
+                'Content-Transfert-Encoding: base64',
+                "\r\n",
+                base64_encode($attachment['attachment'])
+            ));
+        }
 
         foreach($headers as $key => $value) {
-            $value = mb_encode_mimeheader($value, mb_internal_encoding(), 'B', '');
+            $value = mb_encode_mimeheader($value);
             $headers[$key] = "$key: $value";
         }
    
