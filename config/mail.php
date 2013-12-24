@@ -15,23 +15,25 @@ return array(
      * Default headers
      */
     'headers' => array(
-        'Content-Encoding' => 'utf-8',
         'MIME-Version' => '1.0'
     ),
-    'attachement' => array(
-        'encoding'
+    /**
+     * Headers to apply on multipart/mixed document.
+     */
+    'attachement_headers' => array(
+        'MIME-Version' => '1.0'
     ),
     /**
      * Sender configuration
      */
     'sender' => array(
         /**
-         * PHP built-in mail() function
+         * PHP built-in mail() function.
          * 
          * Paremeters are imploded with a spaced and passed as $parameters
          * of the mail() function.
          */
-        'Mail' => array(), // $additional_parameters for mail()
+        'Mail' => array(),
         /**
          * @link http://pear.php.net/manual/en/package.mail.mail.factory.php
          */
@@ -57,15 +59,34 @@ return array(
         )
     ),
     'styler' => array(
+        /**
+         * Plain produces a simple text document.
+         */
         'Plain' => array(
-            'wordwrap' => 70, // wordwrap, FALSE to disable
+            /**
+             * FALSE to disable.
+             * 72 characters recommended.
+             */
+            'wordwrap' => FALSE,
         ),
+        /**
+         * HTML produces a complex HTML document by inlining a CSS file.
+         */
         'HTML' => array(
             'css_file' => MODPATH . 'mail/bootstrap-mail.min.css', // FALSE to disable
         ),
+        /**
+         * Auto produces a simple HTML document.
+         */
         'Auto' => array(
-            'paragraph' => TRUE, // Text::auto_p
-            'link' => TRUE // Text::auto_link
+            /**
+             * Applies a Text::auto_p
+             */
+            'paragraph' => TRUE,
+            /**
+             * Applies a Text::auto_link
+             */
+            'link' => TRUE
         )
     )
 );
