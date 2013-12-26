@@ -18,12 +18,6 @@ return array(
         'MIME-Version' => '1.0'
     ),
     /**
-     * Headers to apply on multipart/mixed document.
-     */
-    'attachement_headers' => array(
-        'MIME-Version' => '1.0'
-    ),
-    /**
      * Sender configuration
      */
     'sender' => array(
@@ -73,7 +67,11 @@ return array(
          * HTML produces a complex HTML document by inlining a CSS file.
          */
         'HTML' => array(
-            'css_file' => MODPATH . 'mail/bootstrap-mail.min.css', // FALSE to disable
+            /**
+             * CSS file to use.
+             *
+             */
+            'css_file' => MODPATH . 'mail/bootstrap-mail.css',
         ),
         /**
          * Auto produces a simple HTML document.

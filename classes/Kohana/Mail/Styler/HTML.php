@@ -33,12 +33,12 @@ class Kohana_Mail_Styler_HTML extends Mail_Styler {
     }
 
     public function style($body) {
+    
+        if (Kohana::$profiling === TRUE) {
+            $benchmark = Profiler::start(__class__, __function__);
+        }
 
         $css = Kohana::$config->load('mail.styler.HTML.css_file');
-
-        if ($css === FALSE) {
-            return (string) $body;
-        }
 
         $dom = str_get_html((string) $body);
 
@@ -54,6 +54,14 @@ class Kohana_Mail_Styler_HTML extends Mail_Styler {
                 }
             }
         }
+
+        $dom = (string) $dom;
+
+        if (isset($benchmark)) {
+            Profiler::stop($benchmark);    
+        }
+
+        return $dom;
 
         return (string) $dom;
     }

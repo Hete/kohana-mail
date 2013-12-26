@@ -3,8 +3,10 @@
 defined('SYSPATH') or die('No direct script access.');
 
 /**
- * Driver for sendmail built-in php function.
+ * Driver for built-in mail() PHP function.
  * 
+ * @see mail
+ *
  * @package   Mail
  * @category  Senders
  * @author    Hète.ca Team
@@ -12,20 +14,20 @@ defined('SYSPATH') or die('No direct script access.');
  */
 class Kohana_Mail_Sender_Mail extends Mail_Sender {
 
-    protected function _send($email, $subject, $body, array $headers, array $attachments) {  
+    protected function _send($email, $body, array $headers, array $attachments) {  
 
         if(Arr::is_array($email)) {
             $email = implode(', ', $email);
         }
 
-        $subject = mb_encode_mimeheader($subject);
+        $subject = mb_encode_mimeheader(Arr::get($headers, 'Subject', ''));
 
         if ($attachments) {
 
             // The body is base64 encoded since it could break the multipart.
             $body = implode("\r\n", array(
                 '--' . Security::token(),
-                'Content-Type: ' . mb_encode_mimeheader($headers['Content-Type']),
+                'Content-Type: ' . Arr::get($headers, 'Content-Type', 'text/plain'),
                 'Content-Transfer-Encoding: base64',
                 "\r\n",
                 base64_encode($body)
@@ -35,9 +37,16 @@ class Kohana_Mail_Sender_Mail extends Mail_Sender {
         }
 
         foreach($attachments as $attachment) {
+
+            $attachment_headers = array();
+
+            foreach ($attachment['headers'] as $key => $value) {
+                $attachment_headers[] = "$key: " . mb_encode_mimeheader($value);
+            }
+
             $body .= implode("\r\n", array(
                 '--' . Security::token() . (($index + 1 === count($attachment)) ? '--' : ''),
-                'Content-Type: ' . mb_encode_mimeheader($attachment['type']),
+                implode("\r\n", $attachment_headers),
                 'Content-Transfert-Encoding: base64',
                 "\r\n",
                 base64_encode($attachment['attachment'])
@@ -55,5 +64,4 @@ class Kohana_Mail_Sender_Mail extends Mail_Sender {
 
         return mail($email, $subject, $body, $headers, $parameters);
     }
-
 }
