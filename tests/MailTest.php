@@ -26,19 +26,16 @@ class Mail_Test extends Unittest_TestCase {
             array('Hello Foo'),
             array('¤ Hello Foo ¤'), // non-ascii
             array(''), // empty
-            array('Hello :name <:email>'), // with substitution
             );
         }
 
     public function bodies() {
         return array(
-            array(View::factory('mail/test')), // View
             array('<html><head></head><body></body></html>'), // html
             array("Hello Foo, it's about your delightful ideas."),
-            array("Hello Foo\nHow are you?")
+            array("Hello Foo\nHow are you?") // end-of-line
         );
     }
-
 
     public function headers() {
         return array(
@@ -50,36 +47,85 @@ class Mail_Test extends Unittest_TestCase {
     }
 
     public function emails_subjects_bodies_headers() {
-        $emails_subjects_bodies_headers = array();
+
+        if ($cached = Kohana::cache(__METHOD__)) {
+            return $cached;    
+        }
+
+        $cached = array();
 
         foreach ($this->emails() as $email) {
             foreach ($this->subjects() as $subject) {
                 foreach ($this->bodies() as $body) {
                     foreach ($this->headers() as $headers) {
-                        $subjects_bodies_headers[] = array($subject, $body, $headers);
+                        $cached = array($email, $subject, $body, $headers);
                     }
                 }
             }
         }
-        return $subjects_bodies_headers;
+
+        Kohana::cache(__METHOD__, $cached);
+
+        return $cached;
     }
 
     public function test_send() {
 
-        Mail_Sender::factory()->send('foo@example.com', 'i am a foobar!', 'Yes! Here we are :)');
+        $this->assertTrue(Mail_Sender::factory()
+            ->subject('test')
+            ->body('test')
+            ->send('foo@example.com'));
 
-        Mail_Sender::factory()->send(array(
-            'foo@example.com' => ''
-        ));
+        // list of email
+        $this->assertTrue(Mail_Sender::factory()
+            ->subject('test')
+            ->body('test')
+            ->send(array(
+                'foo@example.com'
+            )));
 
-        Mail_Sender::factory()->send('foo@example.com');
-        $this->assertTrue(Mail_Sender::factory()->send('foo@bar.com', 'hey', 'mail/test'));
+        // assoc of email
+        $this->assertTrue(Mail_Sender::factory()
+            ->subject('test')
+            ->body('test')
+            ->send(array(
+                'foo@example.com' => 'Foo'
+            )));
 
-        $this->assertTrue(Mail_Sender::factory()->send(array('foo@bar.com'), 'hey', 'mail/test'));
+        // mixed emails
+        $this->assertEquals(Mail_Sender::factory()
+            ->subject('test')
+            ->body('test')
+            ->send(array(
+                'foo@example.com' => 'Foo',
+                'bar@example.com'
+            )));
 
-        $this->assertTrue(Mail_Sender::factory()->send(array('foo@bar.com' => 'Foo Bar'), 'hey', 'mail/test'));
+        // one-by-one
+        $this->assertEquals(Mail_Sender::factory()
+            ->subject('test')
+            ->body('test')
+            ->send(array(
+                'foo@example.com' => 'Foo',
+                'bar@example.com'
+            ), TRUE), array(TRUE, TRUE));
 
-        $this->assertTrue(Mail_Sender::factory()->send(array('Foo Bar' => 'foo@bar.com'), 'hey', 'mail/test'));
+        // omit the subject
+        $this->assertTrue(Mail_Sender::factory()
+            ->body('test')
+            ->send('foo@example.com'));
+    }
+
+    /**
+     * @expectedException Exception
+     */
+    public function test_missing_body() {
+        Mail_Sender::factory()
+            ->send('foo@example.com');
+    }
+
+    public function test_attachment() {
+        
     }
 
     /**
@@ -129,19 +175,17 @@ class Mail_Test extends Unittest_TestCase {
      * @dataProvider bodies
      */
     public function test_Styler_Auto($body) {
-        $styler = Mail_Styler::factory('Auto');
-        $styler->style($body);
+        Mail_Styler::factory('Auto')
+            ->style($body);
     }
 
     /**
-     * @dataProvider
+     * @dataProvider bodies
      */
     public function test_Styler_HTML($body) {
 
         $this->assertFileExists(Kohana::$config->load('mail.styler.HTML.css_file'));
 
-        $styler = Mail_Styler::factory('HTML');
-        $this->assertDifferent($styler->style($body), $body);
+        $this->assertNotEqual(Mail_Styler::factory('HTML')->style($body), $body);
     }
-    
 }

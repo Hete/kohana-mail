@@ -49,7 +49,6 @@ return array(
                 'persist' => NULL,
                 'pipelining' => NULL
             ),
-            'Mail' => array()
         )
     ),
     'styler' => array(

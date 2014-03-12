@@ -1,11 +1,29 @@
 # Kohana Mail Sender
+
 Simple mail sender for the Kohana framework.
 
 ## Basic usage
 
-    Mail_Sender::factory()->send($receivers, $subject, $body, $headers);
+    Mail_Sender::factory()
+        ->subject('Hey Foo!')
+        ->body(View::factory('some_template'))
+        ->send(array(
+            'John McGuire' => 'foo@example.com'
+        ));
+
+## Attachments
+
+Attachmment content can be appended on a mail. You may specify an array of headers specific to that attachment.
+
+    Mail_Sender::factory()
+        ->subject('Got a new cat picture for you.')
+        ->attachment(file_get_contents('cat.png'), array(
+            'Content-Type' => 'image/png'
+        )
+        ->send('foo@example.com')
 
 ### Receivers
+
 Receivers could be 4 things
 
 A simple email
@@ -47,8 +65,6 @@ The headers must be an array
 
     $headers = array('From' => 'noreply@example.com');
     'foo@bar.com'
-));
-</pre>
 
 ## HTML templating
 You can easily do HTML templating and even styling! There is a CSS inliner included :)
@@ -57,10 +73,10 @@ To activate that feature,
 
     Mail_Styler::$default = 'Styler_HTML';
 
-You should also set the Content-Type to text/html in the configuration. It comes with a light bootstrap css.
+The Content-Type will be automatically infered from the styler, but you may still override it at any time.
 
 ## Processing stuff
-If you override Mail_Sender, you should really look for the subject, body and headers process function.
+If you override Mail\_Sender, you should really look for the subject, body and headers process function.
 
 If you need to access the user who's getting your mail:
 

@@ -280,7 +280,7 @@ abstract class Kohana_Mail_Sender {
     public function body($body = NULL) {
     
         if ($body === NULL) {
-            return $body;    
+            return $this->body;    
         }
 
         $this->body = $body;
@@ -291,16 +291,12 @@ abstract class Kohana_Mail_Sender {
     /**
      * Append an attachment to this mail.
      *
-     * You might want to set at least Content-Type header.
+     * You should set at least the Content-Type header.
      *
      * @param string $attachment the raw content of the attachment
      * @param array  $headers    headers for this attachment.
      */
-    public function attachment($attachment = NULL, array $headers = array()) {
-
-        if ($attachment === NULL) {
-            return $this->attachments;    
-        }
+    public function attachment($attachment, array $headers = array()) {
 
         $this->attachments[] = array(
             'attachment' => $attachment,

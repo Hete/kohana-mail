@@ -1,5 +1,5 @@
-<phpunit colors="true" verbose="true" bootstrap="../unittest/bootstrap.php">
+<phpunit bootstrap="../unittest/bootstrap.php">
     <testsuite name="Mail tests">
-        <directory>tests/</directory>  
+        <directory>tests</directory>  
     </testsuite>
 </phpunit>
