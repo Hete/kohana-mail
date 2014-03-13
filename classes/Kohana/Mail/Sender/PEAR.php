@@ -18,15 +18,15 @@ abstract class Kohana_Mail_Sender_PEAR extends Mail_Sender {
 
     protected function _send($email, $body, array $headers, array $attachments) {
 
-        $mime = new Mail_mime();
+        $mime = new Mail_MIME();
 
-        if($headers['Content-Type'] === 'text/html') {
+        if ($headers['Content-Type'] === 'text/html') {
             $mime->setHTMLBody($body);
         } else {
             $mime->setTxtBody($body);
         }
 
-        foreach($attachments as $attachment) {
+        foreach ($attachments as $attachment) {
 
             list($attachment, $type) = $attachment;
 
@@ -34,8 +34,14 @@ abstract class Kohana_Mail_Sender_PEAR extends Mail_Sender {
         }
 
         return $this->PEAR_send($email, $mime, $headers);
-
     }
 
+    /**
+     * Abstracts the sending process for PEAR based senders.
+     * 
+     * @param mixed     $email
+     * @param Mail_MIME $body
+     * @param array     $headers
+     */
     protected abstract function PEAR_send($email, Mail_MIME $body, array $headers);
 }
