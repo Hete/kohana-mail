@@ -8,82 +8,45 @@ defined('SYSPATH') or die('No direct script access.');
  * @package   Mail
  * @author    Guillaume Poirier-Morency <guillaumepoiriermorency@gmail.com>
  * @copyright (c) 2013, Hète.ca Inc.
- * @license   BSD License
+ * @license   BSD 3-clauses
  */
 return array(
-    /**
-     * Default headers
-     */
-    'headers' => array(
-        'MIME-Version' => '1.0'
-    ),
-    /**
-     * Sender configuration
-     */
-    'sender' => array(
+    'default' => array(
+        'sender' => 'Mail',
         /**
-         * PHP built-in mail() function.
-         * 
-         * Paremeters are imploded with a spaced and passed as $parameters
-         * of the mail() function.
+         * Options for the sender.
          */
-        'Mail' => array(),
-        /**
-         * @link http://pear.php.net/manual/en/package.mail.mail.factory.php
+        'sender_options' => array(
+        /* PEAR_Sendmail
+         * 'sendmail_path' => '/usr/bin/sendmail',
+         * 'sendmail_args' => '-i',
          */
-        'PEAR' => array(
-            'Sendmail' => array(
-                'sendmail_path' => '/usr/bin/sendmail',
-                'sendmail_args' => '-i'
-            ),
-            'SMTP' => array(
-                'host' => 'localhost',
-                'port' => 25,
-                'auth' => FALSE,
-                'username' => NULL,
-                'password' => NULL,
-                'localhost' => 'localhost',
-                'timeout' => NULL,
-                'verp' => FALSE,
-                'debug' => FALSE,
-                'persist' => NULL,
-                'pipelining' => NULL
-            ),
-        )
-    ),
-    'styler' => array(
-        /**
-         * Plain produces a simple text document.
+        /* PEAR_SMTP
+         * 'host' => 'localhost',
+         * 'port' => 25,
+         * 'auth' => FALSE,
+         * 'username' => NULL,
+         * 'password' => NULL,
+         * 'localhost' => 'localhost',
+         * 'timeout' => NULL,
+         * 'verp' => FALSE,
+         * 'debug' => FALSE,
+         * 'persist' => NULL,
+         * 'pipelining' => NULL
          */
-        'Plain' => array(
-            /**
-             * FALSE to disable.
-             * 72 characters recommended.
-             */
-            'wordwrap' => FALSE,
         ),
-        /**
-         * HTML produces a complex HTML document by inlining a CSS file.
+        'styler' => NULL,
+        'styler_options' => array(
+        /* Plain
+         * 'wordwrap' => FALSE, // 72 characters recommended, FALSE to disable.
          */
-        'HTML' => array(
-            /**
-             * CSS file to use.
-             *
-             */
-            'css_file' => MODPATH . 'mail/bootstrap-mail.css',
-        ),
-        /**
-         * Auto produces a simple HTML document.
+        /* HTML
+         * 'css_file' => MODPATH . 'mail/bootstrap-mail.css',
          */
-        'Auto' => array(
-            /**
-             * Applies a Text::auto_p
-             */
-            'paragraph' => TRUE,
-            /**
-             * Applies a Text::auto_link
-             */
-            'link' => TRUE
+        /* Auto
+         * 'paragraph' => TRUE, // Applies a Text::auto_p
+         * 'link' => TRUE // Applies a Text::auto_link
+         */
         )
     )
 );

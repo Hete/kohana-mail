@@ -9,108 +9,39 @@ defined('SYSPATH') or die('No direct script access.');
  * @category  Senders
  * @author    Guillaume Poirier-Morency <guillaumepoiriermorency@gmail.com>
  * @copyright (c) 2013, Hète.ca Inc.
+ * @license   BSD 3-clauses
  */
 abstract class Kohana_Mail_Sender {
-
-    /**
-     * Default sender. 
-     * 
-     * @var string 
-     */
-    public static $default = 'Mail';
 
     /**
      * Return an instance of the specified sender.
      * 
      * @return Mail_Sender 
      */
-    public static function factory($name = NULL) {
-
-        if ($name === NULL) {
-            $name = Mail_Sender::$default;
-        }
+    public static function factory($name, array $options) {
 
         $class = "Mail_Sender_$name";
 
-        return new $class();
-    }
- 
-    /**
-     * Process a receiver from the $receivers parameters.
-     */   
-    protected static function process_receiver($index, $email) {
-
-        // $key is an email, so $email is a name
-        if (is_string($index) && Valid::email($index)) {
-            return array($index, $email);
-        }
-
-        return array($email, NULL);
+        return new $class($options);
     }
 
     /**
-     * Process an email and name into a valid RFC address list item.
-     */
-    protected static function process_email($email, $name = NULL) {
-
-        if ($name === NULL) {
-            return $email;
-        }
-
-        return mb_encode_mimeheader($name) . ' ' . "<$email>";
-    }
-
-    /**
-     * Process the body of the mail.
      *
-     * It applies the styler to the body of the mail. The default styler
-     * does absolutely nothing unless it's changed.
-     * 
-     * Override this class in your own application if you want to load
-     * your view or process stuff in your body.
-     *
-     * @param  variant $body  body of the mail to be processed.
-     * @param  string  $email email of the user receiving the mail.
-     * @param  variant $name  name of the user receiving the mail.
-     * @return string         the processed body.
+     * @var type 
      */
-    protected static function process_body($body, $email = NULL, $name = NULL) {
-        Return Mail_Styler::factory()->style($body);
-    }
+    protected $headers = array();
 
     /**
-     * Process mail headers.
      *
-     * This will add the To, Content-Type and Message-ID headers.
-     * 
-     * @param  array   $headers 
-     * @param  string  $email
-     * @param  variant $name     
-     * @return array             the processed headers.
+     * @var type 
      */
-    protected static function process_headers(array $headers, $email = NULL, $name = NULL) {
-
-        if (!array_key_exists('Content-Type', $headers)) {
-            $headers['Content-Type'] = Mail_Styler::factory()->content_type;  
-        }
-
-        if (!array_key_exists('To', $headers) AND $email !== NULL) {
-            $headers['To'] = $this->process_email($email, $name);
-        }
-         
-        if (!array_key_exists('Message-ID', $headers)) {
-            $headers['Message-ID'] = sha1(uniqid(NULL, TRUE));
-        }
-
-        return $headers;
-    }
+    protected $attachments = array();
 
     /**
      * Initialize the headers from the configuration.
      */
-    public function __construct() {
-        $this->headers = Kohana::$config->load('mail.headers');
-        $this->attachments = array();
+    public function __construct(array $options) {
+        $this->options = $options;
     }
 
     /**
@@ -121,6 +52,11 @@ abstract class Kohana_Mail_Sender {
      * @return variant
      */
     public function headers($key = NULL, $value = NULL) {
+
+        if (is_array($key)) {
+            $this->headers = $key;
+            return $this;
+        }
 
         if ($key === NULL) {
             return $this->headers;
@@ -180,15 +116,6 @@ abstract class Kohana_Mail_Sender {
      * @param string $from
      * @return \Mail_Sender
      */
-    public function to($to = NULL) {
-        return $this->headers('To', $to);
-    }
-
-    /**
-     * 
-     * @param string $from
-     * @return \Mail_Sender
-     */
     public function resent_to($resent_to = NULL) {
         return $this->headers('Resent-To', $resent_to);
     }
@@ -201,7 +128,7 @@ abstract class Kohana_Mail_Sender {
     public function subject($subject = NULL) {
         return $this->headers('Subject', $subject);
     }
-    
+
     /**
      * 
      * @param string $from
@@ -271,21 +198,23 @@ abstract class Kohana_Mail_Sender {
      * @return \Mail_Sender
      */
     public function references($references = NULL) {
-        return $this->headers('References', $in_reply_to);
+        return $this->headers('References', $references);
     }
 
     /**
      * Get or set the body of the mail.
+     * 
+     * If you are assigning an HTML body, specify text/html content type.
      */
     public function body($body = NULL) {
-    
+
         if ($body === NULL) {
-            return $this->body;    
+            return $this->body;
         }
 
-        $this->body = $body;
+        $this->body = (string) $body;
 
-        return $this;    
+        return $this;
     }
 
     /**
@@ -315,57 +244,40 @@ abstract class Kohana_Mail_Sender {
      * @param  boolean $one      send all mails at once.
      * @return array   an array of states when sending; keys match $receivers keys.
      */
-    public function send($receivers, $one_by_one = FALSE) {
-       
+    public function send($receivers) {
+
         // Check if the receiver is a traversable structure
         if (!Arr::is_array($receivers)) {
             $receivers = array($receivers);
         }
 
-        if ($one_by_one === TRUE) {
-             
-            // One mail per user
-            foreach ($receivers as $index => $email) {
-                
-                list($email, $name) = Mail_Sender::process_receiver($index, $email);
-                 
-                $body = Mail_Sender::process_body($this->body, $email, $name);
+        $to = array();
 
-                $headers = Mail_Sender::process_headers($this->headers, $email, $name);
-
-                $email = Mail_Sender::process_email($email, $name);
-
-                // replace receiver by the result of the sent
-                $receivers[$index] = $this->_send($email, $body, $headers, $this->attachments);
+        foreach ($receivers as $key => $value) {
+            // $key is an email, so $value is a name
+            if (is_string($key) && Valid::email($key)) {
+                $to[] = mb_encode_mimeheader($value) . ' ' . "<$key>";
+                // $key is a numeric index, $vaalue is an email
+            } else {
+                $to[] = $value;
             }
-
-            return $receivers;
         }
 
-        // Send a single mail to all receivers
-
-        $body = Mail_Sender::process_body($this->body);
-
-        $headers = Mail_Sender::process_headers($this->headers);
-
-        $emails = array();
-
-        foreach ($receivers as $index => $email) {
-            list($email, $name) = $this->process_receiver($index, $email);
-            $emails[] = Mail_Sender::process_email($email, $name);
+        if (!array_key_exists('Message-ID', $this->headers)) {
+            $this->headers['Message-ID'] = sha1(uniqid(NULL, TRUE));
         }
 
-        return $this->_send($emails, $body, $headers, $this->attachments);
+        return $this->_send($to, $this->body, $this->headers, $this->attachments);
     }
 
     /**
      * Implemented by the sender.
      *
-     * @param  string  email       email
+     * @param  string  to          list of emails
      * @param  string  body        mail's body
      * @param  array   headers     headers
      * @param  array   attachments an array of mail attachments
      * @return boolean TRUE if sending is successful, FALSE otherwise.
      */
-    protected abstract function _send($email, $body, array $headers, array $attachments);
+    protected abstract function _send(array $to, $body, array $headers, array $attachments);
 }

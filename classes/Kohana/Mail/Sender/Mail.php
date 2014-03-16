@@ -14,29 +14,28 @@ defined('SYSPATH') or die('No direct script access.');
  */
 class Kohana_Mail_Sender_Mail extends Mail_Sender {
 
-    protected function _send($email, $body, array $headers, array $attachments) {  
+    protected function _send(array $to, $body, array $headers, array $attachments) {
 
-        if(Arr::is_array($email)) {
-            $email = implode(', ', $email);
-        }
-
+        $to = implode(', ', $to);
         $subject = mb_encode_mimeheader(Arr::get($headers, 'Subject', ''));
 
         if ($attachments) {
 
+            $boundary = sha1(uniqid(NULL, TRUE));
+
             // The body is base64 encoded since it could break the multipart.
             $body = implode("\r\n", array(
-                '--' . Security::token(),
+                '--' . $boundary,
                 'Content-Type: ' . Arr::get($headers, 'Content-Type', 'text/plain'),
                 'Content-Transfer-Encoding: base64',
                 "\r\n",
                 base64_encode($body)
             ));
 
-            $headers['Content-Type'] = 'multipart/mixed; boundary=' . Security::token();
+            $headers['Content-Type'] = 'multipart/mixed; boundary=' . $boundary;
         }
 
-        foreach($attachments as $attachment) {
+        foreach ($attachments as $index => $attachment) {
 
             $attachment_headers = array();
 
@@ -45,7 +44,7 @@ class Kohana_Mail_Sender_Mail extends Mail_Sender {
             }
 
             $body .= implode("\r\n", array(
-                '--' . Security::token() . (($index + 1 === count($attachment)) ? '--' : ''),
+                '--' . $boundary . ($index + 1 === count($attachment) ? '--' : ''),
                 implode("\r\n", $attachment_headers),
                 'Content-Transfert-Encoding: base64',
                 "\r\n",
@@ -53,15 +52,16 @@ class Kohana_Mail_Sender_Mail extends Mail_Sender {
             ));
         }
 
-        foreach($headers as $key => $value) {
+        foreach ($headers as $key => $value) {
             $value = mb_encode_mimeheader($value);
             $headers[$key] = "$key: $value";
         }
-   
+
         $headers = implode("\r\n", $headers);
 
-        $parameters = implode(' ', Kohana::$config->load('mail.sender.Mail'));
+        $parameters = implode(' ', $this->options);
 
-        return mail($email, $subject, $body, $headers, $parameters);
+        return mail($to, $subject, $body, $headers, $parameters);
     }
+
 }

@@ -10,7 +10,7 @@ defined('SYSPATH') or die('No direct script access.');
  * @author Hète.ca Team
  * @copyright (c) 2013, Hète.ca Inc.
  */
-class Mail_Test extends Unittest_TestCase {    
+class Mail_Test extends Unittest_TestCase {
 
     public function emails() {
         return array(
@@ -18,7 +18,7 @@ class Mail_Test extends Unittest_TestCase {
             array(array('foo@example.com', 'bar@example.com')),
             array(array('foo@example.com' => 'Foo', 'bar@example.com' => 'Bar')),
             array(array('foo@example.com', 'bar@example.com' => 'Bar'))
-        );   
+        );
     }
 
     public function subjects() {
@@ -26,8 +26,8 @@ class Mail_Test extends Unittest_TestCase {
             array('Hello Foo'),
             array('¤ Hello Foo ¤'), // non-ascii
             array(''), // empty
-            );
-        }
+        );
+    }
 
     public function bodies() {
         return array(
@@ -40,16 +40,23 @@ class Mail_Test extends Unittest_TestCase {
     public function headers() {
         return array(
             array(array(
-                'From' => 'Bar <bar@example.com>',
-                'To'   => 'Foo <foo@example.com>',
-            )),
-        );    
+                    'From' => 'Bar <bar@example.com>',
+                    'To' => 'Foo <foo@example.com>',
+                )),
+        );
     }
 
+    /**
+     * Combine emails, subjects, bodies and headers.
+     * 
+     * @uses Kohana::cache for lightning speed!
+     * 
+     * @return array
+     */
     public function emails_subjects_bodies_headers() {
 
-        if ($cached = Kohana::cache(__METHOD__)) {
-            return $cached;    
+        if ($cached = Kohana::cache(__CLASS__ . __METHOD__)) {
+            return $cached;
         }
 
         $cached = array();
@@ -58,134 +65,105 @@ class Mail_Test extends Unittest_TestCase {
             foreach ($this->subjects() as $subject) {
                 foreach ($this->bodies() as $body) {
                     foreach ($this->headers() as $headers) {
-                        $cached = array($email, $subject, $body, $headers);
+                        $cached[] = array($email[0], $subject[0], $body[0], $headers[0]);
                     }
                 }
             }
         }
 
-        Kohana::cache(__METHOD__, $cached);
+        Kohana::cache(__CLASS__ . __METHOD__, $cached);
 
         return $cached;
     }
 
-    public function test_send() {
-
-        $this->assertTrue(Mail_Sender::factory()
-            ->subject('test')
-            ->body('test')
-            ->send('foo@example.com'));
-
-        // list of email
-        $this->assertTrue(Mail_Sender::factory()
-            ->subject('test')
-            ->body('test')
-            ->send(array(
-                'foo@example.com'
-            )));
-
-        // assoc of email
-        $this->assertTrue(Mail_Sender::factory()
-            ->subject('test')
-            ->body('test')
-            ->send(array(
-                'foo@example.com' => 'Foo'
-            )));
-
-        // mixed emails
-        $this->assertEquals(Mail_Sender::factory()
-            ->subject('test')
-            ->body('test')
-            ->send(array(
-                'foo@example.com' => 'Foo',
-                'bar@example.com'
-            )));
-
-        // one-by-one
-        $this->assertEquals(Mail_Sender::factory()
-            ->subject('test')
-            ->body('test')
-            ->send(array(
-                'foo@example.com' => 'Foo',
-                'bar@example.com'
-            ), TRUE), array(TRUE, TRUE));
-
-        // omit the subject
-        $this->assertTrue(Mail_Sender::factory()
-            ->body('test')
-            ->send('foo@example.com'));
+    /**
+     * @dataProvider emails
+     */
+    public function test_send($email) {
+        $this->assertTrue(Mailer::factory()
+                        ->subject('test')
+                        ->body('test')
+                        ->send($email));
     }
 
     /**
-     * @expectedException Exception
+     * @dataProvider subjects
      */
-    public function test_missing_body() {
-        Mail_Sender::factory()
-            ->send('foo@example.com');
+    public function test_subject($subject) {
+        $this->assertTrue(Mailer::factory()
+                        ->subject($subject)
+                        ->body('test')
+                        ->send('foo@example.com'));
+    }
+
+    /**
+     * @dataProvider headers
+     */
+    public function test_headers(array $headers) {
+        $this->assertTrue(Mailer::factory()
+                        ->body('test')
+                        ->headers($headers)
+                        ->send('foo@example.com'));
     }
 
     public function test_attachment() {
-        
+        $this->assertTrue(Mailer::factory()
+                        ->body('Hey!')
+                        ->attachment('<html><body>Hey!</body></html>', array('Content-Type' => 'text/html'))
+                        ->send('foo@example.com'));
+    }
+
+    /**
+     * A mail with a missing body is invalid.
+     * 
+     * @expectedException ErrorException
+     */
+    public function test_missing_body() {
+        Mailer::factory()
+                ->send('foo@example.com');
     }
 
     /**
      * @dataProvider emails_subjects_bodies_headers
      */
-    public function test_Sender_Mail($email, $subject, $body, $headers) {
-        $this->assertTrue(Mail_Sender::factory('Mail')->send($email, $subject, $body, $headers));
-    }
-
-    /**
-     * @dataProvider emails_subjects_bodies_headers
-     */
-    public function test_Sender_IMAP($email, $subject, $body, $headers) {
-        $this->assertTrue(Mail_Sender::factory('IMAP')->send($email, $subject, $body, $headers));
+    public function test_Sender_Mail($email, $subject, $body, array $headers) {
+        $this->assertTrue(Mail_Sender::factory('Mail', array())
+                        ->subject($subject)
+                        ->body($body)
+                        ->headers($headers)
+                        ->send($email));
     }
 
     /**
      * @dataProvider emails_subjects_bodies_headers
      */
     public function test_Sender_PEAR_Mail($email, $subject, $body, $headers) {
-        $this->assertTrue(Mail_Sender::factory('PEAR_Mail')->send($email, $subject, $body, $headers));
+        $this->assertTrue(Mail_Sender::factory('PEAR_Mail', array())
+                        ->subject($subject)
+                        ->body($body)
+                        ->headers($headers)
+                        ->send($email));
     }
 
     /**
      * @dataProvider emails_subjects_bodies_headers
      */
     public function test_Sender_PEAR_SMTP($email, $subject, $body, $headers) {
-        $this->assertTrue(Mail_Sender::factory('PEAR_SMTP')->send($email, $subject, $body, $headers));
+        $this->assertTrue(Mail_Sender::factory('PEAR_SMTP', array())
+                        ->subject($subject)
+                        ->body($body)
+                        ->headers($headers)
+                        ->send($email));
     }
 
     /**
      * @dataProvider emails_subjects_bodies_headers
      */
     public function test_Sender_PEAR_Sendmail($email, $subject, $body, $headers) {
-        $this->assertTrue(Mail_Sender::factory('PEAR_Sendmail')->send($email, $subject, $body, $headers));
-    }
-
-    /**
-     * @dataProvider bodies
-     */
-    public function test_Styler_Plain($body) {
-        $styler = Mail_Styler::factory('Plain');
-        $this->assertEquals($styler->style($body), $body);
-    }
-
-    /**
-     * @dataProvider bodies
-     */
-    public function test_Styler_Auto($body) {
-        Mail_Styler::factory('Auto')
-            ->style($body);
-    }
-
-    /**
-     * @dataProvider bodies
-     */
-    public function test_Styler_HTML($body) {
-
-        $this->assertFileExists(Kohana::$config->load('mail.styler.HTML.css_file'));
-
-        $this->assertNotEqual(Mail_Styler::factory('HTML')->style($body), $body);
+        $this->assertTrue(Mail_Sender::factory('PEAR_Sendmail', array())
+                        ->subject($subject)
+                        ->body($body)
+                        ->headers($headers)
+                        ->send($email));
     }
 }

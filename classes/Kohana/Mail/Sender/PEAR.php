@@ -16,7 +16,7 @@ require_once 'Mail/Mime.php';
  */
 abstract class Kohana_Mail_Sender_PEAR extends Mail_Sender {
 
-    protected function _send($email, $body, array $headers, array $attachments) {
+    protected function _send(array $to, $body, array $headers, array $attachments) {
 
         $mime = new Mail_MIME();
 
@@ -27,13 +27,11 @@ abstract class Kohana_Mail_Sender_PEAR extends Mail_Sender {
         }
 
         foreach ($attachments as $attachment) {
-
-            list($attachment, $type) = $attachment;
-
-            $mime->addAttachment($attachment, $type, FALSE);
+            list($attachment, $headers) = $attachment;
+            $mime->addAttachment($attachment, $headers, FALSE);
         }
 
-        return $this->PEAR_send($email, $mime, $headers);
+        return $this->PEAR_send($to, $mime, $headers);
     }
 
     /**
@@ -43,5 +41,5 @@ abstract class Kohana_Mail_Sender_PEAR extends Mail_Sender {
      * @param Mail_MIME $body
      * @param array     $headers
      */
-    protected abstract function PEAR_send($email, Mail_MIME $body, array $headers);
+    protected abstract function PEAR_send(array $to, Mail_MIME $body, array $headers);
 }
