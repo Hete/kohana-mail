@@ -3,11 +3,12 @@
 defined('SYSPATH') or die('No direct script access.');
 
 /**
- * Description of Mailer
+ * Mailer.
  *
- * @package  Mail
- * @author   Guillaume Poirier-Morency <guillaumepoiriermorency@gmail.com>
- * @license  BSD 3-clauses
+ * @package   Mail
+ * @author    Guillaume Poirier-Morency <guillaumepoiriermorency@gmail.com>
+ * @copyright (c) 2014, Guillaume Poirier-Morency <guillaumepoiriermorency@gmail.com>
+ * @license   BSD 3 clauses
  */
 class Kohana_Mailer {
 
@@ -26,9 +27,9 @@ class Kohana_Mailer {
         }
 
         $sender = Kohana::$config->load("mail.$name.sender");
-        $sender_options = Kohana::$config->load("mail.$name.sender_options");
+        $options = Kohana::$config->load("mail.$name.options");
 
-        return Mail_Sender::factory($sender, $sender_options);
+        return Mail_Sender::factory($sender, $options);
     }
 
 }

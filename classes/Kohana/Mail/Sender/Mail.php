@@ -14,12 +14,11 @@ defined('SYSPATH') or die('No direct script access.');
  */
 class Kohana_Mail_Sender_Mail extends Mail_Sender {
 
-    protected function _send(array $to, $body, array $headers, array $attachments) {
+    protected function _send(array $to) {
 
         $to = implode(', ', $to);
-        $subject = mb_encode_mimeheader(Arr::get($headers, 'Subject', ''));
 
-        if ($attachments) {
+        if ($this->attachments) {
 
             $boundary = sha1(uniqid(NULL, TRUE));
 
@@ -35,7 +34,7 @@ class Kohana_Mail_Sender_Mail extends Mail_Sender {
             $headers['Content-Type'] = 'multipart/mixed; boundary=' . $boundary;
         }
 
-        foreach ($attachments as $index => $attachment) {
+        foreach ($this->attachments as $index => $attachment) {
 
             $attachment_headers = array();
 
@@ -52,16 +51,20 @@ class Kohana_Mail_Sender_Mail extends Mail_Sender {
             ));
         }
 
-        foreach ($headers as $key => $value) {
+        $headers = array();
+
+        foreach ($this->headers as $key => $value) {
             $value = mb_encode_mimeheader($value);
             $headers[$key] = "$key: $value";
         }
 
         $headers = implode("\r\n", $headers);
 
-        $parameters = implode(' ', $this->options);
+        $subject = Arr::get($headers, 'Subject');
 
-        return mail($to, $subject, $body, $headers, $parameters);
+        $options = implode(' ', $this->options);
+
+        return mail($to, $subject, $this->body, $headers, $options);
     }
 
 }

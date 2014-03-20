@@ -8,20 +8,42 @@ defined('SYSPATH') or die('No direct script access.');
  * @package   Mail
  * @author    Guillaume Poirier-Morency <guillaumepoiriermorency@gmail.com>
  * @copyright (c) 2013, Hète.ca Inc.
- * @license   BSD 3-clauses
+ * @license   BSD 3 clauses
  */
 return array(
     'default' => array(
+        /**
+         * Mail: simple mail() function wrapper.
+         * 
+         * You will need the PEAR Mail package installed on your computer if
+         * you want to use any of the following mailer.
+         * 
+         * PEAR_Sendmail: send mail through a sendmail server using PEAR.
+         * 
+         * PEAR_SMTP: send mail through smtp protocol using PEAR.
+         * 
+         * PEAR_Mail: PEAR wrapper for the mail() function.
+         */
         'sender' => 'Mail',
         /**
          * Options for the sender.
          */
-        'sender_options' => array(
-        /* PEAR_Sendmail
+        'options' => array(
+        /**
+         * Mail
+         * 
+         * Specify an array of commands. They will be automatically joined
+         * by a space character.
+         */
+        /**
+         * PEAR_Sendmail
+         * 
          * 'sendmail_path' => '/usr/bin/sendmail',
          * 'sendmail_args' => '-i',
          */
-        /* PEAR_SMTP
+        /**
+         * PEAR_SMTP
+         * 
          * 'host' => 'localhost',
          * 'port' => 25,
          * 'auth' => FALSE,
@@ -35,18 +57,5 @@ return array(
          * 'pipelining' => NULL
          */
         ),
-        'styler' => NULL,
-        'styler_options' => array(
-        /* Plain
-         * 'wordwrap' => FALSE, // 72 characters recommended, FALSE to disable.
-         */
-        /* HTML
-         * 'css_file' => MODPATH . 'mail/bootstrap-mail.css',
-         */
-        /* Auto
-         * 'paragraph' => TRUE, // Applies a Text::auto_p
-         * 'link' => TRUE // Applies a Text::auto_link
-         */
-        )
     )
 );

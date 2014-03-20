@@ -5,10 +5,11 @@ defined('SYSPATH') or die('No direct script access.');
 /**
  * Tests for the Mail package.
  * 
- * @package Mail
- * @category Tests
- * @author Hète.ca Team
+ * @package   Mail
+ * @category  Tests
+ * @author    Hète.ca Team
  * @copyright (c) 2013, Hète.ca Inc.
+ * @license   BSD 3 clauses
  */
 class Mail_Test extends Unittest_TestCase {
 
@@ -166,4 +167,5 @@ class Mail_Test extends Unittest_TestCase {
                         ->headers($headers)
                         ->send($email));
     }
+
 }

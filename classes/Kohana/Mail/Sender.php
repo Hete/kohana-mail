@@ -25,20 +25,11 @@ abstract class Kohana_Mail_Sender {
         return new $class($options);
     }
 
-    /**
-     *
-     * @var type 
-     */
     protected $headers = array();
-
-    /**
-     *
-     * @var type 
-     */
     protected $attachments = array();
 
     /**
-     * Initialize the headers from the configuration.
+     * Initialize a Sender with options.
      */
     public function __construct(array $options) {
         $this->options = $options;
@@ -247,9 +238,7 @@ abstract class Kohana_Mail_Sender {
     public function send($receivers) {
 
         // Check if the receiver is a traversable structure
-        if (!Arr::is_array($receivers)) {
-            $receivers = array($receivers);
-        }
+        $receivers = Arr::is_array($receivers) ? $receivers : array($receivers);
 
         $to = array();
 
@@ -263,21 +252,18 @@ abstract class Kohana_Mail_Sender {
             }
         }
 
+        // Generate a unique Message-ID
         if (!array_key_exists('Message-ID', $this->headers)) {
             $this->headers['Message-ID'] = sha1(uniqid(NULL, TRUE));
         }
 
-        return $this->_send($to, $this->body, $this->headers, $this->attachments);
+        return $this->_send($to);
     }
 
     /**
      * Implemented by the sender.
      *
-     * @param  string  to          list of emails
-     * @param  string  body        mail's body
-     * @param  array   headers     headers
-     * @param  array   attachments an array of mail attachments
-     * @return boolean TRUE if sending is successful, FALSE otherwise.
+     * @param string $to list of valid RFC emails.
      */
-    protected abstract function _send(array $to, $body, array $headers, array $attachments);
+    protected abstract function _send(array $to);
 }

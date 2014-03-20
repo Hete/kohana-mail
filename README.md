@@ -1,6 +1,10 @@
-# Kohana Mail Sender
+kohana-mail
+===========
 
-Simple mail sender for the Kohana framework.
+Simple mailer for the Kohana framework.
+
+Supports the built-in mail() function and the PEAR Mail module so you can send 
+mail through smtp and sendmail.
 
 ## Basic usage
 
@@ -13,16 +17,17 @@ Simple mail sender for the Kohana framework.
 
 ## Attachments
 
-Attachmment content can be appended on a mail. You may specify an array of headers specific to that attachment.
+Attachmment content can be appended on a mail. You may specify an array of 
+headers specific to that attachment.
 
-    Mail_Sender::factory()
+    Mailer::factory()
         ->subject('Got a new cat picture for you.')
         ->attachment(file_get_contents('cat.png'), array(
             'Content-Type' => 'image/png'
         )
         ->send('foo@example.com')
 
-### Receivers
+## Receivers
 
 Receivers could be 4 things
 
@@ -45,3 +50,7 @@ Or a mixed array
 It is pretty convinient with the ORM
 
     $receivers = ORM::factory('user')->find_all()->as_array('email', 'full_name');
+
+    Mailer::factory()
+        ->reply_to('noreply@example.com')
+        ->send($receivers);
