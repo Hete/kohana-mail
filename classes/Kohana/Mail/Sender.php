@@ -232,8 +232,7 @@ abstract class Kohana_Mail_Sender {
      * When fetching an ORM, it is somewhat useful to do $model->as_array('email', 'name').
      *
      * @param  variant $receiver an email, list of email or associative array of email to name.
-     * @param  boolean $one      send all mails at once.
-     * @return array   an array of states when sending; keys match $receivers keys.
+     * @return boolean TRUE on success FALSE otherwise.
      */
     public function send($receivers) {
 
@@ -257,13 +256,14 @@ abstract class Kohana_Mail_Sender {
             $this->headers['Message-ID'] = sha1(uniqid(NULL, TRUE));
         }
 
-        return $this->_send($to);
+        return (bool) $this->_send($to);
     }
 
     /**
      * Implemented by the sender.
      *
-     * @param string $to list of valid RFC emails.
+     * @param  string $to list of valid RFC emails.
+     * @return variant return code of the sender.
      */
     protected abstract function _send(array $to);
 }
