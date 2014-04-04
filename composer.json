@@ -20,7 +20,12 @@
         "kohana/core": ">=3.3",
         "php": ">=5.3.3"
     },
+    "repositories": [
+        "type": "pear",
+        "url": "pear.php.net"
+    ]
     "suggest": {
-        "PEAR/Mail": "*"
+        "pear-pear/Mail": "*",
+        "pear-pear/Mail_Mime": "*"
     }
 }

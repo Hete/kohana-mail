@@ -81,6 +81,7 @@ class Mail_Test extends Unittest_TestCase {
      * @dataProvider emails
      */
     public function test_send($email) {
+
         $this->assertTrue(Mailer::factory()
                         ->subject('test')
                         ->body('test')
@@ -91,6 +92,7 @@ class Mail_Test extends Unittest_TestCase {
      * @dataProvider subjects
      */
     public function test_subject($subject) {
+
         $this->assertTrue(Mailer::factory()
                         ->subject($subject)
                         ->body('test')
@@ -101,6 +103,7 @@ class Mail_Test extends Unittest_TestCase {
      * @dataProvider headers
      */
     public function test_headers(array $headers) {
+
         $this->assertTrue(Mailer::factory()
                         ->body('test')
                         ->headers($headers)
@@ -108,6 +111,7 @@ class Mail_Test extends Unittest_TestCase {
     }
 
     public function test_attachment() {
+
         $this->assertTrue(Mailer::factory()
                         ->body('Hey!')
                         ->attachment('<html><body>Hey!</body></html>', array('Content-Type' => 'text/html'))
@@ -115,19 +119,10 @@ class Mail_Test extends Unittest_TestCase {
     }
 
     /**
-     * A mail with a missing body is invalid.
-     * 
-     * @expectedException ErrorException
-     */
-    public function test_missing_body() {
-        Mailer::factory()
-                ->send('foo@example.com');
-    }
-
-    /**
      * @dataProvider emails_subjects_bodies_headers
      */
     public function test_Sender_Mail($email, $subject, $body, array $headers) {
+
         $this->assertTrue(Mail_Sender::factory('Mail', array())
                         ->subject($subject)
                         ->body($body)
@@ -139,6 +134,7 @@ class Mail_Test extends Unittest_TestCase {
      * @dataProvider emails_subjects_bodies_headers
      */
     public function test_Sender_PEAR_Mail($email, $subject, $body, $headers) {
+
         $this->assertTrue(Mail_Sender::factory('PEAR_Mail', array())
                         ->subject($subject)
                         ->body($body)
@@ -150,6 +146,7 @@ class Mail_Test extends Unittest_TestCase {
      * @dataProvider emails_subjects_bodies_headers
      */
     public function test_Sender_PEAR_SMTP($email, $subject, $body, $headers) {
+
         $this->assertTrue(Mail_Sender::factory('PEAR_SMTP', array())
                         ->subject($subject)
                         ->body($body)
@@ -161,6 +158,7 @@ class Mail_Test extends Unittest_TestCase {
      * @dataProvider emails_subjects_bodies_headers
      */
     public function test_Sender_PEAR_Sendmail($email, $subject, $body, $headers) {
+
         $this->assertTrue(Mail_Sender::factory('PEAR_Sendmail', array())
                         ->subject($subject)
                         ->body($body)

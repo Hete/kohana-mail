@@ -26,34 +26,42 @@ abstract class Kohana_Mail_Sender {
     }
 
     protected $headers = array();
+
+    protected $body = NULL;
+
     protected $attachments = array();
 
     /**
      * Initialize a Sender with options.
      */
     public function __construct(array $options) {
+
         $this->options = $options;
     }
 
     /**
      * Getter-setter for mail headers.
      * 
-     * @param string $key
-     * @param variant $value
+     * @param  string i $key
+     * @param  variant $value
      * @return variant
      */
     public function headers($key = NULL, $value = NULL) {
 
         if (is_array($key)) {
+
             $this->headers = $key;
+
             return $this;
         }
 
         if ($key === NULL) {
+
             return $this->headers;
         }
 
         if ($value === NULL) {
+
             return Arr::get($this->headers, $key);
         }
 

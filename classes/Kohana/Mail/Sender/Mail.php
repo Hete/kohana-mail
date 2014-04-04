@@ -18,6 +18,8 @@ class Kohana_Mail_Sender_Mail extends Mail_Sender {
 
         $to = implode(', ', $to);
 
+        $body = $this->body;
+
         if ($this->attachments) {
 
             $boundary = sha1(uniqid(NULL, TRUE));
@@ -25,10 +27,10 @@ class Kohana_Mail_Sender_Mail extends Mail_Sender {
             // The body is base64 encoded since it could break the multipart.
             $body = implode("\r\n", array(
                 '--' . $boundary,
-                'Content-Type: ' . Arr::get($headers, 'Content-Type', 'text/plain'),
+                'Content-Type: ' . Arr::get($this->headers, 'Content-Type', 'text/plain'),
                 'Content-Transfer-Encoding: base64',
                 "\r\n",
-                base64_encode($body)
+                base64_encode($this->body)
             ));
 
             $headers['Content-Type'] = 'multipart/mixed; boundary=' . $boundary;
@@ -64,7 +66,7 @@ class Kohana_Mail_Sender_Mail extends Mail_Sender {
 
         $options = implode(' ', $this->options);
 
-        return mail($to, $subject, $this->body, $headers, $options);
+        return mail($to, $subject, $body, $headers, $options);
     }
 
 }

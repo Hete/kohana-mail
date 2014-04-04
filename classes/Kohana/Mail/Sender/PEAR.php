@@ -3,7 +3,7 @@
 defined('SYSPATH') or die('No direct script access.');
 
 require_once 'Mail.php';
-require_once 'Mail/Mime.php';
+require_once 'Mail/mime.php';
 
 /**
  * PEAR wrapper for the Mail module.
@@ -20,18 +20,31 @@ abstract class Kohana_Mail_Sender_PEAR extends Mail_Sender {
 
         $mime = new Mail_MIME();
 
-        if ($this->headers['Content-Type'] === 'text/html') {
+        if ($this->headers('Content-Type') === 'text/html') {
+
             $mime->setHTMLBody($this->body);
         } else {
+
             $mime->setTxtBody($this->body);
         }
 
         foreach ($this->attachments as $attachment) {
+
             list($attachment, $headers) = $attachment;
             $mime->addAttachment($attachment, $headers, FALSE);
         }        
+ 
+        // PEAR use some old code that causes exceptions on E_STRICT...
+
+        $saved = error_reporting();
+
+        error_reporting($saved & ~E_STRICT);
         
-        return $this->PEAR_send($to, $mime->headers($this->headers), $mime->get());
+        $status = $this->PEAR_send($to, $mime->headers($this->headers), $mime->get());
+
+        error_reporting($saved);
+
+        return $status;
     }
 
     /**
