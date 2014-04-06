@@ -11,10 +11,16 @@ defined('SYSPATH') or die('No direct script access.');
  * @copyright (c) 2013, Hète.ca Inc.
  * @license   BSD 3 clauses
  */
-class Mail_Test extends Unittest_TestCase {
+class MailTest extends Unittest_TestCase {
+    
+    /**
+     * Set a custom email to receive the test results.
+     */
+    const RECEIVER = 'guillaumepoiriermorency@gmail.com';
 
     public function emails() {
         return array(
+            array(MailTest::RECEIVER),
             array('foo@example.com'),
             array(array('foo@example.com', 'bar@example.com')),
             array(array('foo@example.com' => 'Foo', 'bar@example.com' => 'Bar')),
@@ -96,7 +102,7 @@ class Mail_Test extends Unittest_TestCase {
         $this->assertTrue(Mailer::factory()
                         ->subject($subject)
                         ->body('test')
-                        ->send('foo@example.com'));
+                        ->send(MailTest::RECEIVER));
     }
 
     /**
@@ -105,17 +111,20 @@ class Mail_Test extends Unittest_TestCase {
     public function test_headers(array $headers) {
 
         $this->assertTrue(Mailer::factory()
+                        ->subject('test')
                         ->body('test')
                         ->headers($headers)
-                        ->send('foo@example.com'));
+                        ->send(MailTest::RECEIVER));
     }
 
     public function test_attachment() {
 
         $this->assertTrue(Mailer::factory()
+                        ->subject('Sent you some files!')
                         ->body('Hey!')
                         ->attachment('<html><body>Hey!</body></html>', array('Content-Type' => 'text/html'))
-                        ->send('foo@example.com'));
+                        ->attachment('smdkn3ihriweojrwefr', array('Content-Type' => 'image/png'))
+                        ->send(MailTest::RECEIVER));
     }
 
     /**

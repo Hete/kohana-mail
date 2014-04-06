@@ -259,11 +259,6 @@ abstract class Kohana_Mail_Sender {
             }
         }
 
-        // Generate a unique Message-ID
-        if (!array_key_exists('Message-ID', $this->headers)) {
-            $this->headers['Message-ID'] = sha1(uniqid(NULL, TRUE));
-        }
-
         return (bool) $this->_send($to);
     }
 
