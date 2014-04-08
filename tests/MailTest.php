@@ -16,11 +16,12 @@ class MailTest extends Unittest_TestCase {
     /**
      * Set a custom email to receive the test results.
      */
-    const RECEIVER = 'guillaumepoiriermorency@gmail.com';
+    const RECEIVER = 'foo@example.com';
 
     public function emails() {
         return array(
             array(MailTest::RECEIVER),
+            array('¤ Foo ¤ <foo@example.com>'), // non-ascii
             array('foo@example.com'),
             array(array('foo@example.com', 'bar@example.com')),
             array(array('foo@example.com' => 'Foo', 'bar@example.com' => 'Bar')),
@@ -122,8 +123,8 @@ class MailTest extends Unittest_TestCase {
         $this->assertTrue(Mailer::factory()
                         ->subject('Sent you some files!')
                         ->body('Hey!')
-                        ->attachment('<html><body>Hey!</body></html>', array('Content-Type' => 'text/html'))
-                        ->attachment('smdkn3ihriweojrwefr', array('Content-Type' => 'image/png'))
+                        ->attachment('{}', array('Content-Type' => 'application/json'))
+                        ->attachment(file_get_contents(MODPATH . 'mail/tests/test.png'), array('Content-Type' => 'image/png'))
                         ->send(MailTest::RECEIVER));
     }
 
@@ -133,6 +134,7 @@ class MailTest extends Unittest_TestCase {
     public function test_Sender_Mail($email, $subject, $body, array $headers) {
 
         $this->assertTrue(Mail_Sender::factory('Mail', array())
+                        ->from('Mail')
                         ->subject($subject)
                         ->body($body)
                         ->headers($headers)
@@ -145,6 +147,7 @@ class MailTest extends Unittest_TestCase {
     public function test_Sender_PEAR_Mail($email, $subject, $body, $headers) {
 
         $this->assertTrue(Mail_Sender::factory('PEAR_Mail', array())
+                        ->from('PEAR Mail')
                         ->subject($subject)
                         ->body($body)
                         ->headers($headers)
@@ -156,7 +159,10 @@ class MailTest extends Unittest_TestCase {
      */
     public function test_Sender_PEAR_SMTP($email, $subject, $body, $headers) {
 
+        $headers['Sender'] = 'PEAR SMTP';
+
         $this->assertTrue(Mail_Sender::factory('PEAR_SMTP', array())
+                        ->from('PEAR SMTP')
                         ->subject($subject)
                         ->body($body)
                         ->headers($headers)
@@ -169,10 +175,10 @@ class MailTest extends Unittest_TestCase {
     public function test_Sender_PEAR_Sendmail($email, $subject, $body, $headers) {
 
         $this->assertTrue(Mail_Sender::factory('PEAR_Sendmail', array())
+                        ->from('PEAR Sendmail')
                         ->subject($subject)
                         ->body($body)
                         ->headers($headers)
                         ->send($email));
     }
-
 }

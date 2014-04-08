@@ -16,6 +16,8 @@ abstract class Kohana_Mail_Sender {
     /**
      * Return an instance of the specified sender.
      * 
+     * @param  string $name    name of the Mail_Sender object to instanciate.
+     * @param  array  $options options for the Mail_Sender object.
      * @return Mail_Sender 
      */
     public static function factory($name, array $options) {
@@ -33,6 +35,8 @@ abstract class Kohana_Mail_Sender {
 
     /**
      * Initialize a Sender with options.
+     *
+     * @param array $options options for the Mail_Sender object.
      */
     public function __construct(array $options) {
 
@@ -42,7 +46,7 @@ abstract class Kohana_Mail_Sender {
     /**
      * Getter-setter for mail headers.
      * 
-     * @param  string i $key
+     * @param  string  $key
      * @param  variant $value
      * @return variant
      */
@@ -70,13 +74,18 @@ abstract class Kohana_Mail_Sender {
         return $this;
     }
 
+    /**
+     *
+     * @param  $sender
+     * @return \Mail_Sender
+     */
     public function sender($sender = NULL) {
         return $this->headers('Sender', $sender);
     }
 
     /**
      * 
-     * @param string $cc
+     * @param  string $cc
      * @return \Mail_Sender
      */
     public function cc($cc = NULL) {
@@ -85,7 +94,7 @@ abstract class Kohana_Mail_Sender {
 
     /**
      * 
-     * @param string $bcc
+     * @param  string $bcc
      * @return \Mail_Sender
      */
     public function bcc($bcc = NULL) {
@@ -94,7 +103,7 @@ abstract class Kohana_Mail_Sender {
 
     /**
      * 
-     * @param string $from
+     * @param  string $from
      * @return \Mail_Sender
      */
     public function from($from = NULL) {
@@ -103,7 +112,7 @@ abstract class Kohana_Mail_Sender {
 
     /**
      * 
-     * @param string $from
+     * @param  string $resent_from
      * @return \Mail_Sender
      */
     public function resent_from($resent_from = NULL) {
@@ -112,7 +121,7 @@ abstract class Kohana_Mail_Sender {
 
     /**
      * 
-     * @param string $from
+     * @param  string $resent_to
      * @return \Mail_Sender
      */
     public function resent_to($resent_to = NULL) {
@@ -121,7 +130,7 @@ abstract class Kohana_Mail_Sender {
 
     /**
      * 
-     * @param string $from
+     * @param  string $subject
      * @return \Mail_Sender
      */
     public function subject($subject = NULL) {
@@ -130,7 +139,7 @@ abstract class Kohana_Mail_Sender {
 
     /**
      * 
-     * @param string $from
+     * @param  string $resent_subject
      * @return \Mail_Sender
      */
     public function resent_subject($resent_subject = NULL) {
@@ -139,7 +148,7 @@ abstract class Kohana_Mail_Sender {
 
     /**
      * 
-     * @param string $from
+     * @param  string $return_path
      * @return \Mail_Sender
      */
     public function return_path($return_path = NULL) {
@@ -148,7 +157,7 @@ abstract class Kohana_Mail_Sender {
 
     /**
      * 
-     * @param string $reply_to
+     * @param  string $reply_to
      * @return \Mail_Sender
      */
     public function reply_to($reply_to = NULL) {
@@ -157,7 +166,7 @@ abstract class Kohana_Mail_Sender {
 
     /**
      * 
-     * @param string $from
+     * @param  string $mail_reply_to
      * @return \Mail_Sender
      */
     public function mail_reply_to($mail_reply_to = NULL) {
@@ -166,7 +175,7 @@ abstract class Kohana_Mail_Sender {
 
     /**
      * 
-     * @param string $from
+     * @param  string $mail_followup_to
      * @return \Mail_Sender
      */
     public function mail_followup_to($mail_followup_to = NULL) {
@@ -175,7 +184,7 @@ abstract class Kohana_Mail_Sender {
 
     /**
      * 
-     * @param string $from
+     * @param  string $message_id
      * @return \Mail_Sender
      */
     public function message_id($message_id = NULL) {
@@ -184,7 +193,7 @@ abstract class Kohana_Mail_Sender {
 
     /**
      * 
-     * @param string $from
+     * @param  string $in_reply_to
      * @return \Mail_Sender
      */
     public function in_reply_to($in_reply_to = NULL) {
@@ -193,7 +202,7 @@ abstract class Kohana_Mail_Sender {
 
     /**
      * 
-     * @param string $from
+     * @param  string $references
      * @return \Mail_Sender
      */
     public function references($references = NULL) {
@@ -201,13 +210,18 @@ abstract class Kohana_Mail_Sender {
     }
 
     /**
-     * Get or set the body of the mail.
+     * Get or set the body of the mail. The body is immediatly evaluated.
      * 
-     * If you are assigning an HTML body, specify text/html content type.
+     * If you are assigning an HTML body, specify Content-Type to text/html in
+     * headers.
+     *
+     * @param  variant $body
+     * @return string  the body of the mail
      */
     public function body($body = NULL) {
 
         if ($body === NULL) {
+
             return $this->body;
         }
 
@@ -250,11 +264,14 @@ abstract class Kohana_Mail_Sender {
         $to = array();
 
         foreach ($receivers as $key => $value) {
+
             // $key is an email, so $value is a name
             if (is_string($key) && Valid::email($key)) {
+
                 $to[] = mb_encode_mimeheader($value) . ' ' . "<$key>";
                 // $key is a numeric index, $vaalue is an email
             } else {
+
                 $to[] = $value;
             }
         }

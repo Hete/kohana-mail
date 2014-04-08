@@ -36,10 +36,10 @@ class Kohana_Mail_Sender_Mail extends Mail_Sender {
 
             // the body is an attachment
             array_unshift($this->attachments, array(
+                'attachment' => $this->body,
                 'headers' => array(
                     'Content-Type' => Arr::get($this->headers, 'Content-Type', 'text/plain')
-                ),
-                'attachment' => $this->body
+                )
             ));
 
             $headers[] = "Content-Type: multipart/mixed; boundary=$boundary";

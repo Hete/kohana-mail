@@ -34,6 +34,8 @@ return array(
          * 
          * Specify an array of commands. They will be automatically joined
          * by a space character.
+         *
+         * 'option_1', 'option_2',
          */
         /**
          * PEAR_Sendmail
@@ -56,6 +58,6 @@ return array(
          * 'persist' => NULL,
          * 'pipelining' => NULL
          */
-        ),
+        )
     )
 );
