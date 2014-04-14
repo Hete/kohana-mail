@@ -27,6 +27,8 @@ return array(
         'sender' => 'Mail',
         /**
          * Options for the sender.
+         *
+         * For PEAR senders options, refer to their official documentation at http://pear.php.net/manual/en/package.mail.mail.factory.php 
          */
         'options' => array(
         /**

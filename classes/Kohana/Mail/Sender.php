@@ -27,11 +27,29 @@ abstract class Kohana_Mail_Sender {
         return new $class($options);
     }
 
+    /**
+     *
+     * @var array 
+     */
     protected $headers = array();
-
+    
+    /**
+     *
+     * @var string 
+     */
     protected $body = NULL;
-
+    
+    /**
+     *
+     * @var array 
+     */
     protected $attachments = array();
+    
+    /**
+     *
+     * @var array 
+     */
+    protected $params = array();
 
     /**
      * Initialize a Sender with options.
@@ -249,6 +267,22 @@ abstract class Kohana_Mail_Sender {
     }
 
     /**
+     * Bind a substitution parameter to this mail sender.
+     * 
+     * Mail headers values (including subject) and body will be substituted.
+     * 
+     * @param  string  $name
+     * @param  variant $value
+     * @return \Mail_Sender
+     */
+    public function param($name, $value) {
+
+        $this->params[$name] = (string) $value;
+        
+        return $this;
+    }
+
+    /**
      * Send an email to its receivers.
      * 
      * When fetching an ORM, it is somewhat useful to do $model->as_array('email', 'name').
@@ -275,6 +309,15 @@ abstract class Kohana_Mail_Sender {
                 $to[] = $value;
             }
         }
+        
+        // substitute headers values
+        foreach ($this->headers as $key => $value) {
+            
+            $this->headers[$key] = strtr($value, $this->params);
+        }
+        
+        // substitute body values
+        $this->body = strtr($this->body, $this->params);
 
         return (bool) $this->_send($to);
     }

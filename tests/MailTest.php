@@ -118,6 +118,16 @@ class MailTest extends Unittest_TestCase {
                         ->send(MailTest::RECEIVER));
     }
 
+    public function test_param() {
+
+         $this->assertTrue(Mailer::factory()
+             ->subject('Mail sent by :name')
+             ->body('Hi, it\'s :name, how are you?')
+             ->param(':name', 'Foo')
+             ->send(MailTest::RECEIVER));
+
+        }
+
     public function test_attachment() {
 
         $this->assertTrue(Mailer::factory()

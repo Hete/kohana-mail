@@ -1,7 +1,7 @@
 {
-    "name": "kohana/mail",
-    "type": "kohana/module",
-    "description": "Mail sender for multiple backend",
+    "name": "hete/mail",
+    "type": "kohana-module",
+    "description": "Mailer with multiple backend for the Kohana framework",
     "homepage": "http://github.com/Hete/kohana-mail",
     "license": "BSD-3-Clause",
     "keywords": ["kohana", "framework", "mail", "sendmail", "smtp"],
