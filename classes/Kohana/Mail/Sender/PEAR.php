@@ -30,8 +30,7 @@ abstract class Kohana_Mail_Sender_PEAR extends Mail_Sender {
 
         foreach ($this->attachments as $attachment) {
 
-            list($attachment, $headers) = $attachment;
-            $mime->addAttachment($attachment, $headers, FALSE);
+            $mime->addAttachment($attachment['attachment'], $attachment['headers'], FALSE);
         }        
  
         // PEAR use some old code that causes exceptions on E_STRICT...
