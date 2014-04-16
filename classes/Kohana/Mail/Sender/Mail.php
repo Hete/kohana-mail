@@ -16,58 +16,60 @@ class Kohana_Mail_Sender_Mail extends Mail_Sender {
 
     protected function _send(array $to) {
 
-        $to = implode(', ', $to);
-
-        $subject = $this->subject();
+        $headers = $this->headers;
 
         $body = $this->body;
 
-        $headers = array();
-
-        foreach ($this->headers as $key => $value) {
-
-            $value = mb_encode_mimeheader($value);
-            $headers[] = "$key: $value";
-        }
+        $attachments = $this->attachments;
 
         $boundary = sha1(uniqid(NULL, TRUE));
 
         if ($this->attachments) {
 
-            $headers[] = "Content-Type: multipart/mixed; boundary=$boundary";
+            // the body is the first part of the message
+            array_unshift($attachments, array(
+                'attachment' => $body,
+                'headers' => array(
+                    'Content-Type' => Arr::get($headers, 'Content-Type', 'text/plain')
+                )
+            ));
 
             $body = 'This is a message with multiple parts in MIME format.' . "\r\n";
             $body .= '--' . $boundary . "\r\n";
 
-            // the body is the first part of the message
-            array_unshift($this->attachments, array(
-                'attachment' => $this->body,
-                'headers' => array(
-                    'Content-Type' => Arr::get($this->headers, 'Content-Type', 'text/plain')
-                )
-            ));
+            // override Content-Type of the message as it is a multipart
+            $headers['Content-Type'] = "multipart/mixed; boundary=$boundary";
         }
 
-        foreach ($this->attachments as $index => $attachment) {
+        foreach ($attachments as $index => $attachment) {
 
-            $attachment_headers = array();
+            $attachment['headers']['Content-Transfer-Encoding'] = 'base64';
 
             foreach ($attachment['headers'] as $key => $value) {
-                $attachment_headers[] = "$key: " . mb_encode_mimeheader($value);
+
+                $body .= "$key: " . mb_encode_mimeheader($value) . "\r\n";
             }
 
-            $attachment_headers[] = 'Content-Transfer-Encoding: base64';
-
-            $body .= implode("\r\n", $attachment_headers) . "\r\n\r\n";
+            $body .= "\r\n";
 
             $body .= base64_encode($attachment['attachment']) . "\r\n";
 
-            $body .= '--' . $boundary . ($index + 1 === count($attachment) ? '--' : '') . "\r\n";
+            $body .= '--' . $boundary . ($index + 1 === count($attachments) ? '--' : '') . "\r\n";
         }
 
-        $subject = mb_encode_mimeheader($subject);
+        $encoded_headers = array();
 
-        $headers = implode("\r\n", $headers);
+        foreach ($headers as $key => $value) {
+
+            $value = mb_encode_mimeheader($value);
+            $encoded_headers[] = "$key: $value";
+        }
+
+        $to = implode(', ', $to);
+
+        $subject = mb_encode_mimeheader($this->subject());
+
+        $headers = implode("\r\n", $encoded_headers);
 
         $options = implode(' ', $this->options);
 

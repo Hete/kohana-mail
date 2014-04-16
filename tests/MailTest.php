@@ -143,7 +143,7 @@ class MailTest extends Unittest_TestCase {
      */
     public function test_Sender_Mail($email, $subject, $body, array $headers) {
 
-        $this->assertTrue(Mail_Sender::factory('Mail', array())
+        $this->assertTrue(Mail_Sender::factory('Mail')
                         ->from('Mail')
                         ->subject($subject)
                         ->body($body)
@@ -156,8 +156,8 @@ class MailTest extends Unittest_TestCase {
      */
     public function test_Sender_Mock($email, $subject, $body, array $headers) {
 
-        $this->assertTrue(Mail_Sender::factory('Mock', array())
-                        ->from('Mail')
+        $this->assertTrue(Mail_Sender::factory('Mock')
+                        ->from('Mock')
                         ->subject($subject)
                         ->body($body)
                         ->headers($headers)
@@ -169,7 +169,7 @@ class MailTest extends Unittest_TestCase {
      */
     public function test_Sender_PEAR_Mail($email, $subject, $body, $headers) {
 
-        $this->assertTrue(Mail_Sender::factory('PEAR_Mail', array())
+        $this->assertTrue(Mail_Sender::factory('PEAR_Mail')
                         ->from('PEAR Mail')
                         ->subject($subject)
                         ->body($body)
@@ -182,9 +182,7 @@ class MailTest extends Unittest_TestCase {
      */
     public function test_Sender_PEAR_SMTP($email, $subject, $body, $headers) {
 
-        $headers['Sender'] = 'PEAR SMTP';
-
-        $this->assertTrue(Mail_Sender::factory('PEAR_SMTP', array())
+        $this->assertTrue(Mail_Sender::factory('PEAR_SMTP')
                         ->from('PEAR SMTP')
                         ->subject($subject)
                         ->body($body)
@@ -197,7 +195,7 @@ class MailTest extends Unittest_TestCase {
      */
     public function test_Sender_PEAR_Sendmail($email, $subject, $body, $headers) {
 
-        $this->assertTrue(Mail_Sender::factory('PEAR_Sendmail', array())
+        $this->assertTrue(Mail_Sender::factory('PEAR_Sendmail')
                         ->from('PEAR Sendmail')
                         ->subject($subject)
                         ->body($body)
