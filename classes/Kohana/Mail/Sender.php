@@ -20,7 +20,7 @@ abstract class Kohana_Mail_Sender {
      * @param  array  $options options for the Mail_Sender object.
      * @return Mail_Sender 
      */
-    public static function factory($name, array $options) {
+    public static function factory($name, array $options = NULL) {
 
         $class = "Mail_Sender_$name";
 
@@ -56,9 +56,9 @@ abstract class Kohana_Mail_Sender {
      *
      * @param array $options options for the Mail_Sender object.
      */
-    public function __construct(array $options) {
+    public function __construct(array $options = NULL) {
 
-        $this->options = $options;
+        $this->options = (array) $options;
     }
 
     /**
