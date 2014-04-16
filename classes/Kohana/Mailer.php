@@ -8,7 +8,7 @@ defined('SYSPATH') or die('No direct script access.');
  * @package   Mail
  * @author    Guillaume Poirier-Morency <guillaumepoiriermorency@gmail.com>
  * @copyright (c) 2014, Guillaume Poirier-Morency <guillaumepoiriermorency@gmail.com>
- * @license   BSD 3 clauses
+ * @license   BSD-3 clauses
  */
 class Kohana_Mailer {
 

@@ -5,7 +5,7 @@ defined('SYSPATH') or die('No direct script access.');
 /**
  * Driver for built-in mail() PHP function.
  * 
- * @see mail
+ * @uses mail
  *
  * @package   Mail
  * @category  Senders

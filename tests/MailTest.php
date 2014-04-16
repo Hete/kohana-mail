@@ -150,6 +150,19 @@ class MailTest extends Unittest_TestCase {
                         ->headers($headers)
                         ->send($email));
     }
+    
+    /**
+     * @dataProvider emails_subjects_bodies_headers
+     */
+    public function test_Sender_Mock($email, $subject, $body, array $headers) {
+
+        $this->assertTrue(Mail_Sender::factory('Mock', array())
+                        ->from('Mail')
+                        ->subject($subject)
+                        ->body($body)
+                        ->headers($headers)
+                        ->send($email));
+    } 
 
     /**
      * @dataProvider emails_subjects_bodies_headers

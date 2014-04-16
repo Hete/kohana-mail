@@ -10,6 +10,8 @@ error_reporting(error_reporting() & ~ E_STRICT);
 /**
  * Sender based on PEAR SMTP.
  * 
+ * @uses Mail_smtp
+ * 
  * @package  Mail
  * @category Senders
  * @author   Guillaume Poirier-Morency <guillaumepoiriermorency@gmail.com>
