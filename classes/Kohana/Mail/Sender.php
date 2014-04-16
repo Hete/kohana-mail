@@ -32,19 +32,19 @@ abstract class Kohana_Mail_Sender {
      * @var array 
      */
     protected $headers = array();
-    
+
     /**
      *
      * @var string 
      */
     protected $body = NULL;
-    
+
     /**
      *
      * @var array 
      */
     protected $attachments = array();
-    
+
     /**
      *
      * @var array 
@@ -278,7 +278,7 @@ abstract class Kohana_Mail_Sender {
     public function param($name, $value) {
 
         $this->params[$name] = (string) $value;
-        
+
         return $this;
     }
 
@@ -287,10 +287,15 @@ abstract class Kohana_Mail_Sender {
      * 
      * When fetching an ORM, it is somewhat useful to do $model->as_array('email', 'name').
      *
-     * @param  variant $receiver an email, list of email or associative array of email to name.
+     * @param  variant $receivers an email, list of email or associative array of email to name.
      * @return boolean TRUE on success FALSE otherwise.
      */
     public function send($receivers) {
+
+        if (Kohana::$profiling) {
+
+            $benchmark = Profiler::start('Mailer', $this->subject());
+        }
 
         // Check if the receiver is a traversable structure
         $receivers = Arr::is_array($receivers) ? $receivers : array($receivers);
@@ -309,17 +314,24 @@ abstract class Kohana_Mail_Sender {
                 $to[] = $value;
             }
         }
-        
+
         // substitute headers values
         foreach ($this->headers as $key => $value) {
-            
+
             $this->headers[$key] = strtr($value, $this->params);
         }
-        
+
         // substitute body values
         $this->body = strtr($this->body, $this->params);
 
-        return (bool) $this->_send($to);
+        $status = (bool) $this->_send($to);
+
+        if (isset($benchmark)) {
+
+            Profiler::stop($benchmark);
+        }
+
+        return $status;
     }
 
     /**
