@@ -6,6 +6,13 @@ require_once 'Mail.php';
 require_once 'Mail/mime.php';
 
 /**
+ * Fixes the Mail class from PEAR that throws E_STRICT
+ */
+class FixedMail extends Mail {
+    
+}
+
+/**
  * PEAR wrapper for the Mail module.
  *
  * PEAR must be included in your PHP path.
@@ -31,19 +38,9 @@ abstract class Kohana_Mail_Sender_PEAR extends Mail_Sender {
         foreach ($this->attachments as $attachment) {
 
             $mime->addAttachment($attachment['attachment'], $attachment['headers'], FALSE);
-        }        
- 
-        // PEAR use some old code that causes exceptions on E_STRICT...
+        }
 
-        $saved = error_reporting();
-
-        error_reporting($saved & ~E_STRICT);
-        
-        $status = $this->PEAR_send($to, $mime->headers($this->headers), $mime->get());
-
-        error_reporting($saved);
-
-        return $status;
+        return $this->PEAR_send($to, $mime->headers($this->headers), $mime->get());
     }
 
     /**

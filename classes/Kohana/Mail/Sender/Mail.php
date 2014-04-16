@@ -34,18 +34,18 @@ class Kohana_Mail_Sender_Mail extends Mail_Sender {
 
         if ($this->attachments) {
 
-            // the body is an attachment
+            $headers[] = "Content-Type: multipart/mixed; boundary=$boundary";
+
+            $body = 'This is a message with multiple parts in MIME format.' . "\r\n";
+            $body .= '--' . $boundary . "\r\n";
+
+            // the body is the first part of the message
             array_unshift($this->attachments, array(
                 'attachment' => $this->body,
                 'headers' => array(
                     'Content-Type' => Arr::get($this->headers, 'Content-Type', 'text/plain')
                 )
             ));
-
-            $headers[] = "Content-Type: multipart/mixed; boundary=$boundary";
-
-            $body = 'This is a message with multiple parts in MIME format.' . "\r\n";
-            $body .= '--' . $boundary . "\r\n";
         }
 
         foreach ($this->attachments as $index => $attachment) {
@@ -58,9 +58,7 @@ class Kohana_Mail_Sender_Mail extends Mail_Sender {
 
             $attachment_headers[] = 'Content-Transfer-Encoding: base64';
 
-            $body .= implode("\r\n", $attachment_headers);
-
-            $body .= "\r\n\r\n";
+            $body .= implode("\r\n", $attachment_headers) . "\r\n\r\n";
 
             $body .= base64_encode($attachment['attachment']) . "\r\n";
 

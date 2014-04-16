@@ -14,7 +14,9 @@ class Kohana_Mail_Sender_PEAR_Sendmail extends Mail_Sender_PEAR {
 
     protected function PEAR_send(array $to, array $headers, $body) {
 
-        return Mail::factory('sendmail', $this->options)->send($to, $headers, $body);
+        $mail = new Mail();
+        
+        return $mail->factory('sendmail', $this->options)->send($to, $headers, $body);
     }
 
 }
