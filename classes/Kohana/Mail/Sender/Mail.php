@@ -57,6 +57,16 @@ class Kohana_Mail_Sender_Mail extends Mail_Sender {
             $body .= '--' . $boundary . ($index + 1 === count($attachments) ? '--' : '') . "\r\n";
         }
 
+        $subject = NULL;
+
+        // avoid duplicated Subject header
+        if(array_key_exists('Subject', $headers)) {
+        
+            $subject = mb_encode_mimeheader($headers['Subject']);
+            
+            unset($headers['Subject']);
+        }
+
         $encoded_headers = array();
 
         foreach ($headers as $key => $value) {
@@ -66,8 +76,6 @@ class Kohana_Mail_Sender_Mail extends Mail_Sender {
         }
 
         $to = implode(', ', $to);
-
-        $subject = mb_encode_mimeheader($this->subject());
 
         $headers = implode("\r\n", $encoded_headers);
 
