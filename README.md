@@ -9,8 +9,10 @@ mail through smtp and sendmail.
 ## Basic usage
 
     Mailer::factory()
-        ->subject('Hey Foo!')
-        ->body(View::factory('some_template'), 'text/html')
+        ->headers('Content-Type', 'text/html')
+        ->subject('Hey :username!')
+        ->body(View::factory('some_template'))
+        ->param(':username', 'John McGuire')
         ->send(array(
             'John McGuire' => 'foo@example.com'
         ));
@@ -23,9 +25,10 @@ headers specific to that attachment.
     Mailer::factory()
         ->subject('Got a new cat picture for you.')
         ->attachment(file_get_contents('cat.png'), array(
-            'Content-Type' => 'image/png'
+            'Content-Type' => 'image/png',
+            'Content-Disposition' => 'attachment; filename=cat.png'
         )
-        ->send('foo@example.com')
+        ->send('foo@example.com');
 
 ## Receivers
 
@@ -54,3 +57,12 @@ It is pretty convinient with the ORM
     Mailer::factory()
         ->reply_to('noreply@example.com')
         ->send($receivers);
+
+## Sending heavy mail
+
+You can send heavy mail using register_shutdown_function
+
+    register_shutdown_function($mailer, 'send', $users);
+
+It's pretty convenient to reduce the request time as mail can often take an
+eternity to send.

@@ -285,13 +285,23 @@ abstract class Kohana_Mail_Sender {
     /**
      * Send an email to its receivers.
      * 
-     * When fetching an ORM, it is somewhat useful to do $model->as_array('email', 'name').
+     * When fetching an ORM, it is somewhat useful to do 
+     * 
+     *     $users = $model->as_array('email', 'username');
+     * 
+     * To send heavy mail, you may use register_shutdown_function so that your
+     * mail gets sent after the user has received his mail.
+     * 
+     * Don't do that for critical mail! You will not be able to access the
+     * result of the function.
+     * 
+     *     register_shutdown_function(array($mailer, 'send'), $users);
      *
      * @param  variant $receivers an email, list of email or associative array of email to name.
      * @return boolean TRUE on success FALSE otherwise.
      */
     public function send($receivers) {
-
+               
         if (Kohana::$profiling) {
 
             $benchmark = Profiler::start('Mailer', $this->subject());
