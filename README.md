@@ -2,6 +2,8 @@
 
 Mail sender for kohana. It is based on 3 structures : Mail_Sender, Mail_Receiver and Mail_Queue. This sender allow you to easily send View based mails.
 
+This version of the module is deprecated. You are better use the [https://github.com/Hete/kohana-mail/tree/3.3/master](3.3/master) branch which contain a clean, simple and efficient implementation.
+
 ### It is as easy as
 <pre>
 Mail_Sender::factory()->send($receiver, $view, $subject, $headers);
