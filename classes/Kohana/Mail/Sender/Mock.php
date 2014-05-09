@@ -12,7 +12,21 @@ defined('SYSPATH') or die('No direct script access.');
  */
 class Kohana_Mail_Sender_Mock extends Mail_Sender {
 
+    /**
+     * Stack of sent mail.
+     * 
+     * Use array_pop in your tests to ensure specific mail have been sent.
+     * 
+     * @var array 
+     */
+    public static $history;
+
     protected function _send(array $to) {
+
+        $this->to = $to;
+
+        // push the mail on the stack
+        Mail_Sender_Mock::$history[] = $this;
 
         return (bool) $to;
     }
