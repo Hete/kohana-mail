@@ -301,7 +301,7 @@ abstract class Kohana_Mail_Sender {
      * @return boolean TRUE on success FALSE otherwise.
      */
     public function send($receivers) {
-               
+
         if (Kohana::$profiling) {
 
             $benchmark = Profiler::start('Mailer', $this->subject());

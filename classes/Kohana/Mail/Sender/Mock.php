@@ -21,6 +21,13 @@ class Kohana_Mail_Sender_Mock extends Mail_Sender {
      */
     public static $history;
 
+    /**
+     * Expose attachments for testing purposes.
+     * 
+     * @var array 
+     */
+    public $attachments;
+
     protected function _send(array $to) {
 
         $this->to = $to;
