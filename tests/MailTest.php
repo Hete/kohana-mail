@@ -9,16 +9,17 @@ defined('SYSPATH') or die('No direct script access.');
  * @category  Tests
  * @author    Hète.ca Team
  * @copyright (c) 2013, Hète.ca Inc.
- * @license   BSD 3 clauses
+ * @license   BSD-3-Clauses
  */
 class MailTest extends Unittest_TestCase {
-    
+
     /**
      * Set a custom email to receive the test results.
      */
     const RECEIVER = 'foo@example.com';
 
     public function emails() {
+
         return array(
             array(MailTest::RECEIVER),
             array('¤ Foo ¤ <foo@example.com>'), // non-ascii
@@ -30,6 +31,7 @@ class MailTest extends Unittest_TestCase {
     }
 
     public function subjects() {
+
         return array(
             array('Hello Foo'),
             array('¤ Hello Foo ¤'), // non-ascii
@@ -38,6 +40,7 @@ class MailTest extends Unittest_TestCase {
     }
 
     public function bodies() {
+
         return array(
             array('<html><head></head><body></body></html>'), // html
             array("Hello Foo, it's about your delightful ideas."),
@@ -87,7 +90,7 @@ class MailTest extends Unittest_TestCase {
     /**
      * @dataProvider emails
      */
-    public function test_send($email) {
+    public function testSend($email) {
 
         $this->assertTrue(Mailer::factory()
                         ->subject('test')
@@ -98,7 +101,7 @@ class MailTest extends Unittest_TestCase {
     /**
      * @dataProvider subjects
      */
-    public function test_subject($subject) {
+    public function testSubject($subject) {
 
         $this->assertTrue(Mailer::factory()
                         ->subject($subject)
@@ -109,7 +112,7 @@ class MailTest extends Unittest_TestCase {
     /**
      * @dataProvider headers
      */
-    public function test_headers(array $headers) {
+    public function testHeaders(array $headers) {
 
         $this->assertTrue(Mailer::factory()
                         ->subject('test')
@@ -118,17 +121,16 @@ class MailTest extends Unittest_TestCase {
                         ->send(MailTest::RECEIVER));
     }
 
-    public function test_param() {
+    public function testParam() {
 
-         $this->assertTrue(Mailer::factory()
-             ->subject('Mail sent by :name')
-             ->body('Hi, it\'s :name, how are you?')
-             ->param(':name', 'Foo')
-             ->send(MailTest::RECEIVER));
+        $this->assertTrue(Mailer::factory()
+                        ->subject('Mail sent by :name')
+                        ->body('Hi, it\'s :name, how are you?')
+                        ->param(':name', 'Foo')
+                        ->send(MailTest::RECEIVER));
+    }
 
-        }
-
-    public function test_attachment() {
+    public function testAttachment() {
 
         $this->assertTrue(Mailer::factory()
                         ->subject('Sent you some files!')
@@ -136,6 +138,11 @@ class MailTest extends Unittest_TestCase {
                         ->attachment('{}', array('Content-Type' => 'application/json'))
                         ->attachment(file_get_contents(MODPATH . 'mail/tests/test.png'), array('Content-Type' => 'image/png'))
                         ->send(MailTest::RECEIVER));
+    }
+
+    public function testMessageIDGenerator() {
+
+        $this->assertRegExp('/<[0-9a-Z]*8\.[0-9a-Z]*8@\w+\.?\w.>/', Mailer::message_id());
     }
 
     /**
@@ -150,7 +157,7 @@ class MailTest extends Unittest_TestCase {
                         ->headers($headers)
                         ->send($email));
     }
-    
+
     /**
      * @dataProvider emails_subjects_bodies_headers
      */
@@ -162,7 +169,7 @@ class MailTest extends Unittest_TestCase {
                         ->body($body)
                         ->headers($headers)
                         ->send($email));
-    } 
+    }
 
     /**
      * @dataProvider emails_subjects_bodies_headers
@@ -202,4 +209,5 @@ class MailTest extends Unittest_TestCase {
                         ->headers($headers)
                         ->send($email));
     }
+
 }

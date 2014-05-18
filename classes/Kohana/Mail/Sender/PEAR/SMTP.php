@@ -15,7 +15,7 @@ error_reporting(error_reporting() & ~ E_STRICT);
  * @package  Mail
  * @category Senders
  * @author   Guillaume Poirier-Morency <guillaumepoiriermorency@gmail.com>
- * @license  BSD 3-clauses
+ * @license  BSD-3-Clauses
  */
 class Kohana_Mail_Sender_PEAR_SMTP extends Mail_Sender_PEAR {
 

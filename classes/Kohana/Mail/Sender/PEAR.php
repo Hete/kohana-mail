@@ -16,7 +16,7 @@ require_once 'Mail/mime.php';
  * @package  Mail
  * @category Senders
  * @author   Guillaume Poirier-Morency <guillaumepoiriermorency@gmail.com>
- * @license  BSD 3-clauses
+ * @license  BSD-3-Clauses
  */
 abstract class Kohana_Mail_Sender_PEAR extends Mail_Sender {
 

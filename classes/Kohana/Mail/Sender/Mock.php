@@ -8,7 +8,7 @@ defined('SYSPATH') or die('No direct script access.');
  * @package  Mail
  * @category Senders
  * @author   Guillaume Poirier-Morency <guillaumepoiriermorency@gmail.com>
- * @license  BSD 3 clauses
+ * @license  BSD-3-Clauses
  */
 class Kohana_Mail_Sender_Mock extends Mail_Sender {
 

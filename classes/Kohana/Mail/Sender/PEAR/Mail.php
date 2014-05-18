@@ -10,7 +10,7 @@ defined('SYSPATH') or die('No direct script access.');
  * @package  Mail
  * @category Senders
  * @author   Guillaume Poirier-Morency
- * @license  BSD 3-clauses
+ * @license  BSD-3-Clauses
  */
 class Kohana_Mail_Sender_PEAR_Mail extends Mail_Sender_PEAR {
 

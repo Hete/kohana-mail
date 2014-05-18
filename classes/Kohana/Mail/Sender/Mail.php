@@ -11,6 +11,7 @@ defined('SYSPATH') or die('No direct script access.');
  * @category  Senders
  * @author    Hète.ca Team
  * @copyright (c) 2013, Hète.ca Inc.
+ * @license   BSD-3-Clauses
  */
 class Kohana_Mail_Sender_Mail extends Mail_Sender {
 

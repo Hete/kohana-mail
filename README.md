@@ -13,9 +13,7 @@ mail through smtp and sendmail.
         ->subject('Hey :username!')
         ->body(View::factory('some_template'))
         ->param(':username', 'John McGuire')
-        ->send(array(
-            'John McGuire' => 'foo@example.com'
-        ));
+        ->send(array('John McGuire' => 'foo@example.com' ));
 
 ## Attachments
 
@@ -29,6 +27,8 @@ headers specific to that attachment.
             'Content-Disposition' => 'attachment; filename=cat.png'
         )
         ->send('foo@example.com');
+
+Mail with attachment will be automatically converted to multipart format.
 
 ## Receivers
 
@@ -62,7 +62,19 @@ It is pretty convinient with the ORM
 
 You can send heavy mail using register_shutdown_function
 
-    register_shutdown_function($mailer, 'send', $users);
+    register_shutdown_function(array($mailer, 'send'), $users);
 
 It's pretty convenient to reduce the request time as mail can often take an
-eternity to send.
+while to send.
+
+## Generating Message-ID
+
+There is a message id implementation based on ()[] recommendations. It generates
+secure identifier to make threads and other facy mailing stuff.
+
+    $message_id = Mailer::message_id();
+
+    Mailer::factory()
+        ->in_reply_to($message_id)
+        ->body('Hey Foo, long time no see!')
+        ->send('foo@example.com')

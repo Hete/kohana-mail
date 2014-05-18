@@ -9,7 +9,7 @@ defined('SYSPATH') or die('No direct script access.');
  * @category  Senders
  * @author    Guillaume Poirier-Morency <guillaumepoiriermorency@gmail.com>
  * @copyright (c) 2013, Hète.ca Inc.
- * @license   BSD 3-clauses
+ * @license   BSD-3-Clauses
  */
 abstract class Kohana_Mail_Sender {
 

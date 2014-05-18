@@ -8,7 +8,7 @@ defined('SYSPATH') or die('No direct script access.');
  * @package   Mail
  * @author    Guillaume Poirier-Morency <guillaumepoiriermorency@gmail.com>
  * @copyright (c) 2013, Hète.ca Inc.
- * @license   BSD 3 clauses
+ * @license   BSD-3-Clauses
  */
 return array(
     'default' => array(
