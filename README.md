@@ -3,7 +3,7 @@ kohana-mail
 
 Simple mailer for the Kohana framework.
 
-Supports the built-in mail() function and the PEAR Mail module so you can send 
+Supports the built-in ```mail``` function and the PEAR Mail module so you can send 
 mail through smtp and sendmail.
 
 ## Basic usage
@@ -17,8 +17,8 @@ Mailer::factory()
     ->send(array('John McGuire' => 'foo@example.com' ));
 ```
 
-The param() function is used to substitute the body and subject. If you use a 
-View for your body, it is more convenient to pass variables using View::factory.
+The ```Mail_Sender::param``` function is used to substitute the body and subject. If you use a 
+View for your body, it is more convenient to pass variables using ```View::factory```.
 
 ## Attachments
 
@@ -88,8 +88,8 @@ while to send.
 
 ## Generating Message-ID
 
-There is a message id implementation based on ()[] recommendations. It generates
-secure identifier to make threads and other facy mailing stuff.
+There is a message id implementation based on [Matt Curtin & Jamie Zawinski recommendations](http://www.jwz.org/doc/mid.html). It generates
+secure identifier to make threads and other fancy mailing stuff.
 
 ```php
 $message_id = Mailer::message_id();
