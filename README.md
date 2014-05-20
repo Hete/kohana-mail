@@ -3,8 +3,9 @@ kohana-mail
 
 Simple mailer for the Kohana framework.
 
-Supports the built-in ```mail``` function and the PEAR Mail module so you can send 
-mail through smtp and sendmail.
+Supports the built-in ```mail``` function and the [PEAR Mail](http://pear.php.net/package/Mail/) module so you can send mail through SMTP and Sendmail.
+
+The SMTP sender for PEAR Mail module uses old PHP4 code that throws strict warnings. If imported, it will automatically disable E_STRICT. It is recommended to use it in PRODUCTION environment and test with an alternate sender.
 
 ## Basic usage
 
@@ -98,4 +99,26 @@ Mailer::factory()
     ->in_reply_to($message_id)
     ->body('Hey Foo, long time no see!')
     ->send('foo@example.com')
+```
+
+## Testing mail
+
+The module provides a Mock sender to make efficient testing. Mails are pushed in a stack ```Mail_Sender_Mock::$history``` so that you can retreive them and test their content.
+
+A variable ```$to``` is added in the mail sender to test receivers. It is an array of RFC822 compliant emails.
+
+```php
+    public function testMail() {
+    
+        // self-request to send a mail
+        Request::factory('send')->execute();
+    
+        $mail = array_pop(Mail_Sender_Mock::$history);
+        
+        $this->assertEquals('text/html', $mail->headers('Content-Type'));
+        $this->assertContains('foo <foo@example.com>', $mail->to);
+        
+        $this->assertTag(array('tag' => 'a', 'attributes' => array('href' => 'http://example.com')), $mail->body());
+    }
+
 ```
