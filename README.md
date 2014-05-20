@@ -22,10 +22,10 @@ View for your body, it is more convenient to pass variables using ```View::facto
 
 ## Attachments
 
-Attachmment content can be appended on a mail. You may specify an array of 
+Attachment content can be appended on a mail using ```Mail_Sender::attachment```. You may specify an array of 
 headers specific to that attachment.
 
-Mail with attachment will be automatically converted to multipart format.
+Mail with attachment(s) will be automatically converted to multipart format.
 
 ```php
 Mailer::factory()
@@ -77,7 +77,7 @@ Mailer::factory()
 
 ## Sending heavy mail
 
-You can send heavy mail using register_shutdown_function
+You can send heavy mail using ```register_shutdown_function```
 
 ```php
 register_shutdown_function(array($mailer, 'send'), $users);
