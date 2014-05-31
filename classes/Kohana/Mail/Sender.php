@@ -93,6 +93,23 @@ abstract class Kohana_Mail_Sender {
     }
 
     /**
+     * Set the Content-Type header of this mail.
+     * 
+     * Use text/html for HTML email.
+     * Use text/plain for plain email.
+     * 
+     * You may also specify a custom charset using the charset parameter like
+     * 
+     *     text/html; charset=utf-8
+     * 
+     * @param  $content_type
+     * @return \Mail_Sender
+     */
+    public function content_type($content_type = NULL) {
+        return $this->headers('Content-Type', $content_type);
+    }
+
+    /**
      *
      * @param  $sender
      * @return \Mail_Sender
