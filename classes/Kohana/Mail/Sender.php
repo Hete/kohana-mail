@@ -347,13 +347,22 @@ abstract class Kohana_Mail_Sender {
             // substitute headers with params
             $value = strtr($value, $this->params);
 
+            // how name should be detected
+            $name = '\b[\w-_ ]+';
+
+            // soft mail validation from Valid::email
+            $email = '[-_a-z0-9\'+*$^&%=~!?{}]++(?:\.[-_a-z0-9\'+*$^&%=~!?{}]+)*+@(?:(?![-.])[-a-z0-9.]+(?<![-.])\.[a-z]{2,6}|\d{1,3}(?:\.\d{1,3}){3})';
+
             /**
              * Detects recipient and list of recipient to encode them 
              * accordingly.
              *
+             * If $name cannot be matched, the regex will take the email 
+             * instead. 
+             *
              * Regex group are used to detect emails and names in recipient.
              */
-            if (preg_match_all('/((\b[\w\s-]*) <(\w+@\w+\.\w+)>)|(\w+@\w+\.\w+)/', $value, $matches, PREG_SET_ORDER)) {
+            if (preg_match_all("/(($name) <($email)>)|($email)/", $value, $matches, PREG_SET_ORDER)) {
                 
                 $recipients = array();
 
@@ -365,7 +374,8 @@ abstract class Kohana_Mail_Sender {
 
                     } else {
 
-                        $recipients[] = $match[4];
+
+                        $recipients[] = $match[0];
                     }
                 }
 
