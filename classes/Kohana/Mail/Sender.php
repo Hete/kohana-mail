@@ -353,7 +353,7 @@ abstract class Kohana_Mail_Sender {
              *
              * Regex group are used to detect emails and names in recipient.
              */
-            if (preg_match_all('/((\b[\w ]*) <(\w+@\w+\.\w+)>)|(\w+@\w+\.\w+)/', $value, $matches, PREG_SET_ORDER)) {
+            if (preg_match_all('/((\b[\w\s-]*) <(\w+@\w+\.\w+)>)|(\w+@\w+\.\w+)/', $value, $matches, PREG_SET_ORDER)) {
                 
                 $recipients = array();
 

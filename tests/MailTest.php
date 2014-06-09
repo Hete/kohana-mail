@@ -144,26 +144,13 @@ class MailTest extends Unittest_TestCase {
 
     public function testMessageIDGenerator() {
 
-        $this->assertRegExp('/<[0-9a-Z]*8\.[0-9a-Z]*8@\w+\.?\w.>/', Mailer::message_id());
+        $this->assertRegExp('/<\w+\.\w+\=@\w+>/', Mailer::message_id());
     }
 
     /**
      * @dataProvider emails_subjects_bodies_headers
      */
-    public function test_Sender_Mail($email, $subject, $body, array $headers) {
-
-        $this->assertTrue(Mail_Sender::factory('Mail')
-                        ->from('Mail')
-                        ->subject($subject)
-                        ->body($body)
-                        ->headers($headers)
-                        ->send($email));
-    }
-
-    /**
-     * @dataProvider emails_subjects_bodies_headers
-     */
-    public function test_Sender_Mock($email, $subject, $body, array $headers) {
+    public function testSenderMock($email, $subject, $body, array $headers) {
 
         $this->assertTrue(Mail_Sender::factory('Mock')
                         ->from('Mock')
@@ -176,7 +163,31 @@ class MailTest extends Unittest_TestCase {
     /**
      * @dataProvider emails_subjects_bodies_headers
      */
-    public function test_Sender_PEAR_Mail($email, $subject, $body, $headers) {
+    public function testSenderMail($email, $subject, $body, array $headers) {
+
+        if (!$this->hasInternet()) {
+        
+            $this->markTestSkipped();    
+        }
+
+        $this->assertTrue(Mail_Sender::factory('Mail')
+                        ->from('Mail')
+                        ->subject($subject)
+                        ->body($body)
+                        ->headers($headers)
+                        ->send($email));
+    }
+
+
+    /**
+     * @dataProvider emails_subjects_bodies_headers
+     */
+    public function testSenderPEARMail($email, $subject, $body, $headers) {
+
+        if (!$this->hasInternet()) {
+        
+            $this->markTestSkipped();    
+        }
 
         $this->assertTrue(Mail_Sender::factory('PEAR_Mail')
                         ->from('PEAR Mail')
@@ -189,7 +200,12 @@ class MailTest extends Unittest_TestCase {
     /**
      * @dataProvider emails_subjects_bodies_headers
      */
-    public function test_Sender_PEAR_SMTP($email, $subject, $body, $headers) {
+    public function testSenderPEARSMTP($email, $subject, $body, $headers) {
+
+        if (!$this->hasInternet()) {
+        
+            $this->markTestSkipped();    
+        }
 
         $this->assertTrue(Mail_Sender::factory('PEAR_SMTP')
                         ->from('PEAR SMTP')
@@ -202,7 +218,12 @@ class MailTest extends Unittest_TestCase {
     /**
      * @dataProvider emails_subjects_bodies_headers
      */
-    public function test_Sender_PEAR_Sendmail($email, $subject, $body, $headers) {
+    public function testSenderPEARSendmail($email, $subject, $body, $headers) {
+
+        if (!$this->hasInternet()) {
+        
+            $this->markTestSkipped();    
+        }
 
         $this->assertTrue(Mail_Sender::factory('PEAR_Sendmail')
                         ->from('PEAR Sendmail')
