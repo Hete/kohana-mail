@@ -52,7 +52,9 @@ class MailTest extends Unittest_TestCase {
         return array(
             array(array(
                     'From' => 'Bar <bar@example.com>',
-                    'To' => 'Foo <foo@example.com>',
+                )),
+            array(array(
+                    'To' => 'Foo <foo@example.com>, bar@example.com', // recipient list
                 )),
         );
     }

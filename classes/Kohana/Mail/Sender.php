@@ -334,7 +334,7 @@ abstract class Kohana_Mail_Sender {
             // $key is an email, so $value is a name
             if (is_string($key) && Valid::email($key)) {
 
-                $to[] = mb_encode_mimeheader($value) . ' ' . "<$key>";
+                $to[] = mb_encode_mimeheader($value) . ' <' . $key . '>';
                 // $key is a numeric index, $vaalue is an email
             } else {
 
@@ -342,10 +342,37 @@ abstract class Kohana_Mail_Sender {
             }
         }
 
-        // substitute headers values
         foreach ($this->headers as $key => $value) {
 
-            $this->headers[$key] = strtr($value, $this->params);
+            // substitute headers with params
+            $value = strtr($value, $this->params);
+
+            /**
+             * Detects recipient and list of recipient to encode them 
+             * accordingly.
+             *
+             * Regex group are used to detect emails and names in recipient.
+             */
+            if (preg_match_all('/((\b[\w ]*) <(\w+@\w+\.\w+)>)|(\w+@\w+\.\w+)/', $value, $matches, PREG_SET_ORDER)) {
+                
+                $recipients = array();
+
+                foreach($matches as $match) {
+
+                    if (count($match) === 4) {
+                    
+                        $recipients[] = mb_encode_mimeheader($match[2]) . ' <' . $match[3] . '>';    
+
+                    } else {
+
+                        $recipients[] = $match[4];
+                    }
+                }
+
+                $value = join(', ', $recipients);
+            }
+
+            $this->headers[$key] = $value;
         }
 
         // substitute body values
