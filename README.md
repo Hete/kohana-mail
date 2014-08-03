@@ -3,9 +3,13 @@ kohana-mail
 
 Simple mailer for the Kohana framework.
 
-Supports the built-in ```mail``` function and the [PEAR Mail](http://pear.php.net/package/Mail/) module so you can send mail through SMTP and Sendmail.
+Supports the following senders
+* ```mail``` built-in function
+* [PEAR Mail](http://pear.php.net/package/Mail/)
+* [PHPMailer](https://github.com/PHPMailer/PHPMailer)
+* mock sender for testing
 
-The SMTP sender for PEAR Mail module uses old PHP4 code that throws strict warnings. If imported, it will automatically disable E_STRICT. It is recommended to use it in PRODUCTION environment and test with an alternate sender.
+The SMTP sender for PEAR Mail module uses old PHP4 code that throws strict warnings. If imported, it will automatically disable E_STRICT.
 
 ## Basic usage
 
@@ -33,8 +37,7 @@ Mailer::factory()
     ->subject('Got a new cat picture for you.')
     ->attachment(file_get_contents('cat.png'), array(
         'Content-Type' => 'image/png',
-        'Content-Disposition' => 'attachment; filename=cat.png'
-    )
+        'Content-Disposition' => 'attachment; filename=cat.png')
     ->send('foo@example.com');
 ```
 
@@ -108,17 +111,16 @@ The module provides a Mock sender to make efficient testing. Mails are pushed in
 A variable ```$to``` is added in the mail sender to test receivers. It is an array of RFC822 compliant emails.
 
 ```php
-    public function testMail() {
-    
-        // self-request to send a mail
-        Request::factory('send')->execute();
-    
-        $mail = array_pop(Mail_Sender_Mock::$history);
-        
-        $this->assertEquals('text/html', $mail->headers('Content-Type'));
-        $this->assertContains('foo <foo@example.com>', $mail->to);
-        
-        $this->assertTag(array('tag' => 'a', 'attributes' => array('href' => 'http://example.com')), $mail->body());
-    }
+public function testMail() 
+{
+    // self-request to send a mail
+    Request::factory('send')->execute();
 
+    $mail = array_pop(Mail_Sender_Mock::$history);
+    
+    $this->assertEquals('text/html', $mail->headers('Content-Type'));
+    $this->assertContains('foo <foo@example.com>', $mail->to);
+    
+    $this->assertTag(array('tag' => 'a', 'attributes' => array('href' => 'http://example.com')), $mail->body());
+}
 ```
