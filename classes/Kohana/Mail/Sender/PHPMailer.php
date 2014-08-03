@@ -5,27 +5,46 @@ require Kohana::find_file('vendor', 'PHPMailer/PHPMailerAutoload');
  * PHPMailer-based mail sender.
  *
  * @package Mail
- * @author Guillaume Poirier-Morency
+ * @category Senders
+ * @author Guillaume Poirier-Morency <guillaumepoiriermorency@gmail.com>
+ * @copyright (c) 2014, Guillaume Poirier-Morency
  * @license BSD-3-Clauses
  */
-class Kohana_Mail_Sender_PHPMailer extends Mail_Sender {
+abstract class Kohana_Mail_Sender_PHPMailer extends Mail_Sender {
 
-	public function _send(array $to)
+	/**
+	 *
+	 * @var PHPMailer
+	 */
+	protected $mailer;
+
+	public function __construct(array $options)
 	{
-		$mailer = new PHPMailer();
+		parent::__construct($options);
+		
+		$this->mailer = new PHPMailer();
+	}
+
+	protected function _send(array $to)
+	{
+		if (array_key_exists('Host', $this->options))
+		{
+			$this->mailer->isSMTP();
+		}
 		
 		foreach ($this->options as $key => $value)
 		{
-			$mailer->{$key} = $value;
+			$this->mailer->{$key} = $value;
 		}
 		
 		foreach ($this->headers as $key => $value)
 		{
-			$mailer->addCustomHeader($key, $value);
+			$this->mailer->addCustomHeader($key, $value);
 		}
 		
-		$mailer->Subject = $this->headers('Subject');
-		$mailer->Body = $this->body;
+		$this->mailer->Subject = $this->headers('Subject');
+		
+		$this->mailer->Body = $this->body;
 		
 		foreach ($this->attachments as $attachment)
 		{
@@ -39,11 +58,11 @@ class Kohana_Mail_Sender_PHPMailer extends Mail_Sender {
 				list ($disposition, $filename) = preg_split('/;filename=/', $disposition);
 			}
 			
-			$mailer->addStringAttachment($attachment['attachment'], $filename, Arr::get($headers, 'Content-Encoding'), Arr::get($headers, 'Content-Type'), $disposition);
+			$this->mailer->addStringAttachment($attachment['attachment'], $filename, Arr::get($headers, 'Content-Encoding'), Arr::get($headers, 'Content-Type'), $disposition);
 		}
 		
-		$mailer->isHTML($this->headers('Content-Type') === 'text/html');
+		$this->mailer->isHTML($this->headers('Content-Type') === 'text/html');
 		
-		return $mailer->send();
+		return $this->mailer->send();
 	}
 }

@@ -25,19 +25,26 @@ abstract class Kohana_Mail_Sender_PEAR extends Mail_Sender {
 		
 		if ($this->headers('Content-Type') === 'text/html')
 		{
-			
 			$mime->setHTMLBody($this->body);
 		}
 		else
 		{
-			
 			$mime->setTxtBody($this->body);
 		}
 		
 		foreach ($this->attachments as $attachment)
 		{
+			$headers = $attachment['headers'];
 			
-			$mime->addAttachment($attachment['attachment'], $attachment['headers'], FALSE);
+			$disposition = Arr::get($headers, 'Content-Disposition', 'attachment');
+			$filename = NULL;
+			
+			if (strpos($disposition, ';filename=') !== FALSE)
+			{
+				list ($disposition, $filename) = preg_split('/;filename=/', $disposition);
+			}
+			
+			$mime->addAttachment($attachment['attachment'], Arr::get($headers, 'Content-Type', 'application/octect-stream'), $filename, FALSE, 'base64', $disposition);
 		}
 		
 		return $this->PEAR_send($to, $mime->headers($this->headers), $mime->get());

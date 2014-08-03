@@ -21,7 +21,7 @@ abstract class Kohana_Mail_Sender {
 	 *        	options for the Mail_Sender object.
 	 * @return Mail_Sender
 	 */
-	public static function factory($name, array $options = NULL)
+	public static function factory($name, array $options)
 	{
 		$class = "Mail_Sender_$name";
 		
@@ -53,14 +53,20 @@ abstract class Kohana_Mail_Sender {
 	protected $params = array();
 
 	/**
+	 * 
+	 * @var array
+	 */
+	protected $options = array();
+
+	/**
 	 * Initialize a Sender with options.
 	 *
 	 * @param array $options
 	 *        	options for the Mail_Sender object.
 	 */
-	public function __construct(array $options = NULL)
+	public function __construct(array $options)
 	{
-		$this->options = (array) $options;
+		$this->options = $options;
 	}
 
 	/**
@@ -347,7 +353,6 @@ abstract class Kohana_Mail_Sender {
 	{
 		if (Kohana::$profiling)
 		{
-			
 			$benchmark = Profiler::start('Mailer', $this->subject());
 		}
 		
@@ -358,17 +363,14 @@ abstract class Kohana_Mail_Sender {
 		
 		foreach ($receivers as $key => $value)
 		{
-			
-			// $key is an email, so $value is a name
 			if (is_string($key) && Valid::email($key))
 			{
-				
+				// $key is an email, so $value is a name
 				$to[] = mb_encode_mimeheader($value) . ' ' . "<$key>";
-				// $key is a numeric index, $vaalue is an email
 			}
 			else
 			{
-				
+				// $key is a numeric index, $value is an email
 				$to[] = $value;
 			}
 		}

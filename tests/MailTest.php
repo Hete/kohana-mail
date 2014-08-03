@@ -17,30 +17,17 @@ class MailTest extends Unittest_TestCase {
 	 */
 	const RECEIVER = 'foo@example.com';
 
-	public function providerEmails()
-	{
-		return array(array(MailTest::RECEIVER), 
-			array('¤ Foo ¤ <foo@example.com>'), 			// non-ascii
-			array('foo@example.com'), 
-			array(array('foo@example.com', 'bar@example.com')), 
-			array(array('foo@example.com' => 'Foo', 'bar@example.com' => 'Bar')), 
-			array(array('foo@example.com', 'bar@example.com' => 'Bar')));
-	}
-
-	public function providerSubjects()
-	{
-		return array(array('Hello Foo'), array('¤ Hello Foo ¤'), 		// non-ascii
-		array('')); // empty
-	}
-
 	public function providerSender()
 	{
-		return array(array(Mail_Sender::factory('Mail')), 
-			// array(Mail_Sender::factory('PEAR_Mail')), 
-			// array(Mail_Sender::factory('PEAR_Sendmail')), 
-			// array(Mail_Sender::factory('PEAR_SMTP')), 
-			array(Mail_Sender::factory('PHPMailer')), 
-			array(Mail_Sender::factory('Mock')));
+		return array(array(Mail_Sender::factory('Mail', array())), 
+			array(Mail_Sender::factory('PEAR_Mail', array())), 
+			array(Mail_Sender::factory('PEAR_Sendmail', array())), 
+			array(Mail_Sender::factory('PEAR_SMTP', array())), 
+			array(Mail_Sender::factory('PHPMailer_Mail', array())), 
+			array(Mail_Sender::factory('PHPMailer_Qmail', array())), 
+			array(Mail_Sender::factory('PHPMailer_Sendmail', array())), 
+			array(Mail_Sender::factory('PHPMailer_SMTP', array())), 
+			array(Mail_Sender::factory('Mock', array())));
 	}
 
 	/**
@@ -49,6 +36,13 @@ class MailTest extends Unittest_TestCase {
 	public function testSend(Mail_Sender $sender)
 	{
 		$this->assertTrue($sender->subject('test')
+			->body('test')
+			->send('foo@example.com'));
+	}
+
+	public function testSendWithDefaultSender()
+	{
+		$this->assertTrue(Mailer::factory()->subject('test')
 			->body('test')
 			->send('foo@example.com'));
 	}
@@ -97,11 +91,13 @@ class MailTest extends Unittest_TestCase {
 	 */
 	public function testBody(Mail_Sender $sender)
 	{
+		// html body
 		$this->assertTrue($sender->subject('Hey foo!')
 			->content_type('text/html')
 			->body('<html><body>Hey foo!</body></html>')
 			->send(MailTest::RECEIVER));
 		
+		// plain text body
 		$this->assertTrue($sender->subject('Hey foo!')
 			->body('Hey!')
 			->send(MailTest::RECEIVER));
@@ -118,10 +114,19 @@ class MailTest extends Unittest_TestCase {
 			->attachment(file_get_contents(MODPATH . 'mail/tests/test.png'), array(
 			'Content-Type' => 'image/png'))
 			->send(MailTest::RECEIVER));
+		
+		// with filename
+		$this->assertTrue($sender->subject('Sent you some files!')
+			->body('Hey!')
+			->attachment('{}', array('Content-Type' => 'application/json'))
+			->attachment(file_get_contents(MODPATH . 'mail/tests/test.png'), array(
+			'Content-Type' => 'image/png', 
+			'Content-Disposition' => 'attachment;filename=test'))
+			->send(MailTest::RECEIVER));
 	}
 
 	public function testMessageIDGenerator()
 	{
-		$this->assertRegExp('/<[\w=]*12\.[\w=]*12@\w+(\.\w+)*>/', Mailer::message_id());
+		$this->assertRegExp('/<[\d\w\+=]+\.[\d\w\+=]+@\w+(\.\w+)*>/', Mailer::message_id());
 	}
 }
