@@ -23,6 +23,8 @@ return array(
          * PEAR_SMTP: send mail through smtp protocol using PEAR.
          * 
          * PEAR_Mail: PEAR wrapper for the mail() function.
+         * 
+         * PHPMailer: send mail using PHPMailer.
          */
         'sender' => 'Mail',
         /**
@@ -59,6 +61,15 @@ return array(
          * 'debug' => FALSE,
          * 'persist' => NULL,
          * 'pipelining' => NULL
+         */
+        /**
+         * PHPMailer
+         * 
+         * @link https://github.com/PHPMailer/PHPMailer
+         * 
+         * ''
+         * 'Username'
+         * 'Password'
          */
         )
     )

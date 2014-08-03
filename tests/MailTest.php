@@ -1,213 +1,127 @@
 <?php
-
 defined('SYSPATH') or die('No direct script access.');
 
 /**
  * Tests for the Mail package.
- * 
- * @package   Mail
- * @category  Tests
- * @author    Hète.ca Team
+ *
+ * @package Mail
+ * @category Tests
+ * @author Hète.ca Team
  * @copyright (c) 2013, Hète.ca Inc.
- * @license   BSD-3-Clauses
+ * @license BSD-3-Clauses
  */
 class MailTest extends Unittest_TestCase {
 
-    /**
-     * Set a custom email to receive the test results.
-     */
-    const RECEIVER = 'foo@example.com';
+	/**
+	 * Set a custom email to receive the test results.
+	 */
+	const RECEIVER = 'foo@example.com';
 
-    public function emails() {
+	public function providerEmails()
+	{
+		return array(array(MailTest::RECEIVER), 
+			array('¤ Foo ¤ <foo@example.com>'), 			// non-ascii
+			array('foo@example.com'), 
+			array(array('foo@example.com', 'bar@example.com')), 
+			array(array('foo@example.com' => 'Foo', 'bar@example.com' => 'Bar')), 
+			array(array('foo@example.com', 'bar@example.com' => 'Bar')));
+	}
 
-        return array(
-            array(MailTest::RECEIVER),
-            array('¤ Foo ¤ <foo@example.com>'), // non-ascii
-            array('foo@example.com'),
-            array(array('foo@example.com', 'bar@example.com')),
-            array(array('foo@example.com' => 'Foo', 'bar@example.com' => 'Bar')),
-            array(array('foo@example.com', 'bar@example.com' => 'Bar'))
-        );
-    }
+	public function providerSubjects()
+	{
+		return array(array('Hello Foo'), array('¤ Hello Foo ¤'), 		// non-ascii
+		array('')); // empty
+	}
 
-    public function subjects() {
+	public function providerSender()
+	{
+		return array(array(Mail_Sender::factory('Mail')), 
+			// array(Mail_Sender::factory('PEAR_Mail')), 
+			// array(Mail_Sender::factory('PEAR_Sendmail')), 
+			// array(Mail_Sender::factory('PEAR_SMTP')), 
+			array(Mail_Sender::factory('PHPMailer')), 
+			array(Mail_Sender::factory('Mock')));
+	}
 
-        return array(
-            array('Hello Foo'),
-            array('¤ Hello Foo ¤'), // non-ascii
-            array(''), // empty
-        );
-    }
+	/**
+	 * @dataProvider providerSender
+	 */
+	public function testSend(Mail_Sender $sender)
+	{
+		$this->assertTrue($sender->subject('test')
+			->body('test')
+			->send('foo@example.com'));
+	}
 
-    public function bodies() {
+	/**
+	 * @dataProvider providerSender
+	 */
+	public function testSubject(Mail_Sender $sender)
+	{
+		$this->assertTrue($sender->subject('Hello Foo')
+			->body('test')
+			->send(MailTest::RECEIVER));
+		
+		$this->assertTrue($sender->subject('¤ Hello Foo ¤')
+			->body('test')
+			->send(MailTest::RECEIVER));
+		
+		$this->assertTrue($sender->subject('')
+			->body('test')
+			->send(MailTest::RECEIVER));
+	}
 
-        return array(
-            array('<html><head></head><body></body></html>'), // html
-            array("Hello Foo, it's about your delightful ideas."),
-            array("Hello Foo\nHow are you?") // end-of-line
-        );
-    }
+	/**
+	 * @dataProvider providerSender
+	 */
+	public function testHeaders(Mail_Sender $sender)
+	{
+		$this->assertTrue($sender->subject('test')
+			->body('test')
+			->headers('Content-Type', 'text/html')
+			->send(MailTest::RECEIVER));
+	}
 
-    public function headers() {
-        return array(
-            array(array(
-                    'From' => 'Bar <bar@example.com>',
-                    'To' => 'Foo <foo@example.com>',
-                )),
-        );
-    }
+	public function testParam()
+	{
+		$this->assertTrue(Mailer::factory()->subject('Mail sent by :name')
+			->body('Hi, it\'s :name, how are you?')
+			->param(':name', 'Foo')
+			->send(MailTest::RECEIVER));
+		
+		$this->markTestIncomplete();
+	}
 
-    /**
-     * Combine emails, subjects, bodies and headers.
-     * 
-     * @uses Kohana::cache for lightning speed!
-     * 
-     * @return array
-     */
-    public function emails_subjects_bodies_headers() {
+	/**
+	 * @dataProvider providerSender
+	 */
+	public function testBody(Mail_Sender $sender)
+	{
+		$this->assertTrue($sender->subject('Hey foo!')
+			->content_type('text/html')
+			->body('<html><body>Hey foo!</body></html>')
+			->send(MailTest::RECEIVER));
+		
+		$this->assertTrue($sender->subject('Hey foo!')
+			->body('Hey!')
+			->send(MailTest::RECEIVER));
+	}
 
-        if ($cached = Kohana::cache(__CLASS__ . __METHOD__)) {
-            return $cached;
-        }
+	/**
+	 * @dataProvider providerSender
+	 */
+	public function testAttachment(Mail_Sender $sender)
+	{
+		$this->assertTrue($sender->subject('Sent you some files!')
+			->body('Hey!')
+			->attachment('{}', array('Content-Type' => 'application/json'))
+			->attachment(file_get_contents(MODPATH . 'mail/tests/test.png'), array(
+			'Content-Type' => 'image/png'))
+			->send(MailTest::RECEIVER));
+	}
 
-        $cached = array();
-
-        foreach ($this->emails() as $email) {
-            foreach ($this->subjects() as $subject) {
-                foreach ($this->bodies() as $body) {
-                    foreach ($this->headers() as $headers) {
-                        $cached[] = array($email[0], $subject[0], $body[0], $headers[0]);
-                    }
-                }
-            }
-        }
-
-        Kohana::cache(__CLASS__ . __METHOD__, $cached);
-
-        return $cached;
-    }
-
-    /**
-     * @dataProvider emails
-     */
-    public function testSend($email) {
-
-        $this->assertTrue(Mailer::factory()
-                        ->subject('test')
-                        ->body('test')
-                        ->send($email));
-    }
-
-    /**
-     * @dataProvider subjects
-     */
-    public function testSubject($subject) {
-
-        $this->assertTrue(Mailer::factory()
-                        ->subject($subject)
-                        ->body('test')
-                        ->send(MailTest::RECEIVER));
-    }
-
-    /**
-     * @dataProvider headers
-     */
-    public function testHeaders(array $headers) {
-
-        $this->assertTrue(Mailer::factory()
-                        ->subject('test')
-                        ->body('test')
-                        ->headers($headers)
-                        ->send(MailTest::RECEIVER));
-    }
-
-    public function testParam() {
-
-        $this->assertTrue(Mailer::factory()
-                        ->subject('Mail sent by :name')
-                        ->body('Hi, it\'s :name, how are you?')
-                        ->param(':name', 'Foo')
-                        ->send(MailTest::RECEIVER));
-    }
-
-    public function testAttachment() {
-
-        $this->assertTrue(Mailer::factory()
-                        ->subject('Sent you some files!')
-                        ->body('Hey!')
-                        ->attachment('{}', array('Content-Type' => 'application/json'))
-                        ->attachment(file_get_contents(MODPATH . 'mail/tests/test.png'), array('Content-Type' => 'image/png'))
-                        ->send(MailTest::RECEIVER));
-    }
-
-    public function testMessageIDGenerator() {
-
-        $this->assertRegExp('/<[0-9a-Z]*8\.[0-9a-Z]*8@\w+\.?\w.>/', Mailer::message_id());
-    }
-
-    /**
-     * @dataProvider emails_subjects_bodies_headers
-     */
-    public function test_Sender_Mail($email, $subject, $body, array $headers) {
-
-        $this->assertTrue(Mail_Sender::factory('Mail')
-                        ->from('Mail')
-                        ->subject($subject)
-                        ->body($body)
-                        ->headers($headers)
-                        ->send($email));
-    }
-
-    /**
-     * @dataProvider emails_subjects_bodies_headers
-     */
-    public function test_Sender_Mock($email, $subject, $body, array $headers) {
-
-        $this->assertTrue(Mail_Sender::factory('Mock')
-                        ->from('Mock')
-                        ->subject($subject)
-                        ->body($body)
-                        ->headers($headers)
-                        ->send($email));
-    }
-
-    /**
-     * @dataProvider emails_subjects_bodies_headers
-     */
-    public function test_Sender_PEAR_Mail($email, $subject, $body, $headers) {
-
-        $this->assertTrue(Mail_Sender::factory('PEAR_Mail')
-                        ->from('PEAR Mail')
-                        ->subject($subject)
-                        ->body($body)
-                        ->headers($headers)
-                        ->send($email));
-    }
-
-    /**
-     * @dataProvider emails_subjects_bodies_headers
-     */
-    public function test_Sender_PEAR_SMTP($email, $subject, $body, $headers) {
-
-        $this->assertTrue(Mail_Sender::factory('PEAR_SMTP')
-                        ->from('PEAR SMTP')
-                        ->subject($subject)
-                        ->body($body)
-                        ->headers($headers)
-                        ->send($email));
-    }
-
-    /**
-     * @dataProvider emails_subjects_bodies_headers
-     */
-    public function test_Sender_PEAR_Sendmail($email, $subject, $body, $headers) {
-
-        $this->assertTrue(Mail_Sender::factory('PEAR_Sendmail')
-                        ->from('PEAR Sendmail')
-                        ->subject($subject)
-                        ->body($body)
-                        ->headers($headers)
-                        ->send($email));
-    }
-
+	public function testMessageIDGenerator()
+	{
+		$this->assertRegExp('/<[\w=]*12\.[\w=]*12@\w+(\.\w+)*>/', Mailer::message_id());
+	}
 }
