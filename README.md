@@ -9,7 +9,7 @@ Supports the following senders
 * [PHPMailer](https://github.com/PHPMailer/PHPMailer)
 * mock sender for testing
 
-The SMTP sender for PEAR Mail module uses old PHP4 code that throws strict warnings. If imported, it will automatically disable E_STRICT.
+The SMTP sender for PEAR Mail module uses old PHP4 code that throws strict warnings. If imported, it will automatically disable ```E_STRICT```.
 
 ## Basic usage
 
