@@ -16,7 +16,7 @@ abstract class Kohana_Mail_Sender_PHPMailer extends Mail_Sender {
 	 *
 	 * @var PHPMailer
 	 */
-	protected $mailer;
+	public $mailer;
 
 	public function __construct(array $options)
 	{
@@ -40,6 +40,11 @@ abstract class Kohana_Mail_Sender_PHPMailer extends Mail_Sender {
 		foreach ($this->headers as $key => $value)
 		{
 			$this->mailer->addCustomHeader($key, $value);
+		}
+		
+		foreach ($to as $address)
+		{
+			$this->mailer->addAddress($address);
 		}
 		
 		$this->mailer->Subject = $this->headers('Subject');
