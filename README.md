@@ -9,7 +9,8 @@ Supports the following senders
 * [PHPMailer](https://github.com/PHPMailer/PHPMailer)
 * mock sender for testing
 
-The SMTP sender for PEAR Mail module uses old PHP4 code that throws strict warnings. If imported, it will automatically disable ```E_STRICT```.
+The SMTP sender for PEAR Mail module uses old PHP4 code that throws strict 
+warnings. If imported, it will automatically disable ```E_STRICT```.
 
 ## Basic usage
 
@@ -22,13 +23,14 @@ Mailer::factory()
     ->send(array('John McGuire' => 'foo@example.com' ));
 ```
 
-The ```Mail_Sender::param``` function is used to substitute the body and subject. If you use a 
-View for your body, it is more convenient to pass variables using ```View::factory```.
+The ```Mail_Sender::param``` function is used to substitute the body and 
+subject. If you use a ```View``` for your body, it is more convenient to pass 
+variables using ```View::factory```.
 
 ## Attachments
 
-Attachment content can be appended on a mail using ```Mail_Sender::attachment```. You may specify an array of 
-headers specific to that attachment.
+Attachment content can be appended on a mail using ```Mail_Sender::attachment```.
+You may specify an array of headers specific to that attachment.
 
 Mail with attachment(s) will be automatically converted to multipart format.
 
@@ -92,8 +94,9 @@ while to send.
 
 ## Generating Message-ID
 
-There is a message id implementation based on [Matt Curtin & Jamie Zawinski recommendations](http://www.jwz.org/doc/mid.html). It generates
-secure identifier to make threads and other fancy mailing stuff.
+There is a message id implementation based on 
+[Matt Curtin & Jamie Zawinski recommendations](http://www.jwz.org/doc/mid.html). 
+It generates secure identifier to make threads and other fancy mailing stuff.
 
 ```php
 $message_id = Mailer::message_id();
@@ -106,9 +109,12 @@ Mailer::factory()
 
 ## Testing mail
 
-The module provides a Mock sender to make efficient testing. Mails are pushed in a stack ```Mail_Sender_Mock::$history``` so that you can retreive them and test their content.
+The module provides a Mock sender to make efficient testing. Mails are pushed in 
+a stack ```Mail_Sender_Mock::$history``` so that you can retreive them and test 
+their content.
 
-A variable ```$to``` is added in the mail sender to test receivers. It is an array of RFC822 compliant emails.
+A variable ```$to``` is added in the mail sender to test receivers. It is an 
+array of RFC822 compliant emails.
 
 ```php
 public function testMail() 
