@@ -1,4 +1,5 @@
 <?php
+
 defined('SYSPATH') or die('No direct script access.');
 
 require_once 'Mail.php';
@@ -22,7 +23,7 @@ abstract class Kohana_Mail_Sender_PEAR extends Mail_Sender {
 	protected function _send(array $to)
 	{
 		$mime = new Mail_mime();
-		
+
 		if ($this->headers('Content-Type') === 'text/html')
 		{
 			$mime->setHTMLBody($this->body);
@@ -31,22 +32,22 @@ abstract class Kohana_Mail_Sender_PEAR extends Mail_Sender {
 		{
 			$mime->setTxtBody($this->body);
 		}
-		
+
 		foreach ($this->attachments as $attachment)
 		{
 			$headers = $attachment['headers'];
-			
+
 			$disposition = Arr::get($headers, 'Content-Disposition', 'attachment');
 			$filename = NULL;
-			
+
 			if (strpos($disposition, ';filename=') !== FALSE)
 			{
 				list ($disposition, $filename) = preg_split('/;filename=/', $disposition);
 			}
-			
+
 			$mime->addAttachment($attachment['attachment'], Arr::get($headers, 'Content-Type', 'application/octect-stream'), $filename, FALSE, 'base64', $disposition);
 		}
-		
+
 		return $this->PEAR_send($to, $mime->headers($this->headers), $mime->get());
 	}
 

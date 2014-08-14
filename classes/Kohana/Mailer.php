@@ -1,4 +1,5 @@
 <?php
+
 defined('SYSPATH') or die('No direct script access.');
 
 /**
@@ -25,10 +26,10 @@ class Kohana_Mailer {
 		{
 			$name = Mailer::$default;
 		}
-		
+
 		$sender = Kohana::$config->load("mail.$name.sender");
 		$options = (array) Kohana::$config->load("mail.$name.options");
-		
+
 		return Mail_Sender::factory($sender, $options);
 	}
 
@@ -45,21 +46,22 @@ class Kohana_Mailer {
 	public static function message_id()
 	{
 		$microtime = base_convert(microtime(), 10, 36);
-		
+
 		// Generate a new unique token
 		if (function_exists('openssl_random_pseudo_bytes'))
 		{
-			
+
 			$random = base64_encode(openssl_random_pseudo_bytes(8));
 		}
 		else
 		{
-			
+
 			$random = base64_encode(substr(sha1(uniqid(NULL, TRUE)), 0, 8));
 		}
-		
+
 		$domain = Arr::get($_SERVER, 'SERVER_NAME', 'localhost');
-		
+
 		return '<' . $microtime . '.' . $random . '@' . $domain . '>';
 	}
+
 }

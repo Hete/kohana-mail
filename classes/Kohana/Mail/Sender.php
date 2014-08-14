@@ -1,4 +1,5 @@
 <?php
+
 defined('SYSPATH') or die('No direct script access.');
 
 /**
@@ -24,7 +25,7 @@ abstract class Kohana_Mail_Sender {
 	public static function factory($name, array $options)
 	{
 		$class = "Mail_Sender_$name";
-		
+
 		return new $class($options);
 	}
 
@@ -80,26 +81,26 @@ abstract class Kohana_Mail_Sender {
 	{
 		if (is_array($key))
 		{
-			
+
 			$this->headers = $key;
-			
+
 			return $this;
 		}
-		
+
 		if ($key === NULL)
 		{
-			
+
 			return $this->headers;
 		}
-		
+
 		if ($value === NULL)
 		{
-			
+
 			return Arr::get($this->headers, $key);
 		}
-		
+
 		$this->headers[$key] = (string) $value;
-		
+
 		return $this;
 	}
 
@@ -287,12 +288,12 @@ abstract class Kohana_Mail_Sender {
 	{
 		if ($body === NULL)
 		{
-			
+
 			return $this->body;
 		}
-		
+
 		$this->body = (string) $body;
-		
+
 		return $this;
 	}
 
@@ -308,9 +309,9 @@ abstract class Kohana_Mail_Sender {
 	 */
 	public function attachment($attachment, array $headers = array())
 	{
-		$this->attachments[] = array('attachment' => $attachment, 
+		$this->attachments[] = array('attachment' => $attachment,
 			'headers' => $headers);
-		
+
 		return $this;
 	}
 
@@ -326,7 +327,7 @@ abstract class Kohana_Mail_Sender {
 	public function param($name, $value)
 	{
 		$this->params[$name] = (string) $value;
-		
+
 		return $this;
 	}
 
@@ -355,12 +356,12 @@ abstract class Kohana_Mail_Sender {
 		{
 			$benchmark = Profiler::start('Mailer', $this->subject());
 		}
-		
+
 		// Check if the receiver is a traversable structure
 		$receivers = Arr::is_array($receivers) ? $receivers : array($receivers);
-		
+
 		$to = array();
-		
+
 		foreach ($receivers as $key => $value)
 		{
 			if (is_string($key) && Valid::email($key))
@@ -374,25 +375,25 @@ abstract class Kohana_Mail_Sender {
 				$to[] = $value;
 			}
 		}
-		
+
 		// substitute headers values
 		foreach ($this->headers as $key => $value)
 		{
-			
+
 			$this->headers[$key] = strtr($value, $this->params);
 		}
-		
+
 		// substitute body values
 		$this->body = strtr($this->body, $this->params);
-		
+
 		$status = (bool) $this->_send($to);
-		
+
 		if (isset($benchmark))
 		{
-			
+
 			Profiler::stop($benchmark);
 		}
-		
+
 		return $status;
 	}
 
