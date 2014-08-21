@@ -12,37 +12,35 @@ defined('SYSPATH') or die('No direct script access.');
  */
 class Kohana_Mail_Sender_Mock extends Mail_Sender {
 
-    /**
-     * Stack of sent mail.
-     * 
-     * Use array_pop in your tests to ensure specific mail have been sent.
-     * 
-     * @var array 
-     */
-    public static $history;
+	/**
+	 * Stack of sent mail.
+	 * 
+	 * Use array_pop in your tests to ensure specific mail have been sent.
+	 * 
+	 * @var array 
+	 */
+	public static $history;
 
-    /**
-     * Expose attachments for testing purposes.
-     * 
-     * @var array 
-     */
-    public $attachments;
+	/**
+	 * Expose attachments for testing purposes.
+	 * 
+	 * @var array 
+	 */
+	public $attachments;
 
-    protected function _send(array $to) {
+	protected function _send()
+	{
+		// push the mail on the stack
+		Mail_Sender_Mock::$history[] = $this;
 
-        $this->to = $to;
+		// log the mocked mail for debugging
+		Kohana::$log->add(Log::DEBUG, "Mocked mail for :to\n\n:headers\n\n:body", array(
+			':to' => print_r($this->to, TRUE),
+			':headers' => print_r($this->headers, TRUE),
+			':body' => $this->body
+		));
 
-        // push the mail on the stack
-        Mail_Sender_Mock::$history[] = $this;
-
-        // log the mocked mail for debugging
-        Kohana::$log->add(Log::DEBUG, "Mocked mail for :to\n\n:headers\n\n:body", array(
-            ':to' => print_r($to, TRUE),
-            ':headers' => print_r($this->headers, TRUE),
-            ':body' => $this->body
-        ));
-
-        return (bool) $to;
-    }
+		return (bool) $this->to;
+	}
 
 }

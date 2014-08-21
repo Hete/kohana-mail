@@ -20,32 +20,49 @@ require_once 'Mail/mime.php';
  */
 abstract class Kohana_Mail_Sender_PEAR extends Mail_Sender {
 
-    protected function _send(array $to) {
+	/**
+	 * PEAR Mail provides a method for encoding headers.
+	 * 
+	 * @param string $name
+	 * @param string $header
+	 */
+	public static function header_encode($name, $header)
+	{
+		Mail_mime::encodeHeader($name, $header, Kohana::$charset, 'base64');
+	}
 
-        $mime = new Mail_mime();
+	/**
+	 *
+	 * @var Mail 
+	 */
+	protected $mail;
 
-        if ($this->headers('Content-Type') === 'text/html') {
+	public function __construct(array $options = NULL)
+	{
+		parent::__construct($options);
 
-            $mime->setHTMLBody($this->body);
-        } else {
+		$this->mail = new Mail();
+	}
 
-            $mime->setTxtBody($this->body);
-        }
+	protected function _send()
+	{
+		$mime = new Mail_mime();
 
-        foreach ($this->attachments as $attachment) {
+		if ($this->headers('Content-Type') === 'text/html')
+		{
+			$mime->setHTMLBody($this->body);
+		}
+		else
+		{
+			$mime->setTxtBody($this->body);
+		}
 
-            $mime->addAttachment($attachment['attachment'], $attachment['headers'], FALSE);
-        }
+		foreach ($this->attachments as $attachment)
+		{
+			$mime->addAttachment($attachment['attachment'], $attachment['headers'], FALSE);
+		}
 
-        return $this->PEAR_send($to, $mime->headers($this->headers), $mime->get());
-    }
+		return $this->mail->send($this->to, $mime->headers(), $mime->get());
+	}
 
-    /**
-     * Abstracts the sending process for PEAR based senders.
-     * 
-     * @param array  $to
-     * @param array  $headers
-     * @param string $body
-     */
-    protected abstract function PEAR_send(array $to, array $headers, $body);
 }

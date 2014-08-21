@@ -19,11 +19,11 @@ error_reporting(error_reporting() & ~ E_STRICT);
  */
 class Kohana_Mail_Sender_PEAR_SMTP extends Mail_Sender_PEAR {
 
-    protected function PEAR_send(array $to, array $headers, $body) {
+	public function __construct(array $options)
+	{
+		parent::__construct($options);
 
-        $mail = new Mail();
-
-        return $mail->factory('smtp', $this->options)->send($to, $headers, $body);
-    }
+		$this->mail->factory('smtp', $this->options);
+	}
 
 }

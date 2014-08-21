@@ -14,11 +14,11 @@ defined('SYSPATH') or die('No direct script access.');
  */
 class Kohana_Mail_Sender_PEAR_Sendmail extends Mail_Sender_PEAR {
 
-    protected function PEAR_send(array $to, array $headers, $body) {
+	public function __construct(array $options)
+	{
+		parent::__construct($options);
 
-        $mail = new Mail();
-        
-        return $mail->factory('sendmail', $this->options)->send($to, $headers, $body);
-    }
+		$this->mail->factory('sendmail', $this->options);
+	}
 
 }
