@@ -4,16 +4,60 @@ defined('SYSPATH') or die('No direct script access.');
 
 /**
  * Driver for built-in mail() PHP function.
- * 
- * @uses mail
  *
- * @package   Mail
- * @category  Senders
- * @author    Hète.ca Team
+ * @uses mail
+ * 
+ * @todo finish reimplementation with header encoding.
+ *      
+ * @package Mail
+ * @category Senders
+ * @author Hète.ca Team
  * @copyright (c) 2013, Hète.ca Inc.
- * @license   BSD-3-Clauses
+ * @license BSD-3-Clauses
  */
 class Kohana_Mail_Sender_Mail extends Mail_Sender {
+
+	/**
+	 * Encode a mime header.
+	 * 
+	 * Specific sender might override this method to implement a specific
+	 * encoding method.
+	 * 
+	 * @param  string $name     name for the header
+	 * @param  string $header   header value
+	 * @reutrn string
+	 */
+	public static function header_encode($header)
+	{
+		if (Arr::is_array($header))
+		{
+			$recipients = array();
+
+			foreach ($recipients as $key => $value)
+			{
+				if (is_string($key) && Valid::email($key))
+				{
+					// $key is an email, so $value is a name
+					$recipients[] = static::header_encode($value).' <'.$key.'>';
+				}
+				else
+				{
+					// $key is a numeric index, $vaalue is an email
+					$recipients[] = $value;
+				}
+			}
+
+			return join(', ', $recipients);
+		}
+
+		if (function_exists('mb_encode_mimeheader'))
+		{
+			return mb_encode_mimeheader($header);
+		}
+
+		// strip non-ascii
+		return UTF8::strip_non_ascii($header);
+	}
 
 	protected function _send()
 	{
@@ -35,8 +79,8 @@ class Kohana_Mail_Sender_Mail extends Mail_Sender {
 				)
 			));
 
-			$body = 'This is a message with multiple parts in MIME format.' . "\r\n";
-			$body .= '--' . $boundary . "\r\n";
+			$body = 'This is a message with multiple parts in MIME format.'."\r\n";
+			$body .= '--'.$boundary."\r\n";
 
 			// override Content-Type of the message as it is a multipart
 			$headers['Content-Type'] = "multipart/mixed; boundary=$boundary";
@@ -48,17 +92,17 @@ class Kohana_Mail_Sender_Mail extends Mail_Sender {
 
 			foreach ($attachment['headers'] as $name => $header)
 			{
-				$body .= static::header_encode($name, $header) . "\r\n";
+				$body .= $name.': '.static::header_encode($header)."\r\n";
 			}
 
 			$body .= "\r\n";
 
-			$body .= base64_encode($attachment['attachment']) . "\r\n";
+			$body .= base64_encode($attachment['attachment'])."\r\n";
 
-			$body .= '--' . $boundary . ($index + 1 === count($attachments) ? '--' : '') . "\r\n";
+			$body .= '--'.$boundary.($index + 1 === count($attachments) ? '--' : '')."\r\n";
 		}
 
-		$subject = NULL;
+		$subject = Arr::get($this->headers, 'Subject');
 
 		// avoid duplicated Subject header
 		if (array_key_exists('Subject', $headers))
@@ -72,10 +116,10 @@ class Kohana_Mail_Sender_Mail extends Mail_Sender {
 
 		foreach ($headers as $name => $header)
 		{
-			$encoded_headers[] = static::header_encode($name, $header);
+			$encoded_headers[] = $name.': '.static::header_encode($header);
 		}
 
-		$to = static::recipients_encode('To', $this->to);
+		$to = static::header_encode('To', $this->to);
 
 		$headers = implode("\r\n", $encoded_headers);
 

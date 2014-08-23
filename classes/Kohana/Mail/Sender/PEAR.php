@@ -12,24 +12,13 @@ require_once 'Mail/mime.php';
  *
  * @uses Mail
  * @uses Mail_mime
- * 
+ *      
  * @package  Mail
  * @category Senders
  * @author   Guillaume Poirier-Morency <guillaumepoiriermorency@gmail.com>
  * @license  BSD-3-Clauses
  */
 abstract class Kohana_Mail_Sender_PEAR extends Mail_Sender {
-
-	/**
-	 * PEAR Mail provides a method for encoding headers.
-	 * 
-	 * @param string $name
-	 * @param string $header
-	 */
-	public static function header_encode($name, $header)
-	{
-		Mail_mime::encodeHeader($name, $header, Kohana::$charset, 'base64');
-	}
 
 	/**
 	 *
@@ -47,6 +36,11 @@ abstract class Kohana_Mail_Sender_PEAR extends Mail_Sender {
 	protected function _send()
 	{
 		$mime = new Mail_mime();
+
+		foreach ($this->headers as $name => $header)
+		{
+			$mime->addHeader($name, $header);
+		}
 
 		if ($this->headers('Content-Type') === 'text/html')
 		{

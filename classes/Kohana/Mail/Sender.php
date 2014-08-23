@@ -4,65 +4,14 @@ defined('SYSPATH') or die('No direct script access.');
 
 /**
  * Mail sender.
- * 
- * @package   Mail
- * @category  Senders
- * @author    Guillaume Poirier-Morency <guillaumepoiriermorency@gmail.com>
+ *
+ * @package Mail
+ * @category Senders
+ * @author Guillaume Poirier-Morency <guillaumepoiriermorency@gmail.com>
  * @copyright (c) 2013, Hète.ca Inc.
- * @license   BSD-3-Clauses
+ * @license BSD-3-Clauses
  */
 abstract class Kohana_Mail_Sender {
-
-	/**
-	 * Encode a mime header.
-	 * 
-	 * Specific sender might override this method to implement a specific
-	 * encoding method.
-	 * 
-	 * @param  string $name     name for the header
-	 * @param  string $header   header value
-	 * @reutrn string
-	 */
-	public static function header_encode($name, $header)
-	{
-		if (function_exists('mb_encode_mimeheader'))
-		{
-			return $name . ': ' . mb_encode_mimeheader($header);
-		}
-
-		// strip non-ascii
-		return $name . ': ' . UTF8::strip_non_ascii($header);
-	}
-
-	/**
-	 * Encode an array of recipients into a valid RFC
-	 * 
-	 * @param  string $name
-	 * @param  array  $recipients
-	 * @return string
-	 */
-	public static function recipients_encode($name, array $recipients)
-	{
-		$recipients = array();
-
-		foreach ($recipients as $key => $value)
-		{
-			if (is_string($key) && Valid::email($key))
-			{
-				// $key is an email, so $value is a name
-				$recipients[] = static::header_encode($name, $value, FALSE) . ' <' . $key . '>';
-			}
-			else
-			{
-				// $key is a numeric index, $vaalue is an email
-				$recipients[] = $value;
-			}
-		}
-
-		$recipients = $name . ': ' . join(', ', $recipients);
-
-		return static::header_encode($name, $recipients);
-	}
 
 	/**
 	 * Return an instance of the specified sender.
@@ -109,13 +58,20 @@ abstract class Kohana_Mail_Sender {
 	protected $params = array();
 
 	/**
+	 * 
+	 * @var array
+	 */
+	protected $options = array();
+
+	/**
 	 * Initialize a Sender with options.
 	 *
-	 * @param array $options options for the Mail_Sender object.
+	 * @param array $options
+	 *        	options for the Mail_Sender object.
 	 */
-	public function __construct(array $options = NULL)
+	public function __construct(array $options)
 	{
-		$this->options = (array) $options;
+		$this->options = $options;
 	}
 
 	/**
@@ -147,22 +103,23 @@ abstract class Kohana_Mail_Sender {
 			return Arr::get($this->headers, $key);
 		}
 
-		$this->headers[$key] = $value;
+		$this->headers[$key] = (string) $value;
 
 		return $this;
 	}
 
 	/**
 	 * Set the Content-Type header of this mail.
-	 * 
+	 *
 	 * Use text/html for HTML email.
 	 * Use text/plain for plain email.
-	 * 
+	 *
 	 * You may also specify a custom charset using the charset parameter like
-	 * 
-	 *     text/html; charset=utf-8
-	 * 
-	 * @param  $content_type
+	 *
+	 * text/html; charset=utf-8
+	 *
+	 * @param
+	 *        	$content_type
 	 * @return \Mail_Sender
 	 */
 	public function content_type($content_type = NULL)
@@ -321,13 +278,15 @@ abstract class Kohana_Mail_Sender {
 	}
 
 	/**
-	 * Get or set the body of the mail. The body is immediatly evaluated.
-	 * 
+	 * Get or set the body of the mail.
+	 *
+	 * The body is immediatly evaluated.
+	 *
 	 * If you are assigning an HTML body, specify Content-Type to text/html in
 	 * headers.
 	 *
-	 * @param  variant $body
-	 * @return string  the body of the mail
+	 * @param variant $body        	
+	 * @return string the body of the mail
 	 */
 	public function body($body = NULL)
 	{
@@ -401,7 +360,7 @@ abstract class Kohana_Mail_Sender {
 		}
 
 		// Check if the receiver is a traversable structure
-		$this->to = Arr::is_array($to) ? $to : array($to);
+		$to = Arr::is_array($to) ? $to : array($to);
 
 		// substitute headers
 		foreach ($this->headers as $name => $header)

@@ -4,7 +4,7 @@
     "description": "Mailer with multiple backend for the Kohana framework",
     "homepage": "http://github.com/Hete/kohana-mail",
     "license": "BSD-3-Clause",
-    "keywords": ["kohana", "framework", "mail", "sendmail", "smtp"],
+    "keywords": ["kohana", "framework", "mail", "sendmail", "smtp", "PHPMailer"],
     "authors": [
         {
             "name": "Guillaume Poirier-Morency",
@@ -29,6 +29,7 @@
     ],
     "suggest": {
         "pear-pear/Mail": "*",
-        "pear-pear/Mail_Mime": "*"
+        "pear-pear/Mail_Mime": "*",
+        "PHPMailer/PHPMailer": "*"
     }
 }
