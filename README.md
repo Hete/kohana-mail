@@ -93,17 +93,16 @@ The module provides a Mock sender to make efficient testing. Mails are pushed in
 A variable `$to` is added in the mail sender to test receivers. It is an array of RFC822 compliant emails.
 
 ```php
-    public function testMail() {
-    
-        // self-request to send a mail
-        Request::factory('send')->execute();
-    
-        $mail = array_pop(Mail_Sender_Mock::$history);
-        
-        $this->assertEquals('text/html', $mail->headers('Content-Type'));
-        $this->assertContains('foo <foo@example.com>', $mail->to);
-        
-        $this->assertTag(array('tag' => 'a', 'attributes' => array('href' => 'http://example.com')), $mail->body());
-    }
+public function testMail() 
+{
+    // self-request to send a mail
+    Request::factory('send')->execute();
 
+    $mail = array_pop(Mail_Sender_Mock::$history);
+    
+    $this->assertEquals('text/html', $mail->headers('Content-Type'));
+    $this->assertContains('foo <foo@example.com>', $mail->to);
+    
+    $this->assertTag(array('tag' => 'a', 'attributes' => array('href' => 'http://example.com')), $mail->body());
+}
 ```
