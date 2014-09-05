@@ -3,12 +3,14 @@ kohana-mail
 
 Simple mailer for the Kohana framework.
 
-Supports the built-in ```mail``` function and the [PEAR Mail](http://pear.php.net/package/Mail/) module so you can send mail through SMTP and Sendmail.
+This module provide a simple and unique interface to multiple mail backend.
 
-The SMTP sender for PEAR Mail module uses old PHP4 code that throws strict warnings. If imported, it will automatically disable E_STRICT. It is recommended to use it in PRODUCTION environment and test with an alternate sender.
+Supports the built-in `mail` function and the [PEAR Mail](http://pear.php.net/package/Mail/) module so you can send mail through SMTP and Sendmail.
 
-## Basic usage
+The SMTP sender for PEAR Mail module uses old PHP4 code that throws strict warnings. If imported, it will automatically disable `E_STRICT`. It is recommended to use it in `PRODUCTION` environment and test with an alternate sender.
 
+Basic usage
+-----------
 ```php
 Mailer::factory()
     ->headers('Content-Type', 'text/html')
@@ -21,8 +23,8 @@ Mailer::factory()
 The ```Mail_Sender::param``` function is used to substitute the body and subject. If you use a 
 View for your body, it is more convenient to pass variables using ```View::factory```.
 
-## Attachments
-
+Attachments
+-----------
 Attachment content can be appended on a mail using ```Mail_Sender::attachment```. You may specify an array of 
 headers specific to that attachment.
 
@@ -33,62 +35,45 @@ Mailer::factory()
     ->subject('Got a new cat picture for you.')
     ->attachment(file_get_contents('cat.png'), array(
         'Content-Type' => 'image/png',
-        'Content-Disposition' => 'attachment; filename=cat.png'
-    )
+        'Content-Disposition' => 'attachment; filename=cat.png')
     ->send('foo@example.com');
 ```
 
-## Receivers
-
-Receivers could be 4 things
+Receivers
+---------
+Receivers must comply with the following format:
 
 A simple email
 
 ```php
-$receiver = "john@example.com";
+$receiver = "john@example.com"; # a simple email
+$receivers = array("john@example.com", "james@example.com"); # a list of emails
+$receivers = array("john@example.com" => "John Doe # an associative array
+$receivers = array("john@example.com", "james@example.com" => "James Doe"); # a mixed array
 ```
 
-A list of emails
-
-```php
-$receivers = array("john@example.com", "james@example.com");
-```
-
-An associative array
-
-```php
-$receivers = array("john@example.com" => "John Doe");
-```
-
-Or a mixed array
-
-```php
-$receivers = array("john@example.com", "james@example.com" => "James Doe");
-```
-
-It is pretty convinient with the ORM
-
+It is pretty convenient with the ORM
 ```php
 $receivers = ORM::factory('user')->find_all()->as_array('email', 'full_name');
 
 Mailer::factory()
     ->reply_to('noreply@example.com')
+    ->body('Hey guys!')
     ->send($receivers);
 ```
 
-## Sending heavy mail
-
+Sending heavy mail
+------------------
 You can send heavy mail using ```register_shutdown_function```
 
 ```php
 register_shutdown_function(array($mailer, 'send'), $users);
 ```
 
-It's pretty convenient to reduce the request time as mail can often take an
-while to send.
+Mail will be sent after the user gets his response.
 
-## Generating Message-ID
-
+Generating Message-ID
+---------------------
 There is a message id implementation based on [Matt Curtin & Jamie Zawinski recommendations](http://www.jwz.org/doc/mid.html). It generates
 secure identifier to make threads and other fancy mailing stuff.
 
@@ -101,11 +86,11 @@ Mailer::factory()
     ->send('foo@example.com')
 ```
 
-## Testing mail
+Testing mail
+------------
+The module provides a Mock sender to make efficient testing. Mails are pushed in a stack `Mail_Sender_Mock::$history` so that you can retreive them and test their content.
 
-The module provides a Mock sender to make efficient testing. Mails are pushed in a stack ```Mail_Sender_Mock::$history``` so that you can retreive them and test their content.
-
-A variable ```$to``` is added in the mail sender to test receivers. It is an array of RFC822 compliant emails.
+A variable `$to` is added in the mail sender to test receivers. It is an array of RFC822 compliant emails.
 
 ```php
     public function testMail() {
