@@ -13,11 +13,6 @@ require Kohana::find_file('vendor', 'PHPMailer/PHPMailerAutoload');
  */
 abstract class Kohana_Mail_Sender_PHPMailer extends Mail_Sender {
 
-	public static function header_encode($name, $header)
-	{
-		return PHPMailer::headerEncode($name, $header);
-	}
-
 	/**
 	 *
 	 * @var PHPMailer
@@ -31,7 +26,7 @@ abstract class Kohana_Mail_Sender_PHPMailer extends Mail_Sender {
 		$this->mailer = new PHPMailer();
 	}
 
-	protected function _send(array $to)
+	protected function _send()
 	{
 		if (array_key_exists('Host', $this->options))
 		{
@@ -53,10 +48,9 @@ abstract class Kohana_Mail_Sender_PHPMailer extends Mail_Sender {
 			$this->mailer->addCustomHeader($name, $header);
 		}
 
-		foreach ($to as $address)
+		foreach ($this->to as $address)
 		{
-			$this->mailer->addrFormat($address);
-			$this->mailer->addAddress($address);
+			$this->mailer->addAddress($this->mailer->addrFormat($address));
 		}
 
 		$this->mailer->Subject = $this->headers('Subject');

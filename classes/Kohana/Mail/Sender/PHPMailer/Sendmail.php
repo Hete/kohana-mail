@@ -13,11 +13,11 @@ defined('SYSPATH') or die('No direct script access.');
  */
 class Kohana_Mail_Sender_PHPMailer_Sendmail extends Mail_Sender_PHPMailer {
 
-	public function _send(array $to)
+	public function __construct(array $options)
 	{
-		$this->mailer->isSendmail();
+                parent::__construct($options);
 
-		return parent::_send($to);
+		$this->mailer->isSendmail();
 	}
 
 }

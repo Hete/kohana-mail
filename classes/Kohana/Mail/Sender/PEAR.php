@@ -35,14 +35,9 @@ abstract class Kohana_Mail_Sender_PEAR extends Mail_Sender {
 
 	protected function _send()
 	{
-		$mime = new Mail_mime();
+		$mime = new Mail_mime(array('head_charset' => Kohana::$charset, 'text_charset' => Kohana::$charset, 'html_charset' => Kohana::$charset));
 
-		foreach ($this->headers as $name => $header)
-		{
-			$mime->addHeader($name, $header);
-		}
-
-		if ($this->headers('Content-Type') === 'text/html')
+		if ($this->content_type() === 'text/html')
 		{
 			$mime->setHTMLBody($this->body);
 		}
@@ -56,7 +51,11 @@ abstract class Kohana_Mail_Sender_PEAR extends Mail_Sender {
 			$mime->addAttachment($attachment['attachment'], $attachment['headers'], FALSE);
 		}
 
-		return $this->mail->send($this->to, $mime->headers(), $mime->get());
+                // get must be called before headers
+                $body = $mime->get();
+                $headers = $mime->headers($this->headers);
+
+		return $this->mail->send($this->to, $headers, $body);
 	}
 
 }

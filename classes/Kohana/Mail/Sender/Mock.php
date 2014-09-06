@@ -31,13 +31,13 @@ class Kohana_Mail_Sender_Mock extends Mail_Sender {
 	protected function _send()
 	{
 		// push the mail on the stack
-		Mail_Sender_Mock::$history[] = $this;
+		static::$history[] = $this;
 
 		// log the mocked mail for debugging
 		Kohana::$log->add(Log::DEBUG, "Mocked mail for :to\n\n:headers\n\n:body", array(
-			':to' => print_r($this->to, TRUE),
+			':to'      => print_r($this->to, TRUE),
 			':headers' => print_r($this->headers, TRUE),
-			':body' => $this->body
+			':body'    => $this->body
 		));
 
 		return (bool) $this->to;
