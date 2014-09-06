@@ -16,8 +16,13 @@ It aims to unify mailing system under a single interface so that you can
 deploy your app independently of available libraries on the server or in your
 organization.
 
-## Basic usage
+The SMTP sender for PEAR Mail module uses old PHP4 code that throws strict 
+warnings. If imported, it will automatically disable `E_STRICT`. It is 
+recommended to use it in `PRODUCTION` environment and test with an alternate
+sender.
 
+Basic usage
+-----------
 ```php
 Mailer::factory()
     ->headers('Content-Type', 'text/html')
@@ -44,9 +49,9 @@ Alias are defined for `Cc`, `Bcc`, `Reply-To` and more for convenience.
 $mailer->bcc('johndoe@example.com');
 ```
 
-## Attachments
-
-Attachment content can be appended on a mail using `Mail_Sender::attachment`.
+Attachments
+-----------
+Attachment content can be appended on a mail using `Mail_Sender::attachment`. 
 You may specify an array of headers specific to that attachment.
 
 Mail with attachment(s) will be automatically converted to multipart format.
@@ -60,17 +65,20 @@ Mailer::factory()
     ->send('foo@example.com');
 ```
 
-## Receivers
+Receivers
+---------
+Receivers must comply with the following format:
 
-Receivers could be 4 things
+A simple email
 
-* a simple email `'john@example.com'`
-* a list of emails `array('john@example,com', 'james@example.com')`
-* an associative array `array('john@example.com' => 'John Doe')`
-* a mixed array `array('john@example.com', 'james@example.com' => 'James Doe')`
+```php
+$receiver = "john@example.com"; # a simple email
+$receivers = array("john@example.com", "james@example.com"); # a list of emails
+$receivers = array("john@example.com" => "John Doe # an associative array
+$receivers = array("john@example.com", "james@example.com" => "James Doe"); # a mixed array
+```
 
-It is pretty convinient with the ORM
-
+It is pretty convenient with the ORM
 ```php
 $receivers = ORM::factory('user')
     ->find_all()
@@ -78,22 +86,22 @@ $receivers = ORM::factory('user')
 
 Mailer::factory()
     ->reply_to('noreply@example.com')
+    ->body('Hey guys!')
     ->send($receivers);
 ```
 
-## Sending heavy mail
-
-You can send heavy mail using `register_shutdown_function`.
+Sending heavy mail
+------------------
+You can send heavy mail using `register_shutdown_function`
 
 ```php
 register_shutdown_function(array($mailer, 'send'), $users);
 ```
 
-It's pretty convenient to reduce the request time as mail can often take an
-while to send.
+Mail will be sent after the user gets his response.
 
-## Generating Message-ID
-
+Generating Message-ID
+---------------------
 There is a message id implementation based on 
 [Matt Curtin & Jamie Zawinski recommendations](http://www.jwz.org/doc/mid.html). 
 It generates secure identifier to make threads and other fancy mailing stuff.
@@ -105,11 +113,14 @@ Mailer::factory()
     ->send('foo@example.com')
 ```
 
-## Testing mail
-
-The module provides a Mock sender to make efficient testing. Mails are pushed in 
+Testing mail
+------------
+The module provides a Mock sender to make efficient testing. Mails are pushed in
 a stack `Mail_Sender_Mock::$history` so that you can retreive them and test 
 their content.
+
+A variable `$to` is added in the mail sender to test receivers. It is an array 
+of RFC822 compliant emails.
 
 ```php
 public function testMail() 
