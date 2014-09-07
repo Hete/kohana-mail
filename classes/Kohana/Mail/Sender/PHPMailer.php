@@ -53,9 +53,9 @@ abstract class Kohana_Mail_Sender_PHPMailer extends Mail_Sender {
 			$this->mailer->addCustomHeader($name, $header);
 		}
 
-		foreach ($this->to as $address)
+		foreach ($this->to as $email => $name)
 		{
-			$this->mailer->addAddress($address);
+			$this->mailer->addAddress(Valid::email($name) ? $name : $email, $name);
 		}
 
 		$this->mailer->Subject = $this->headers('Subject');
