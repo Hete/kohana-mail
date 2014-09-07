@@ -335,6 +335,11 @@ abstract class Kohana_Mail_Sender {
 	}
 
 	/**
+	 * Last error message.
+	 */
+	public abstract function error();
+
+	/**
 	 * Send an email to its receivers.
 	 * 
 	 * When fetching an ORM, it is somewhat useful to do 
@@ -360,7 +365,7 @@ abstract class Kohana_Mail_Sender {
 		}
 
 		// Check if the receiver is a traversable structure
-		$to = Arr::is_array($to) ? $to : array($to);
+		$this->to = Arr::is_array($to) ? $to : array($to);
 
 		// substitute headers
 		foreach ($this->headers as $name => $header)

@@ -28,6 +28,11 @@ class Kohana_Mail_Sender_Mock extends Mail_Sender {
 	 */
 	public $attachments;
 
+	public function error()
+	{
+		return NULL;
+	}
+
 	protected function _send()
 	{
 		// push the mail on the stack
@@ -40,7 +45,7 @@ class Kohana_Mail_Sender_Mock extends Mail_Sender {
 			':body'    => $this->body
 		));
 
-		return (bool) $this->to;
+		return ! empty($this->to) AND ! empty($this->body);
 	}
 
 }
