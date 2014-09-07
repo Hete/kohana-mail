@@ -26,11 +26,22 @@ abstract class Kohana_Mail_Sender_PEAR extends Mail_Sender {
 	 */
 	protected $mail;
 
+	/** 
+     *
+	 * @var PEAR_Error
+	 */
+	private $error;
+
 	public function __construct(array $options = NULL)
 	{
 		parent::__construct($options);
 
 		$this->mail = new Mail();
+	}
+
+	public function error()
+	{
+		return $this->error instanceof PEAR_Error ? $this->error->getMessage() : NULL;
 	}
 
 	protected function _send()
@@ -48,14 +59,36 @@ abstract class Kohana_Mail_Sender_PEAR extends Mail_Sender {
 
 		foreach ($this->attachments as $attachment)
 		{
-			$mime->addAttachment($attachment['attachment'], $attachment['headers'], FALSE);
+			$headers = $attachment['headers'];
+
+			$content_type = Arr::get($headers, 'Content-Type', 'application/octet-stream');
+			$disposition = Arr::get($headers, 'Content-Disposition', 'attachment');
+			$filename = NULL;
+			$description = Arr::get($headers, 'Content-Description');
+			$charset = Kohana::$charset;
+			$language = Arr::get($headers, 'Content-Language');
+			$location = Arr::get($headers, 'Content-Location');
+
+			if (strpos($content_type, '; charset=') !== FALSE)
+			{
+				list ($content_type, $charset) = preg_split('/; charset=/', $content_type);
+			}
+
+			if (strpos($disposition, '; filename=') !== FALSE)
+			{
+				list ($disposition, $filename) = preg_split('/; filename=/', $disposition);
+			}
+
+			$mime->addAttachment($attachment['attachment'], $content_type, $filename, FALSE, 'base64', $disposition, $charset, $language, $location, NULL, NULL, $description, Kohana::$charset);
 		}
 
-                // get must be called before headers
-                $body = $mime->get();
-                $headers = $mime->headers($this->headers);
+		// get must be called before headers
+		$body = $mime->get();
+		$headers = $mime->headers($this->headers);
 
-		return $this->mail->send($this->to, $headers, $body);
+		$this->error = $this->mail->send($this->to, $headers, $body);
+
+		return $this->error === TRUE AND ! empty($body);
 	}
 
 }

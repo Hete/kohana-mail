@@ -20,10 +20,6 @@ class Kohana_Mail_Sender_Mail extends Mail_Sender {
 	/**
 	 * Encode a mime header.
 	 * 
-	 * Specific sender might override this method to implement a specific
-	 * encoding method.
-	 * 
-	 * @param  string $name     name for the header
 	 * @param  string $header   header value
 	 * @reutrn string
 	 */
@@ -33,17 +29,17 @@ class Kohana_Mail_Sender_Mail extends Mail_Sender {
 		{
 			$recipients = array();
 
-			foreach ($recipients as $key => $value)
+			foreach ($header as $key => $value)
 			{
-				if (is_string($key) && Valid::email($key))
+				if (is_string($key) AND Valid::email($key))
 				{
 					// $key is an email, so $value is a name
 					$recipients[] = static::header_encode($value).' <'.$key.'>';
 				}
 				else
 				{
-					// $key is a numeric index, $vaalue is an email
-					$recipients[] = $value;
+					// $key is a numeric index, $value is an email
+					$recipients[] = static::header_encode($value);
 				}
 			}
 
@@ -57,6 +53,11 @@ class Kohana_Mail_Sender_Mail extends Mail_Sender {
 
 		// strip non-ascii
 		return UTF8::strip_non_ascii($header);
+	}
+
+	public function error() 
+	{
+		return NULL;	
 	}
 
 	protected function _send()
@@ -102,7 +103,7 @@ class Kohana_Mail_Sender_Mail extends Mail_Sender {
 			$body .= '--'.$boundary.($index + 1 === count($attachments) ? '--' : '')."\r\n";
 		}
 
-		$subject = Arr::get($this->headers, 'Subject');
+		$subject = NULL;
 
 		// avoid duplicated Subject header
 		if (array_key_exists('Subject', $headers))
@@ -125,7 +126,7 @@ class Kohana_Mail_Sender_Mail extends Mail_Sender {
 
 		$options = implode(' ', $this->options);
 
-		return mail($to, $subject, $body, $headers, $options);
+		return mail($to, $subject, $body, $headers, $options) AND ! empty($body);
 	}
 
 }

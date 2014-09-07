@@ -26,6 +26,11 @@ abstract class Kohana_Mail_Sender_PHPMailer extends Mail_Sender {
 		$this->mailer = new PHPMailer();
 	}
 
+	public function error() 
+	{
+		return $this->mailer->ErrorInfo;	
+	}
+
 	protected function _send()
 	{
 		if (array_key_exists('Host', $this->options))
@@ -50,7 +55,7 @@ abstract class Kohana_Mail_Sender_PHPMailer extends Mail_Sender {
 
 		foreach ($this->to as $address)
 		{
-			$this->mailer->addAddress($this->mailer->addrFormat($address));
+			$this->mailer->addAddress($address);
 		}
 
 		$this->mailer->Subject = $this->headers('Subject');
@@ -61,15 +66,17 @@ abstract class Kohana_Mail_Sender_PHPMailer extends Mail_Sender {
 		{
 			$headers = $attachment['headers'];
 
+			$content_type = Arr::get($headers, 'Content-Type', '');
 			$disposition = Arr::get($headers, 'Content-Disposition', 'attachment');
 			$filename = NULL;
+			$description = Arr::get($headers, 'Content-Description');
 
-			if (strpos($disposition, ';filename=') !== FALSE)
+			if (strpos($disposition, '; filename=') !== FALSE)
 			{
-				list ($disposition, $filename) = preg_split('/;filename=/', $disposition);
+				list ($disposition, $filename) = preg_split('/; filename=/', $disposition);
 			}
 
-			$this->mailer->addStringAttachment($attachment['attachment'], $filename, Arr::get($headers, 'Content-Encoding'), Arr::get($headers, 'Content-Type'), $disposition);
+			$this->mailer->addStringAttachment($attachment['attachment'], $filename, 'base64', $content_type, $disposition);
 		}
 
 		$this->mailer->isHTML($this->headers('Content-Type') === 'text/html');
