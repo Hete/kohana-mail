@@ -22,14 +22,29 @@ class Kohana_Mail_Sender_Mock extends Mail_Sender {
 	public static $history;
 
 	/**
+	 * Expose to for testing purposes.
+	 */
+	public $to;
+
+	/**
 	 * Expose attachments for testing purposes.
 	 * 
 	 * @var array 
 	 */
-	public $attachments;
+	public $attachments = array();
 
 	public function error()
 	{
+		if (empty($this->to))
+		{
+			return 'Recipient cannot be empty.';	
+		}
+
+		if (empty($this->body))
+		{
+			return 'Body cannot be empty.';	
+		}
+
 		return NULL;
 	}
 
