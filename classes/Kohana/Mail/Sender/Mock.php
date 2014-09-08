@@ -48,11 +48,6 @@ class Kohana_Mail_Sender_Mock extends Mail_Sender {
 		return NULL;
 	}
 
-	public function error()
-	{
-		return NULL;
-	}
-
 	protected function _send()
 	{
 		// push the mail on the stack
