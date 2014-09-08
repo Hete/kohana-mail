@@ -16,7 +16,7 @@ class MailTest extends Unittest_TestCase {
 	/**
 	 * Set a custom email to receive the test results.
 	 */
-	const RECEIVER = NULL;
+	const RECEIVER = 'guillaumepoiriermorency@gmail.com';
 
 	public function setUp()
 	{
@@ -31,22 +31,21 @@ class MailTest extends Unittest_TestCase {
 	public function providerHeaders() 
 	{
 		return array(
-			array('test', 'test'),
-			array('test ¤', 'test =?UTF-8?B?wqQ=?='),
-			array('test@test.com', 'test@test.com'),
-			array(array('test@test.com'), 'test@test.com'),
-			array(array('test@test.com' => 'test'), 'test <test@test.com>'),
-			array(array('test@test.com' => 'test', 'test2@test.com' => 'test'), 'test <test@test.com>, test <test2@test.com>'),
-			array('test', 'test')
+			array('Subject', 'test', 'test'),
+			array('Subject', 'test ¤', 'test =?UTF-8?B?wqQ=?='),
+			array('To', 'test@test.com', 'test@test.com'),
+			array('To', array('test@test.com'), 'test@test.com'),
+			array('To', array('test@test.com' => 'test'), 'test <test@test.com>'),
+			array('To', array('test@test.com' => 'test', 'test2@test.com' => 'test'), 'test <test@test.com>, test <test2@test.com>'),
 		);	
 	}
 	
 	/**
 	 * @dataProvider providerHeaders
 	 */
-	public function testEncodeHeaderWithMbstring($header, $encoded) 
+	public function testEncodeHeaderWithMbstring($name, $header, $encoded) 
 	{
-		$this->assertEquals($encoded, Mail_Sender_Mail::header_encode($header));
+		$this->assertEquals($encoded, Mail_Sender_Mail::header_encode($name, $header));
 	}
 
 	public function testMessageIDGenerator()

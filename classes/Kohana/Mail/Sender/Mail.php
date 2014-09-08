@@ -23,8 +23,14 @@ class Kohana_Mail_Sender_Mail extends Mail_Sender {
 	 * @param  string $header   header value
 	 * @reutrn string
 	 */
-	public static function header_encode($header)
+	public static function header_encode($name, $header)
 	{
+		// restrict encoding to specific headers
+		if (! in_array($name, array('Subject', 'To', 'Reply-To', 'From', 'Cc', 'Bcc')))
+		{
+			return $header;
+		}
+
 		if (Arr::is_array($header))
 		{
 			$recipients = array();
@@ -34,12 +40,12 @@ class Kohana_Mail_Sender_Mail extends Mail_Sender {
 				if (is_string($key) AND Valid::email($key))
 				{
 					// $key is an email, so $value is a name
-					$recipients[] = static::header_encode($value).' <'.$key.'>';
+					$recipients[] = static::header_encode($name, $value).' <'.$key.'>';
 				}
 				else
 				{
 					// $key is a numeric index, $value is an email
-					$recipients[] = static::header_encode($value);
+					$recipients[] = static::header_encode($name, $value);
 				}
 			}
 
@@ -93,7 +99,7 @@ class Kohana_Mail_Sender_Mail extends Mail_Sender {
 
 			foreach ($attachment['headers'] as $name => $header)
 			{
-				$body .= $name.': '.static::header_encode($header)."\r\n";
+				$body .= $name.': '.static::header_encode($name, $header)."\r\n";
 			}
 
 			$body .= "\r\n";
@@ -117,10 +123,10 @@ class Kohana_Mail_Sender_Mail extends Mail_Sender {
 
 		foreach ($headers as $name => $header)
 		{
-			$encoded_headers[] = $name.': '.static::header_encode($header);
+			$encoded_headers[] = $name.': '.static::header_encode($name, $header);
 		}
 
-		$to = static::header_encode($this->to);
+		$to = static::header_encode('To', $this->to);
 
 		$headers = implode("\r\n", $encoded_headers);
 
