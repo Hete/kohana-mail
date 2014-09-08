@@ -32,9 +32,9 @@ abstract class Kohana_Mail_Sender_PEAR extends Mail_Sender {
 	 */
 	private $error;
 
-	public function __construct(array $options = NULL)
+	public function __construct(array $headers, array $options)
 	{
-		parent::__construct($options);
+		parent::__construct($headers, $options);
 
 		$this->mail = new Mail();
 	}

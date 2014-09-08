@@ -13,9 +13,9 @@ defined('SYSPATH') or die('No direct script access.');
  */
 class Kohana_Mail_Sender_PHPMailer_Mail extends Mail_Sender_PHPMailer {
 
-	public function __construct(array $options)
+	public function __construct(array $headers, array $options)
 	{
-                parent::__construct($options);
+        parent::__construct($headers, $options);
 
 		$this->mailer->isMail();
 	}

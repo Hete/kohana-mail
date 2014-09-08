@@ -27,6 +27,10 @@ return array(
          * PHPMailer: send mail using PHPMailer.
          */
         'sender' => 'Mail',
+		/**
+		 * Initialize headers.
+		 */
+		'headers' => array(),
         /**
          * Options for the sender.
          *

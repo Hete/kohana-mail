@@ -17,14 +17,15 @@ abstract class Kohana_Mail_Sender {
 	 * Return an instance of the specified sender.
 	 * 
 	 * @param  string $name    name of the Mail_Sender object to instanciate.
+	 * @param  array  $headers initial headers
 	 * @param  array  $options options for the Mail_Sender object.
 	 * @return Mail_Sender 
 	 */
-	public static function factory($name, array $options = NULL)
+	public static function factory($name, array $headers, array $options)
 	{
 		$class = "Mail_Sender_$name";
 
-		return new $class($options);
+		return new $class($headers, $options);
 	}
 
 	/**
@@ -69,8 +70,9 @@ abstract class Kohana_Mail_Sender {
 	 * @param array $options
 	 *        	options for the Mail_Sender object.
 	 */
-	public function __construct(array $options)
+	public function __construct(array $headers, array $options)
 	{
+		$this->headers = $headers;
 		$this->options = $options;
 	}
 

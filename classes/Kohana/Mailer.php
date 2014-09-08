@@ -28,9 +28,10 @@ class Kohana_Mailer {
 		}
 
 		$sender = Kohana::$config->load("mail.$name.sender");
+		$headers = (array) Kohana::$config->load("mail.$name.headers");
 		$options = (array) Kohana::$config->load("mail.$name.options");
 
-		return Mail_Sender::factory($sender, $options);
+		return Mail_Sender::factory($sender, $headers, $options);
 	}
 
 	/**

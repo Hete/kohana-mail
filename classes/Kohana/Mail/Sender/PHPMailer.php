@@ -19,9 +19,9 @@ abstract class Kohana_Mail_Sender_PHPMailer extends Mail_Sender {
 	 */
 	public $mailer;
 
-	public function __construct(array $options)
+	public function __construct(array $headers, array $options)
 	{
-		parent::__construct($options);
+		parent::__construct($headers, $options);
 
 		$this->mailer = new PHPMailer();
 	}
