@@ -16,7 +16,7 @@ class MailTest extends Unittest_TestCase {
 	/**
 	 * Set a custom email to receive the test results.
 	 */
-	const RECEIVER = 'guillaumepoiriermorency@gmail.com';
+	const RECEIVER = NULL;
 
 	public function setUp()
 	{
