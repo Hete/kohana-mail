@@ -1,6 +1,6 @@
 <?php
 
-defined('SYSPATH') or die('No direct script access.');
+defined('SYSPATH') OR die('No direct script access.');
 
 /**
  * Mail sender.
@@ -120,8 +120,7 @@ abstract class Kohana_Mail_Sender {
 	 *
 	 * text/html; charset=utf-8
 	 *
-	 * @param
-	 *        	$content_type
+	 * @param string $content_type
 	 * @return \Mail_Sender
 	 */
 	public function content_type($content_type = NULL)
@@ -131,7 +130,7 @@ abstract class Kohana_Mail_Sender {
 
 	/**
 	 *
-	 * @param  $sender
+	 * @param string $sender
 	 * @return \Mail_Sender
 	 */
 	public function sender($sender = NULL)

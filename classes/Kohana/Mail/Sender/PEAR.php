@@ -1,6 +1,6 @@
 <?php
 
-defined('SYSPATH') or die('No direct script access.');
+defined('SYSPATH') OR die('No direct script access.');
 
 require_once 'Mail.php';
 require_once 'Mail/mime.php';
@@ -36,12 +36,12 @@ abstract class Kohana_Mail_Sender_PEAR extends Mail_Sender {
 	{
 		parent::__construct($headers, $options);
 
-		$this->mail = new Mail();
+		$this->mail = new Mail;
 	}
 
 	public function error()
 	{
-		return $this->error instanceof PEAR_Error ? $this->error->getMessage() : NULL;
+		return ($this->error instanceof PEAR_Error) ? $this->error->getMessage() : NULL;
 	}
 
 	protected function _send()

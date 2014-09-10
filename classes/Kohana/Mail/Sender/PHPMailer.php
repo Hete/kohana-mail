@@ -1,5 +1,7 @@
 <?php
 
+defined('SYSPATH') OR die('No direct script access.');
+
 require Kohana::find_file('vendor', 'PHPMailer/PHPMailerAutoload');
 
 /**
@@ -23,7 +25,7 @@ abstract class Kohana_Mail_Sender_PHPMailer extends Mail_Sender {
 	{
 		parent::__construct($headers, $options);
 
-		$this->mailer = new PHPMailer();
+		$this->mailer = new PHPMailer;
 	}
 
 	public function error() 

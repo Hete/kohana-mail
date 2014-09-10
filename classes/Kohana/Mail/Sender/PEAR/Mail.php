@@ -1,6 +1,6 @@
 <?php
 
-defined('SYSPATH') or die('No direct script access.');
+defined('SYSPATH') OR die('No direct script access.');
 
 /**
  * Sender based on PEAR mail built-in function.

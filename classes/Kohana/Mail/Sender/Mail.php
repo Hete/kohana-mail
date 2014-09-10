@@ -1,19 +1,17 @@
 <?php
 
-defined('SYSPATH') or die('No direct script access.');
+defined('SYSPATH') OR die('No direct script access.');
 
 /**
  * Driver for built-in mail() PHP function.
  *
  * @uses mail
- * 
- * @todo finish reimplementation with header encoding.
  *      
- * @package Mail
- * @category Senders
- * @author Hète.ca Team
+ * @package   Mail
+ * @category  Senders
+ * @author    Hète.ca Team
  * @copyright (c) 2013, Hète.ca Inc.
- * @license BSD-3-Clauses
+ * @license   BSD-3-Clauses
  */
 class Kohana_Mail_Sender_Mail extends Mail_Sender {
 
@@ -26,7 +24,7 @@ class Kohana_Mail_Sender_Mail extends Mail_Sender {
 	public static function header_encode($name, $header)
 	{
 		// restrict encoding to specific headers
-		if (! in_array($name, array('Subject', 'To', 'Reply-To', 'From', 'Cc', 'Bcc')))
+		if ( ! in_array($name, array('Subject', 'To', 'Reply-To', 'From', 'Cc', 'Bcc')))
 		{
 			return $header;
 		}
@@ -106,7 +104,7 @@ class Kohana_Mail_Sender_Mail extends Mail_Sender {
 
 			$body .= base64_encode($attachment['attachment'])."\r\n";
 
-			$body .= '--'.$boundary.($index + 1 === count($attachments) ? '--' : '')."\r\n";
+			$body .= '--'.$boundary.(($index + 1 === count($attachments)) ? '--' : '')."\r\n";
 		}
 
 		$subject = NULL;
@@ -123,7 +121,7 @@ class Kohana_Mail_Sender_Mail extends Mail_Sender {
 
 		foreach ($headers as $name => $header)
 		{
-			$encoded_headers[] = $name.': '.static::header_encode($name, $header);
+			$encoded_headers[] = $name.':'.static::header_encode($name, $header);
 		}
 
 		$to = static::header_encode('To', $this->to);
