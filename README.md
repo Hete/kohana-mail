@@ -119,9 +119,6 @@ The module provides a Mock sender to make efficient testing. Mails are pushed in
 a stack `Mail_Sender_Mock::$history` so that you can retreive them and test 
 their content.
 
-A variable `$to` is added in the mail sender to test receivers. It is an array 
-of RFC822 compliant emails.
-
 ```php
 public function testMail() 
 {
@@ -131,7 +128,7 @@ public function testMail()
     $mail = array_pop(Mail_Sender_Mock::$history);
     
     $this->assertEquals('text/html', $mail->headers('Content-Type'));
-    $this->assertContains('foo <foo@example.com>', $mail->to);
+    $this->assertContains('foo@example.com', $mail->to);
     
     $this->assertTag(array('tag' => 'a', 'attributes' => array('href' => 'http://example.com')), $mail->body());
 }
