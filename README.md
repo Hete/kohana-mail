@@ -9,9 +9,6 @@ Supports the following senders
 * [PHPMailer](https://github.com/PHPMailer/PHPMailer)
 * mock sender for testing
 
-The SMTP sender for PEAR Mail module uses old PHP4 code that throws strict 
-warnings. If imported, it will automatically disable `E_STRICT`.
-
 It aims to unify mailing system under a single interface so that you can
 deploy your app independently of available libraries on the server or in your
 organization.
@@ -92,13 +89,12 @@ Mailer::factory()
 
 Sending heavy mail
 ------------------
-You can send heavy mail using `register_shutdown_function`
-
+You can send heavy mail using `register_shutdown_function`:
 ```php
 register_shutdown_function(array($mailer, 'send'), $users);
 ```
 
-Mail will be sent after the user gets his response.
+Mail will be sent after the user get his response.
 
 Generating Message-ID
 ---------------------
