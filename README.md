@@ -9,9 +9,6 @@ Supports the following senders
 * [PHPMailer](https://github.com/PHPMailer/PHPMailer)
 * mock sender for testing
 
-The SMTP sender for PEAR Mail module uses old PHP4 code that throws strict 
-warnings. If imported, it will automatically disable `E_STRICT`.
-
 It aims to unify mailing system under a single interface so that you can
 deploy your app independently of available libraries on the server or in your
 organization.
@@ -92,13 +89,12 @@ Mailer::factory()
 
 Sending heavy mail
 ------------------
-You can send heavy mail using `register_shutdown_function`
-
+You can send heavy mail using `register_shutdown_function`:
 ```php
 register_shutdown_function(array($mailer, 'send'), $users);
 ```
 
-Mail will be sent after the user gets his response.
+Mail will be sent after the user get his response.
 
 Generating Message-ID
 ---------------------
@@ -119,9 +115,6 @@ The module provides a Mock sender to make efficient testing. Mails are pushed in
 a stack `Mail_Sender_Mock::$history` so that you can retreive them and test 
 their content.
 
-A variable `$to` is added in the mail sender to test receivers. It is an array 
-of RFC822 compliant emails.
-
 ```php
 public function testMail() 
 {
@@ -131,7 +124,7 @@ public function testMail()
     $mail = array_pop(Mail_Sender_Mock::$history);
     
     $this->assertEquals('text/html', $mail->headers('Content-Type'));
-    $this->assertContains('foo <foo@example.com>', $mail->to);
+    $this->assertContains('foo@example.com', $mail->to);
     
     $this->assertTag(array('tag' => 'a', 'attributes' => array('href' => 'http://example.com')), $mail->body());
 }

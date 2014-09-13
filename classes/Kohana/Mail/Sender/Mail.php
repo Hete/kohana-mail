@@ -52,7 +52,7 @@ class Kohana_Mail_Sender_Mail extends Mail_Sender {
 
 		if (function_exists('mb_encode_mimeheader'))
 		{
-			return mb_encode_mimeheader($header);
+			return mb_encode_mimeheader($header, Kohana::$charset);
 		}
 
 		// strip non-ascii

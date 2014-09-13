@@ -16,16 +16,11 @@ class MailTest extends Unittest_TestCase {
 	/**
 	 * Set a custom email to receive the test results.
 	 */
-	const RECEIVER = NULL;
+	const RECEIVER = 'foo@example.com';
 
 	public function setUp()
 	{
 		parent::setUp();
-
-		if (MailTest::RECEIVER === NULL)
-		{
-			$this->markTestSkipped('You have to set a receiver in order to get the test results.');
-		}
 	}
 
 	public function providerHeaders() 
