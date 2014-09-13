@@ -121,7 +121,7 @@ class Kohana_Mail_Sender_Mail extends Mail_Sender {
 
 		foreach ($headers as $name => $header)
 		{
-			$encoded_headers[] = $name.':'.static::header_encode($name, $header);
+			$encoded_headers[] = $name.': '.static::header_encode($name, $header);
 		}
 
 		$to = static::header_encode('To', $this->to);
