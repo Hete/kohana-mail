@@ -104,6 +104,8 @@ class Kohana_Mail_Sender_Mail extends Mail_Sender {
 
 			$body .= base64_encode($attachment['attachment'])."\r\n";
 
+			$body .= "\r\n";
+
 			$body .= '--'.$boundary.(($index + 1 === count($attachments)) ? '--' : '')."\r\n";
 		}
 
