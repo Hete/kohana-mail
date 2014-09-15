@@ -68,7 +68,7 @@ class Kohana_Mail_Sender_Mail extends Mail_Sender {
 	{
 		$headers = $this->headers;
 
-		$body = $this->body;
+        $body = $this->body;
 
 		$attachments = $this->attachments;
 
@@ -102,7 +102,7 @@ class Kohana_Mail_Sender_Mail extends Mail_Sender {
 
 			$body .= "\r\n";
 
-			$body .= base64_encode($attachment['attachment'])."\r\n";
+			$body .= wordwrap(base64_encode($attachment['attachment']), 78, "\r\n", TRUE)."\r\n";
 
 			$body .= "\r\n";
 
@@ -127,6 +127,8 @@ class Kohana_Mail_Sender_Mail extends Mail_Sender {
 		}
 
 		$to = static::header_encode('To', $this->to);
+
+        $body = wordwrap($body, 78, "\r\n");
 
 		$headers = implode("\r\n", $encoded_headers);
 
