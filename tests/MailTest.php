@@ -18,11 +18,6 @@ class MailTest extends Unittest_TestCase {
 	 */
 	const RECEIVER = 'foo@example.com';
 
-	public function setUp()
-	{
-		parent::setUp();
-	}
-
 	public function providerHeaders() 
 	{
 		return array(
