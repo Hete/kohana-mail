@@ -49,9 +49,9 @@ class MailTest extends Unittest_TestCase {
 	{
 		return array(
 			array(Mail_Sender::factory('Mail',               array(), array())),
-			array(Mail_Sender::factory('PEAR_Mail',          array(), array())),
-			array(Mail_Sender::factory('PEAR_Sendmail',      array(), array())),
-			array(Mail_Sender::factory('PEAR_SMTP',          array(), array())),
+			//array(Mail_Sender::factory('PEAR_Mail',          array(), array())),
+			//array(Mail_Sender::factory('PEAR_Sendmail',      array(), array())),
+			//array(Mail_Sender::factory('PEAR_SMTP',          array(), array())),
 			//array(Mail_Sender::factory('PHPMailer_Mail',     array(), array())),
 			//array(Mail_Sender::factory('PHPMailer_Qmail',    array(), array())), // could not test this one :(
 			// array(Mail_Sender::factory('PHPMailer_Sendmail', array(), array())),
