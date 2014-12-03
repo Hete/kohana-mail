@@ -1,16 +1,16 @@
 {
-    "name": "hete/mail",
-    "type": "kohana-module",
+    "name":        "hete/mail",
+    "type":        "kohana-module",
     "description": "Mailer with multiple backend for the Kohana framework",
-    "homepage": "http://github.com/Hete/kohana-mail",
-    "license": "BSD-3-Clause",
-    "keywords": ["kohana", "framework", "mail", "sendmail", "smtp", "PHPMailer"],
+    "homepage":    "http://github.com/Hete/kohana-mail",
+    "license":     "BSD-3-Clause",
+    "keywords":    ["kohana", "framework", "mail", "sendmail", "smtp", "PHPMailer"],
     "authors": [
         {
-            "name": "Guillaume Poirier-Morency",
-            "email": "guillaumepoiriermorency@gmail.com",
+            "name":     "Guillaume Poirier-Morency",
+            "email":    "guillaumepoiriermorency@gmail.com",
             "homepage": "https://github.com/arteymix",
-            "role": "developer"
+            "role":     "developer"
         }
     ],
     "support": {
@@ -22,18 +22,18 @@
         "php": ">=5.3.3"
     },
     "require-dev": {
-        "phpunit/phpunit": "3.7.*",
-        "kohana/unittest": "3.3.*",
+        "phpunit/phpunit":  "3.7.*",
+        "kohana/unittest":  "3.3.*",
         "kohana/koharness": "*@dev"
     },
     "repositories": [
         {
             "type": "pear",
-            "url": "pear.php.net"
+            "url":  "pear.php.net"
         }
     ],
     "suggest": {
-        "pear-pear/Mail": "*",
+        "pear-pear/Mail":      "*",
         "pear-pear/Mail_Mime": "*",
         "PHPMailer/PHPMailer": "5.2.*"
     }

@@ -1,6 +1,8 @@
 kohana-mail
 ===========
 
+[![BuildStatus](https://travis-ci.org/Hete/kohana-mail.svg?branch=3.3%2Ffeature%2Fcomposer)](https://travis-ci.org/Hete/kohana-mail)
+
 Simple mailer for the Kohana framework.
 
 Supports the following senders:
