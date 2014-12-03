@@ -18,13 +18,13 @@
         "source": "http://github.com/Hete/kohana-mail"
     },
     "require": {
-        "composer/installers": "~1.0",                                                                                                                
         "kohana/core": "3.3.*",
         "php": ">=5.3.3"
     },
     "require-dev": {
         "phpunit/phpunit": "3.7.*",
-        "kohana/unittest": "3.3.*"
+        "kohana/unittest": "3.3.*",
+        "kohana/koharness": "*@dev"
     },
     "repositories": [
         {
@@ -35,6 +35,6 @@
     "suggest": {
         "pear-pear/Mail": "*",
         "pear-pear/Mail_Mime": "*",
-        "PHPMailer/PHPMailer": "*"
+        "PHPMailer/PHPMailer": "5.2.*"
     }
 }

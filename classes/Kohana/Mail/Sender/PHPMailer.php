@@ -1,17 +1,13 @@
-<?php
-
-defined('SYSPATH') OR die('No direct script access.');
-
-require Kohana::find_file('vendor', 'PHPMailer/PHPMailerAutoload');
+<?php defined('SYSPATH') OR die('No direct script access.');
 
 /**
  * PHPMailer-based mail sender.
  *
- * @package Mail
- * @category Senders
- * @author Guillaume Poirier-Morency <guillaumepoiriermorency@gmail.com>
+ * @package   Mail
+ * @category  Senders
+ * @author    Guillaume Poirier-Morency <guillaumepoiriermorency@gmail.com>
  * @copyright (c) 2014, Guillaume Poirier-Morency
- * @license BSD-3-Clauses
+ * @license   BSD-3-Clauses
  */
 abstract class Kohana_Mail_Sender_PHPMailer extends Mail_Sender {
 
@@ -28,9 +24,9 @@ abstract class Kohana_Mail_Sender_PHPMailer extends Mail_Sender {
 		$this->mailer = new PHPMailer;
 	}
 
-	public function error() 
+	public function error()
 	{
-		return $this->mailer->ErrorInfo;	
+		return $this->mailer->ErrorInfo;
 	}
 
 	protected function _send()
@@ -81,7 +77,7 @@ abstract class Kohana_Mail_Sender_PHPMailer extends Mail_Sender {
 			$this->mailer->addStringAttachment($attachment['attachment'], $filename, 'base64', $content_type, $disposition);
 		}
 
-		$this->mailer->isHTML($this->headers('Content-Type') === 'text/html');
+		$this->mailer->isHTML(strpos('text/html', $this->content_type()) === 0);
 
 		return $this->mailer->send();
 	}
