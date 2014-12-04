@@ -38,25 +38,28 @@ abstract class Kohana_Mail_Sender_PHPMailer extends Mail_Sender {
 
 	protected function _send()
 	{
-		foreach ($this->headers as $name => $header)
-		{
-			if (Arr::is_array($header))
-			{
-				$header = $this->mailer->addrFormat($header);
-			}
-
-			$this->mailer->addCustomHeader($name, $header);
-		}
-
 		foreach ($this->to as $email => $name)
 		{
 			$this->mailer->addAddress(Valid::email($name) ? $name : $email, $name);
 		}
 
+        $this->mailer->From = $this->from();
 		$this->mailer->Subject = $this->subject();
-
 		$this->mailer->Body = $this->body;
-		$this->mailer->isHTML($this->headers('Content-Type') === 'text/html');
+		$this->mailer->isHTML(strpos('text/html', $this->headers('Content-Type')) === 0);
+
+		foreach ($this->headers as $name => $header)
+		{
+            if ( ! in_array($name, array('From', 'To')))
+            {
+                if (Arr::is_array($header))
+                {
+                    $header = $this->mailer->addrFormat($header);
+                }
+
+                $this->mailer->addCustomHeader($name, $header);
+            }
+		}
 
 		foreach ($this->attachments as $attachment)
 		{
