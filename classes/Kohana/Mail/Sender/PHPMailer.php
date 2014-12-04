@@ -1,17 +1,15 @@
-<?php
-
-defined('SYSPATH') OR die('No direct script access.');
+<?php defined('SYSPATH') OR die('No direct script access.');
 
 require Kohana::find_file('vendor', 'PHPMailer/PHPMailerAutoload');
 
 /**
  * PHPMailer-based mail sender.
  *
- * @package Mail
- * @category Senders
- * @author Guillaume Poirier-Morency <guillaumepoiriermorency@gmail.com>
+ * @package   Mail
+ * @category  Senders
+ * @author    Guillaume Poirier-Morency <guillaumepoiriermorency@gmail.com>
  * @copyright (c) 2014, Guillaume Poirier-Morency
- * @license BSD-3-Clauses
+ * @license   BSD-3-Clauses
  */
 abstract class Kohana_Mail_Sender_PHPMailer extends Mail_Sender {
 
@@ -26,25 +24,20 @@ abstract class Kohana_Mail_Sender_PHPMailer extends Mail_Sender {
 		parent::__construct($headers, $options);
 
 		$this->mailer = new PHPMailer;
-	}
-
-	public function error() 
-	{
-		return $this->mailer->ErrorInfo;	
-	}
-
-	protected function _send()
-	{
-		if (array_key_exists('Host', $this->options))
-		{
-			$this->mailer->isSMTP();
-		}
 
 		foreach ($this->options as $key => $value)
 		{
 			$this->mailer->{$key} = $value;
 		}
+	}
 
+	public function error()
+	{
+		return $this->mailer->ErrorInfo;
+	}
+
+	protected function _send()
+	{
 		foreach ($this->headers as $name => $header)
 		{
 			if (Arr::is_array($header))
@@ -60,9 +53,10 @@ abstract class Kohana_Mail_Sender_PHPMailer extends Mail_Sender {
 			$this->mailer->addAddress(Valid::email($name) ? $name : $email, $name);
 		}
 
-		$this->mailer->Subject = $this->headers('Subject');
+		$this->mailer->Subject = $this->subject();
 
 		$this->mailer->Body = $this->body;
+		$this->mailer->isHTML($this->headers('Content-Type') === 'text/html');
 
 		foreach ($this->attachments as $attachment)
 		{
@@ -75,13 +69,11 @@ abstract class Kohana_Mail_Sender_PHPMailer extends Mail_Sender {
 
 			if (strpos($disposition, '; filename=') !== FALSE)
 			{
-				list ($disposition, $filename) = preg_split('/; filename=/', $disposition);
+				list ($disposition, $filename) = preg_split('/;\s*filename=/', $disposition);
 			}
 
 			$this->mailer->addStringAttachment($attachment['attachment'], $filename, 'base64', $content_type, $disposition);
 		}
-
-		$this->mailer->isHTML($this->headers('Content-Type') === 'text/html');
 
 		return $this->mailer->send();
 	}
