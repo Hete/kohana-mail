@@ -1,7 +1,5 @@
 <?php defined('SYSPATH') OR die('No direct script access.');
 
-require Kohana::find_file('vendor', 'PHPMailer/PHPMailerAutoload');
-
 /**
  * PHPMailer-based mail sender.
  *
@@ -56,7 +54,7 @@ abstract class Kohana_Mail_Sender_PHPMailer extends Mail_Sender {
 		$this->mailer->Subject = $this->subject();
 
 		$this->mailer->Body = $this->body;
-		$this->mailer->isHTML($this->headers('Content-Type') === 'text/html');
+		$this->mailer->isHTML(strpos('text/html', $this->content_type()) === 0);		
 
 		foreach ($this->attachments as $attachment)
 		{
@@ -73,7 +71,7 @@ abstract class Kohana_Mail_Sender_PHPMailer extends Mail_Sender {
 			}
 
 			$this->mailer->addStringAttachment($attachment['attachment'], $filename, 'base64', $content_type, $disposition);
-		}
+		}	
 
 		return $this->mailer->send();
 	}
