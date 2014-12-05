@@ -42,7 +42,7 @@ class MailTest extends Unittest_TestCase {
 
 	public function testMessageIDGenerator()
 	{
-		$this->assertRegExp('/<[\d\w\+=]+\.[\d\w\+=]+@\w+(\.\w+)*>/', Mailer::message_id());
+		$this->assertRegExp('/<[\d\w\+=\/]+\.[\d\w\+=\/]+@\w+(\.\w+)*>/', Mailer::message_id());
 	}
 
 	public function providerSender()
