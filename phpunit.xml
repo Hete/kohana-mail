@@ -1,8 +1,0 @@
-<phpunit bootstrap="../unittest/bootstrap.php">
-    <php>
-        <server name="KOHANA_ENV" value="TESTING"/>
-    </php>
-    <testsuite name="Mail tests">
-        <directory>tests</directory>  
-    </testsuite>
-</phpunit>

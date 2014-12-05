@@ -1,0 +1,14 @@
+language: php
+
+php:
+    - 5.3
+    - 5.4
+    - 5.5
+
+install:
+    - git submodule update --init --recursive
+    - composer install
+    - vendor/bin/koharness
+    - cd /tmp/koharness
+
+script: vendor/bin/phpunit --bootstrap=modules/unittest/bootstrap.php modules/mail/tests
