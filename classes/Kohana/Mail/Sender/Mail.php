@@ -1,12 +1,10 @@
-<?php
-
-defined('SYSPATH') OR die('No direct script access.');
+<?php defined('SYSPATH') OR die('No direct script access.');
 
 /**
  * Driver for built-in mail() PHP function.
  *
  * @uses mail
- *      
+ *
  * @package   Mail
  * @category  Senders
  * @author    Hète.ca Team
@@ -17,7 +15,7 @@ class Kohana_Mail_Sender_Mail extends Mail_Sender {
 
 	/**
 	 * Encode a mime header.
-	 * 
+	 *
 	 * @param  string $header   header value
 	 * @reutrn string
 	 */
@@ -59,9 +57,19 @@ class Kohana_Mail_Sender_Mail extends Mail_Sender {
 		return UTF8::strip_non_ascii($header);
 	}
 
-	public function error() 
+	/**
+	 * Mail sender does not provide any relevant error information.
+     *
+	 * We can at least tell if the $body is empty.
+	 */
+	public function error()
 	{
-		return NULL;	
+		if (empty($this->body))
+		{
+			return 'Message body is empty';
+		}
+
+		return NULL;
 	}
 
 	protected function _send()
