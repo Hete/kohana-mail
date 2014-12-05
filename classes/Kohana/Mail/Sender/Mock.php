@@ -1,35 +1,33 @@
-<?php
-
-defined('SYSPATH') OR die('No direct script access.');
+<?php defined('SYSPATH') OR die('No direct script access.');
 
 /**
  * Fake sender for testing application without sending real mails.
  *
- * @package Mail
+ * @package  Mail
  * @category Senders
- * @author Guillaume Poirier-Morency <guillaumepoiriermorency@gmail.com>
- * @license BSD-3-Clauses
+ * @author   Guillaume Poirier-Morency <guillaumepoiriermorency@gmail.com>
+ * @license  BSD-3-Clauses
  */
 class Kohana_Mail_Sender_Mock extends Mail_Sender {
 
 	/**
 	 * Stack of sent mail.
-	 * 
+	 *
 	 * Use array_pop in your tests to ensure specific mail have been sent.
-	 * 
-	 * @var array 
+	 *
+	 * @var array
 	 */
 	public static $history;
 
 	/**
-	 * Expose to for testing purposes.
+	 * Expose $to for testing purposes.
 	 */
 	public $to;
 
 	/**
 	 * Expose attachments for testing purposes.
-	 * 
-	 * @var array 
+	 *
+	 * @var array
 	 */
 	public $attachments = array();
 
@@ -37,12 +35,12 @@ class Kohana_Mail_Sender_Mock extends Mail_Sender {
 	{
 		if (empty($this->to))
 		{
-			return 'Recipient cannot be empty.';	
+			return 'Recipient cannot be empty.';
 		}
 
 		if (empty($this->body))
 		{
-			return 'Body cannot be empty.';	
+			return 'Body cannot be empty.';
 		}
 
 		return NULL;

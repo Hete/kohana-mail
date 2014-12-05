@@ -1,7 +1,3 @@
-<?php
+<?php defined('SYSPATH') OR die('No direct script access.');
 
-defined('SYSPATH') OR die('No direct script access.');
-
-class Mailer extends Kohana_Mailer {
-	
-}
+class Mailer extends Kohana_Mailer {}

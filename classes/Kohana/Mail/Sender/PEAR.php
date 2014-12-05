@@ -1,6 +1,4 @@
-<?php
-
-defined('SYSPATH') OR die('No direct script access.');
+<?php defined('SYSPATH') OR die('No direct script access.');
 
 require_once 'Mail.php';
 require_once 'Mail/mime.php';
@@ -12,7 +10,7 @@ require_once 'Mail/mime.php';
  *
  * @uses Mail
  * @uses Mail_mime
- *      
+ *
  * @package  Mail
  * @category Senders
  * @author   Guillaume Poirier-Morency <guillaumepoiriermorency@gmail.com>
@@ -22,11 +20,11 @@ abstract class Kohana_Mail_Sender_PEAR extends Mail_Sender {
 
 	/**
 	 *
-	 * @var Mail 
+	 * @var Mail
 	 */
 	protected $mail;
 
-	/** 
+	/**
      *
 	 * @var PEAR_Error
 	 */

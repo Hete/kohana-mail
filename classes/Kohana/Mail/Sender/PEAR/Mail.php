@@ -1,12 +1,10 @@
-<?php
-
-defined('SYSPATH') OR die('No direct script access.');
+<?php defined('SYSPATH') OR die('No direct script access.');
 
 /**
  * Sender based on PEAR mail built-in function.
  *
  * @uses Mail_mail
- *      
+ *
  * @package  Mail
  * @category Senders
  * @author   Guillaume Poirier-Morency <guillaumepoiriermorency@gmail.com>

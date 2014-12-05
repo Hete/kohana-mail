@@ -1,14 +1,12 @@
-<?php
-
-defined('SYSPATH') OR die('No direct script access.');
+<?php defined('SYSPATH') OR die('No direct script access.');
 
 /**
  * Mailer.
  *
- * @package Mail
- * @author Guillaume Poirier-Morency <guillaumepoiriermorency@gmail.com>
+ * @package   Mail
+ * @author    Guillaume Poirier-Morency <guillaumepoiriermorency@gmail.com>
  * @copyright (c) 2014, Guillaume Poirier-Morency
- * @license BSD-3-Clauses
+ * @license   BSD-3-Clauses
  */
 class Kohana_Mailer {
 
@@ -17,7 +15,7 @@ class Kohana_Mailer {
 	/**
 	 * Prepare a Mail_Sender.
 	 *
-	 * @param string $name        	
+	 * @param string $name
 	 * @return Mail_Sender
 	 */
 	public static function factory($name = NULL)
