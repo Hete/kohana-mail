@@ -23,6 +23,7 @@ Basic usage
 ```php
 Mailer::factory()
     ->headers('Content-Type', 'text/html')
+    // ->headers('Content-Type', 'text/html; charset=utf-8') to specify UTF-8 character encoding
     ->subject('Hey :username!')
     ->body(View::factory('some_template'))
     ->param(':username', 'John McGuire')
