@@ -46,7 +46,7 @@ abstract class Kohana_Mail_Sender_PEAR extends Mail_Sender {
 	{
 		$mime = new Mail_mime(array('head_charset' => Kohana::$charset, 'text_charset' => Kohana::$charset, 'html_charset' => Kohana::$charset));
 
-		if ($this->content_type() === 'text/html')
+		if (strpos($this->content_type(), 'text/html') !== FALSE)
 		{
 			$mime->setHTMLBody($this->body);
 		}
